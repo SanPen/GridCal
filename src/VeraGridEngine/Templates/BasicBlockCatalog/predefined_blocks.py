@@ -7,9 +7,11 @@ from __future__ import annotations
 
 from typing import Tuple, Sequence, List
 
+from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Templates.template_definition import TemplateDefinition, TemplateProp
 from VeraGridEngine.basic_structures import Vec
+from VeraGridEngine.enumerations import BlockType, DeviceType
 import VeraGridEngine.Utils.Symbolic.symbolic as sym
 from VeraGridEngine.Utils.Symbolic.block import Block
 
@@ -171,6 +173,163 @@ class ProductTemplate(TemplateDefinition):
         divisor_inputs: int = self.get_value("divisor_inputs")
 
         return product(self.vf, divident_inputs, divisor_inputs)
+
+
+class MinimumTemplate(TemplateDefinition):
+    """Structural definition of a minimum block with configurable arity."""
+
+    __slots__ = ()
+
+    def __init__(self, vf: VarFactory) -> None:
+        """Create a minimum-block definition with two inputs by default.
+
+        :param vf: Variable factory receiving the generated block variables.
+        :return: None.
+        """
+        TemplateDefinition.__init__(
+            self,
+            vf,
+            list((
+                TemplateProp(
+                    name="input_count",
+                    units="",
+                    descr="Number of signals compared by the minimum operation.",
+                    tpe=int,
+                    value=2,
+                ),
+            )),
+        )
+
+    def eval(self) -> EmtModelTemplate:
+        """Build the minimum block using the configured input count.
+
+        :return: EMT template containing a minimum block with the requested input count.
+        """
+        input_count: int = int(self.get_value("input_count"))
+        return build_extremum_template(
+            var_factory=self.vf,
+            input_count=input_count,
+            block_type=BlockType.MIN,
+        )
+
+
+class MaximumTemplate(TemplateDefinition):
+    """Structural definition of a maximum block with configurable arity."""
+
+    __slots__ = ()
+
+    def __init__(self, vf: VarFactory) -> None:
+        """Create a maximum-block definition with two inputs by default.
+
+        :param vf: Variable factory receiving the generated block variables.
+        :return: None.
+        """
+        TemplateDefinition.__init__(
+            self,
+            vf,
+            list((
+                TemplateProp(
+                    name="input_count",
+                    units="",
+                    descr="Number of signals compared by the maximum operation.",
+                    tpe=int,
+                    value=2,
+                ),
+            )),
+        )
+
+    def eval(self) -> EmtModelTemplate:
+        """Build the maximum block using the configured input count.
+
+        :return: EMT template containing a maximum block with the requested input count.
+        """
+        input_count: int = int(self.get_value("input_count"))
+        return build_extremum_template(
+            var_factory=self.vf,
+            input_count=input_count,
+            block_type=BlockType.MAX,
+        )
+
+
+def build_extremum_template(
+        var_factory: VarFactory,
+        input_count: int,
+        block_type: BlockType,
+) -> EmtModelTemplate:
+    """Wrap a configurable minimum or maximum block in the builder contract.
+
+    Builder-backed Library entries return model templates so creation,
+    preflight validation, and structural editing all consume the same type.
+    The inner block remains an ordinary symbolic block and retains the
+    configurable ``input_count`` structure.
+
+    :param var_factory: Variable factory receiving the generated variables.
+    :param input_count: Number of signals participating in the reduction.
+    :param block_type: ``BlockType.MIN`` or ``BlockType.MAX``.
+    :return: EMT template containing the requested extremum block.
+    """
+    block: Block = extremum(
+        var_factory=var_factory,
+        input_count=input_count,
+        block_type=block_type,
+    )
+    template: EmtModelTemplate = EmtModelTemplate(name=block.name)
+    template.tpe = DeviceType.NoDevice
+    template.block = block
+    return template
+
+
+def extremum(var_factory: VarFactory, input_count: int, block_type: BlockType) -> Block:
+    """Build a minimum or maximum reduction over a configurable number of inputs.
+
+    The operation is represented by ordinary binary symbolic function nodes.
+    Folding those nodes keeps the model proportional to the number of inputs
+    instead of expanding every comparison into repeated Heaviside expressions.
+
+    :param var_factory: Variable factory receiving the generated block variables.
+    :param input_count: Number of input signals participating in the reduction.
+    :param block_type: ``BlockType.MIN`` or ``BlockType.MAX``.
+    :return: Structural minimum or maximum block.
+    :raises ValueError: If fewer than two inputs or an unsupported block type is requested.
+    """
+    if input_count < 2:
+        raise ValueError("Minimum and maximum blocks require at least two inputs")
+    else:
+        pass
+
+    if block_type == BlockType.MIN:
+        function_name: str = "min"
+        block_name: str = "minimum"
+    elif block_type == BlockType.MAX:
+        function_name = "max"
+        block_name = "maximum"
+    else:
+        raise ValueError("Extremum blocks support only BlockType.MIN or BlockType.MAX")
+
+    # Create stable positional names so existing connections survive a later
+    # increase or decrease of the configured input count.
+    inputs: List[sym.Var] = list()
+    input_index: int
+    for input_index in range(input_count):
+        inputs.append(var_factory.add_var("extremum_input_" + str(input_index)))
+
+    # Reduce the inputs through native symbolic min/max nodes. Each additional
+    # port contributes exactly one comparison node to the symbolic model.
+    expression: sym.Expr = inputs[0]
+    input_variable: sym.Var
+    for input_variable in inputs[1:]:
+        expression = sym.Func2(function_name, expression, input_variable)
+
+    output_variable: sym.Var = var_factory.add_var("extremum_output_")
+    block: Block = Block(
+        algebraic_vars=list((output_variable,)),
+        algebraic_eqs=list((output_variable - expression,)),
+        in_vars=inputs,
+        out_vars=list((output_variable,)),
+        name=block_name,
+        is_decomposable=False,
+    )
+    return block
 
 def product(var_factory: VarFactory, divident_inputs: int = 1, divisor_inputs: int = 1) -> Block:
     """

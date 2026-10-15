@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils package &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Utils package &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -73,6 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -1428,6 +1429,7 @@
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.find_connections_pf"><code class="docutils literal notranslate"><span class="pre">find_connections_pf()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.find_matching_dynamic_connection_intent"><code class="docutils literal notranslate"><span class="pre">find_matching_dynamic_connection_intent()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.find_name_in_block"><code class="docutils literal notranslate"><span class="pre">find_name_in_block()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.flatten_block"><code class="docutils literal notranslate"><span class="pre">flatten_block()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.has_emt_internal_grounding_link"><code class="docutils literal notranslate"><span class="pre">has_emt_internal_grounding_link()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.normalize_dynamic_connection_intents"><code class="docutils literal notranslate"><span class="pre">normalize_dynamic_connection_intents()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.normalize_event_parameter_initialization"><code class="docutils literal notranslate"><span class="pre">normalize_event_parameter_initialization()</span></code></a></li>
@@ -1663,8 +1665,25 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#module-VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic">VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.ExplicitInitializationResult"><code class="docutils literal notranslate"><span class="pre">ExplicitInitializationResult</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.ExplicitInitializationResult.converged"><code class="docutils literal notranslate"><span class="pre">ExplicitInitializationResult.converged</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.ExplicitInitializationResult.diff_init_guess"><code class="docutils literal notranslate"><span class="pre">ExplicitInitializationResult.diff_init_guess</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.ExplicitInitializationResult.failed_variable"><code class="docutils literal notranslate"><span class="pre">ExplicitInitializationResult.failed_variable</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.ExplicitInitializationResult.init_guess"><code class="docutils literal notranslate"><span class="pre">ExplicitInitializationResult.init_guess</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.ExplicitInitializationResult.message"><code class="docutils literal notranslate"><span class="pre">ExplicitInitializationResult.message</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.ExplicitInitializationResult.self_implicit_result"><code class="docutils literal notranslate"><span class="pre">ExplicitInitializationResult.self_implicit_result</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.RmsSingleEquationCompiler"><code class="docutils literal notranslate"><span class="pre">RmsSingleEquationCompiler</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.RmsSingleEquationCompiler.compile_equation"><code class="docutils literal notranslate"><span class="pre">RmsSingleEquationCompiler.compile_equation()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.SelfImplicitSolveResult"><code class="docutils literal notranslate"><span class="pre">SelfImplicitSolveResult</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.SelfImplicitSolveResult.converged"><code class="docutils literal notranslate"><span class="pre">SelfImplicitSolveResult.converged</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.SelfImplicitSolveResult.iterations"><code class="docutils literal notranslate"><span class="pre">SelfImplicitSolveResult.iterations</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.SelfImplicitSolveResult.residual"><code class="docutils literal notranslate"><span class="pre">SelfImplicitSolveResult.residual</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.SelfImplicitSolveResult.status"><code class="docutils literal notranslate"><span class="pre">SelfImplicitSolveResult.status</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.SelfImplicitSolveResult.value"><code class="docutils literal notranslate"><span class="pre">SelfImplicitSolveResult.value</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.SymbolicVectorSingleEquationCompiler"><code class="docutils literal notranslate"><span class="pre">SymbolicVectorSingleEquationCompiler</span></code></a><ul>
@@ -1673,7 +1692,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.add_direct_algebraic_init_dependencies"><code class="docutils literal notranslate"><span class="pre">add_direct_algebraic_init_dependencies()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.add_items"><code class="docutils literal notranslate"><span class="pre">add_items()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.apply_sampled_procedural_initializers"><code class="docutils literal notranslate"><span class="pre">apply_sampled_procedural_initializers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.apply_procedural_initializers"><code class="docutils literal notranslate"><span class="pre">apply_procedural_initializers()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.build_explicit_external_uid_values"><code class="docutils literal notranslate"><span class="pre">build_explicit_external_uid_values()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.build_explicit_init_graph"><code class="docutils literal notranslate"><span class="pre">build_explicit_init_graph()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.build_init_dict"><code class="docutils literal notranslate"><span class="pre">build_init_dict()</span></code></a></li>
@@ -1685,6 +1704,7 @@
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.evaluate_explicit_init_equation"><code class="docutils literal notranslate"><span class="pre">evaluate_explicit_init_equation()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.evaluate_single_equation_fn"><code class="docutils literal notranslate"><span class="pre">evaluate_single_equation_fn()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.init_explicit_common"><code class="docutils literal notranslate"><span class="pre">init_explicit_common()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.initialization_dependency_reaches_uid"><code class="docutils literal notranslate"><span class="pre">initialization_dependency_reaches_uid()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.solve_self_implicit"><code class="docutils literal notranslate"><span class="pre">solve_self_implicit()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.store_resolved_event_parameter"><code class="docutils literal notranslate"><span class="pre">store_resolved_event_parameter()</span></code></a></li>
 </ul>
@@ -2072,11 +2092,15 @@
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.compare_blocks"><code class="docutils literal notranslate"><span class="pre">compare_blocks()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.connections_to_dict"><code class="docutils literal notranslate"><span class="pre">connections_to_dict()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.duplicate_block"><code class="docutils literal notranslate"><span class="pre">duplicate_block()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.duplicate_block_across_factories"><code class="docutils literal notranslate"><span class="pre">duplicate_block_across_factories()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.duplicate_block_vars_uid"><code class="docutils literal notranslate"><span class="pre">duplicate_block_vars_uid()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.duplicate_condition"><code class="docutils literal notranslate"><span class="pre">duplicate_condition()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.duplicate_const"><code class="docutils literal notranslate"><span class="pre">duplicate_const()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.duplicate_const_uid"><code class="docutils literal notranslate"><span class="pre">duplicate_const_uid()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.duplicate_expr"><code class="docutils literal notranslate"><span class="pre">duplicate_expr()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.duplicate_required_var"><code class="docutils literal notranslate"><span class="pre">duplicate_required_var()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.duplicate_var"><code class="docutils literal notranslate"><span class="pre">duplicate_var()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.duplicate_var_uid"><code class="docutils literal notranslate"><span class="pre">duplicate_var_uid()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.expr_list_to_list"><code class="docutils literal notranslate"><span class="pre">expr_list_to_list()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.expr_to_dict"><code class="docutils literal notranslate"><span class="pre">expr_to_dict()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic_io.infer_persisted_main_block_uids"><code class="docutils literal notranslate"><span class="pre">infer_persisted_main_block_uids()</span></code></a></li>
@@ -2589,6 +2613,17 @@ simulation package <code class="docutils literal notranslate"><span class="pre">
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.get_output_parameter_indices">
+<span class="sig-name descname"><span class="pre">get_output_parameter_indices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Utils/procedural_logic.html#BlockProceduralLogicUpdater.get_output_parameter_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.get_output_parameter_indices" title="Link to this definition"></a></dt>
+<dd><p>Return the runtime slots owned by the bound procedural entries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Sorted immutable runtime-parameter indices.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.initialize_modes">
 <span class="sig-name descname"><span class="pre">initialize_modes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">float64</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Utils/procedural_logic.html#BlockProceduralLogicUpdater.initialize_modes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.initialize_modes" title="Link to this definition"></a></dt>
 <dd><p>Initialize retained procedural mode outputs at startup.</p>
@@ -2609,7 +2644,7 @@ the exact operating-point sample that the runtime layer will hold.</p>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
+<dd class="field-even"><p>None.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2628,6 +2663,20 @@ the exact operating-point sample that the runtime layer will hold.</p>
 <dt class="sig sig-object py" id="VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.problem">
 <span class="sig-name descname"><span class="pre">problem</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#VeraGridEngine.Utils.procedural_logic.ProceduralProblem" title="VeraGridEngine.Utils.procedural_logic.ProceduralProblem"><span class="pre">ProceduralProblem</span></a></span><a class="headerlink" href="#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.problem" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Utils/procedural_logic.html#BlockProceduralLogicUpdater.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.reset" title="Link to this definition"></a></dt>
+<dd><p>Reset all solver-owned procedural state for a new event group.</p>
+<p>Canonical block entries remain untouched. The cloned runtime entries are
+rebound to clear latches, timers, histories and expression caches while
+retaining the problem-local parameter storage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.Utils.procedural_logic.BlockProceduralLogicUpdater.runtime_initialized">
@@ -3865,6 +3914,17 @@ to drive runtime modes, retained flags, timers, or event scheduling in a structu
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Event time or None.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="VeraGridEngine.Utils.procedural_logic.ProceduralLogicBase.get_output_parameter_indices">
+<span class="sig-name descname"><span class="pre">get_output_parameter_indices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Utils/procedural_logic.html#ProceduralLogicBase.get_output_parameter_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Utils.procedural_logic.ProceduralLogicBase.get_output_parameter_indices" title="Link to this definition"></a></dt>
+<dd><p>Return the bound runtime-parameter slots written by this entry.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Immutable tuple of flat runtime-parameter indices.</p>
 </dd>
 </dl>
 </dd></dl>

@@ -63,6 +63,11 @@ Flags:
 specify the initial voltage guess. If selected those values are used to initialize the power flow solution.
 - **Ignore single island nodes**: If selected, the islands of 1 one are considered in blackout and not calculated.
 - **3-phase**: If selected a three phase power flow is run. For now only supporting simple local voltage controls.
+  Batteries participate using fixed positive-sequence P/Q or the same local U1 voltage
+  control as generators, including enabled Q limits. Their connection determines the
+  passive zero-sequence path, and their Z2 determines the negative-sequence response.
+  Required sequence impedances must be finite and nonzero (Z0 only for Yg).
+  See the [DGS modelling notes](file_operations.md) for import fields and power conventions.
 - **Distributed slack**: If selected, the slack power is distributed simply among the existing generators.
 - **Control Q limits**: This is the mode of reactive power control for the generators that are set in PV mode. 
 This is a node-level control, so for this to work, there must not be more than one generator per bus. Otherwise a 
@@ -609,6 +614,32 @@ by explicit star constant-power or constant-current loads remain in the nonlinea
 system; singular neutral blocks also remain explicit. This reduction introduces
 no grounding and does not constrain the common-mode voltage of floating ABC buses.
 It is separate from the physical earth-wire reduction of overhead tower templates.
+
+Floating common voltage modes are handled separately in the ABC formulation.
+The calculation checks the compiled branch terminal matrices, each shunt, the
+assembled nodal matrix, and the connections of nonlinear injections and controls.
+A candidate displacement moves all present NABC conductors at each bus together.
+Connected groups are checked for an independent null direction; a delta connection
+or a small singular value of the assembled matrix alone is not sufficient.
+
+For a confirmed free group, one redundant complex current-balance equation is
+replaced by $U_0=(U_a+U_b+U_c)/3=0$ at one representative bus. This selects a
+voltage reference without adding an earth admittance or changing any device data.
+All original current-balance and control equations remain in the convergence
+check, including the replaced equation. The existing numerical solvers and their
+numerical differentiation routine are reused.
+
+The detection uses local summation-roundoff bounds, independently of the power-flow
+tolerance. Static-generator zero-sequence earth paths are detected from the response
+of their stored ABC admittance to a common voltage displacement, without a separate
+indicator. A contribution lost to roundoff when assembling this matrix cannot be
+distinguished from zero. Explicit branch shunts and the existing connection checks
+are retained. Slack buses and earth-referenced injections prevent
+a group from receiving a free reference; unsupported or ambiguous groups retain
+their original equations. Detection is rebuilt with each formulation, so a newly
+compiled phase-to-earth fault can remove a previously free reference. This does
+not constitute a general short-circuit solver or remove other causes of poor
+conditioning, such as extremely small physical impedances.
 
 ### The Newton-Raphson Method
 

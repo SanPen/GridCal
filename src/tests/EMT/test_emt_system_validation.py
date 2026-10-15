@@ -22,6 +22,7 @@ from VeraGridEngine.Simulations.EMT.problems.emt_problem_dae import (
     EmtProblemDae,
     EmtTopologyError,
     _build_emt_device_type_disposition_table,
+    validate_line_phase_layout,
 )
 from VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver import JitSymbolicSolver
 from VeraGridEngine.Simulations.PowerFlow.power_flow_driver import PowerFlowOptions
@@ -160,7 +161,393 @@ def _build_interface_validation_problem(grid: gce.MultiCircuit) -> EmtProblemDae
     problem.grid = grid
     problem.logger = Logger()
     problem._device_type_disposition = _build_emt_device_type_disposition_table()
+    problem._local_external_mapping_by_block_uid = dict()
     return problem
+
+
+def _build_terminal_mapping_test_problem(logger: Logger | None) -> EmtProblemDae:
+    """Build the minimal problem state required to register one EMT model.
+
+    :param logger: Optional driver-owned logger used by mapping diagnostics.
+    :return: Lightweight EMT problem prepared for ``_process_device_model``.
+    """
+    problem: EmtProblemDae = EmtProblemDae.__new__(EmtProblemDae)
+    problem.logger = logger
+    problem._device_type_disposition = _build_emt_device_type_disposition_table()
+    problem._local_external_mapping_by_block_uid = dict()
+    problem._runtime_parameter_owner_blocks = dict()
+    problem._runtime_parameter_devices = dict()
+    problem._event_parameter_device_idtags = dict()
+    problem._event_parameter_name_lookup = dict()
+    problem._continuous_event_parameter_uids = set()
+    problem._discrete_event_parameter_uids = set()
+    problem._vars2device = dict()
+    problem._vars_info = dict()
+    problem._vars_glob_name2uid = dict()
+    problem._pending_fmu_cs_devices = list()
+    problem._pending_fmu_me_devices = list()
+    problem._device_models_with_init_eqs = list()
+    problem._device_models_with_init_eqs_seen = set()
+    problem._device_models_for_ptc = list()
+    return problem
+
+
+def _build_line_for_phase_layout(
+        phase_mask: tuple[bool, bool, bool, bool],
+) -> gce.Line:
+    """Build one line whose physical phase mask is explicitly controlled.
+
+    :param phase_mask: Active physical conductors in NABC order.
+    :return: Line prepared for terminal-layout validation.
+    """
+    bus_from: gce.Bus = gce.Bus(name="Terminal from", Vnom=20.0)
+    bus_to: gce.Bus = gce.Bus(name="Terminal to", Vnom=20.0)
+    line: gce.Line = gce.Line(name="Terminal line", bus_from=bus_from, bus_to=bus_to)
+    line.ys.phN = phase_mask[0]
+    line.ys.phA = phase_mask[1]
+    line.ys.phB = phase_mask[2]
+    line.ys.phC = phase_mask[3]
+    return line
+
+
+def _register_terminal_mapping(
+        problem: EmtProblemDae,
+        line: gce.Line,
+        block: Block,
+) -> dict[object, Var]:
+    """Register one line block and return its problem-local external mapping.
+
+    :param problem: Lightweight EMT problem receiving the local mapping.
+    :param line: Static line owning the symbolic model.
+    :param block: Symbolic line model to register.
+    :return: Effective mapping stored by the EMT problem.
+    """
+    system_block: Block = Block()
+    problem._process_device_model(
+        dev=line,
+        mdl=block,
+        sys_block=system_block,
+        static_parameter_values_mapping=dict(),
+    )
+    return problem._local_external_mapping_by_block_uid[block.uid]
+
+
+def test_terminal_mapping_keeps_modern_connected_targets_authoritative() -> None:
+    """Keep modern semantic keys after their targets are rebound to bus variables.
+
+    :return: None.
+    """
+    line: gce.Line = _build_line_for_phase_layout((False, True, False, False))
+    from_target: Var = Var(name="connected_from_a", reference=VarPowerFlowReferenceType.v_A)
+    to_target: Var = Var(name="connected_to_a", reference=VarPowerFlowReferenceType.v_A)
+    block: Block = Block(
+        in_vars=list((from_target, to_target)),
+        external_mapping=dict((
+            (VarPowerFlowReferenceType.vf_A, from_target),
+            (VarPowerFlowReferenceType.vt_A, to_target),
+        )),
+    )
+    problem: EmtProblemDae = _build_terminal_mapping_test_problem(logger=None)
+    effective_mapping: dict[object, Var] = _register_terminal_mapping(
+        problem=problem,
+        line=line,
+        block=block,
+    )
+
+    assert list(effective_mapping.keys()) == list((
+        VarPowerFlowReferenceType.vf_A,
+        VarPowerFlowReferenceType.vt_A,
+    ))
+    assert validate_line_phase_layout(
+        branch=line,
+        mdl=block,
+        effective_external_mapping=effective_mapping,
+        logger=None,
+    )
+
+
+def test_terminal_mapping_completes_partial_modern_contract_from_legacy_inputs() -> None:
+    """Complete one missing modern terminal from a compatible legacy input.
+
+    :return: None.
+    """
+    line: gce.Line = _build_line_for_phase_layout((False, True, False, False))
+    from_target: Var = Var(name="modern_from_a", reference=VarPowerFlowReferenceType.vf_A)
+    to_target: Var = Var(name="legacy_to_a", reference=VarPowerFlowReferenceType.vt_A)
+    block: Block = Block(
+        in_vars=list((from_target, to_target)),
+        external_mapping=dict(((VarPowerFlowReferenceType.vf_A, from_target),)),
+    )
+    original_mapping: dict[object, Var] = dict(block.external_mapping)
+    problem: EmtProblemDae = _build_terminal_mapping_test_problem(logger=None)
+    effective_mapping: dict[object, Var] = _register_terminal_mapping(
+        problem=problem,
+        line=line,
+        block=block,
+    )
+
+    assert effective_mapping[VarPowerFlowReferenceType.vf_A] is from_target
+    assert effective_mapping[VarPowerFlowReferenceType.vt_A] is to_target
+    assert block.external_mapping == original_mapping
+    assert VarPowerFlowReferenceType.vt_A not in block.external_mapping
+
+
+def test_terminal_mapping_restores_complete_legacy_line_contract_locally() -> None:
+    """Restore an in-vars-only line interface without mutating its source block.
+
+    :return: None.
+    """
+    line: gce.Line = _build_line_for_phase_layout((False, True, True, False))
+    legacy_vars: list[Var] = list((
+        Var(name="legacy_from_a", reference=VarPowerFlowReferenceType.vf_A),
+        Var(name="legacy_from_b", reference=VarPowerFlowReferenceType.vf_B),
+        Var(name="legacy_to_a", reference=VarPowerFlowReferenceType.vt_A),
+        Var(name="legacy_to_b", reference=VarPowerFlowReferenceType.vt_B),
+    ))
+    block: Block = Block(in_vars=legacy_vars, external_mapping=dict())
+    problem: EmtProblemDae = _build_terminal_mapping_test_problem(logger=None)
+    effective_mapping: dict[object, Var] = _register_terminal_mapping(
+        problem=problem,
+        line=line,
+        block=block,
+    )
+
+    assert list(effective_mapping.keys()) == list((
+        VarPowerFlowReferenceType.vf_A,
+        VarPowerFlowReferenceType.vf_B,
+        VarPowerFlowReferenceType.vt_A,
+        VarPowerFlowReferenceType.vt_B,
+    ))
+    assert len(block.external_mapping) == 0
+    assert validate_line_phase_layout(
+        branch=line,
+        mdl=block,
+        effective_external_mapping=effective_mapping,
+        logger=None,
+    )
+
+
+def test_terminal_mapping_rejects_modern_legacy_target_conflict() -> None:
+    """Reject one terminal whose modern and legacy targets are incompatible.
+
+    :return: None.
+    """
+    line: gce.Line = _build_line_for_phase_layout((False, True, False, False))
+    modern_target: Var = Var(name="modern_from_a", reference=VarPowerFlowReferenceType.v_A)
+    legacy_target: Var = Var(name="legacy_from_a", reference=VarPowerFlowReferenceType.vf_A)
+    block: Block = Block(
+        in_vars=list((legacy_target,)),
+        external_mapping=dict(((VarPowerFlowReferenceType.vf_A, modern_target),)),
+    )
+    logger: Logger = Logger()
+    problem: EmtProblemDae = _build_terminal_mapping_test_problem(logger=logger)
+
+    with pytest.raises(EmtTopologyError, match="Conflicting EMT terminal mappings"):
+        _register_terminal_mapping(problem=problem, line=line, block=block)
+
+    assert logger.has_errors()
+    assert logger.entries[-1].device_property == "emt_terminal_mapping"
+
+
+def test_terminal_mapping_ignores_internal_legacy_reference_when_modern_owner_exists() -> None:
+    """Do not treat a child-internal input as a second public terminal.
+
+    :return: None.
+    """
+    line: gce.Line = _build_line_for_phase_layout((False, True, False, False))
+    public_vdc: Var = Var(name="public_vdc", reference=VarPowerFlowReferenceType.Vdc)
+    internal_vdc: Var = Var(name="internal_vdc", reference=VarPowerFlowReferenceType.Vdc)
+    child_block: Block = Block(in_vars=list((internal_vdc,)))
+    root_block: Block = Block(
+        children=list((child_block,)),
+        in_vars=list((public_vdc,)),
+        external_mapping=dict(((VarPowerFlowReferenceType.Vdc, public_vdc),)),
+    )
+    problem: EmtProblemDae = _build_terminal_mapping_test_problem(logger=None)
+    effective_mapping: dict[object, Var] = _register_terminal_mapping(
+        problem=problem,
+        line=line,
+        block=root_block,
+    )
+
+    assert effective_mapping[VarPowerFlowReferenceType.Vdc] is public_vdc
+
+
+def test_terminal_mapping_rejects_conflicting_hierarchy_declarations() -> None:
+    """Reject two hierarchy blocks that map one terminal to different variables.
+
+    :return: None.
+    """
+    line: gce.Line = _build_line_for_phase_layout((False, True, False, False))
+    root_target: Var = Var(name="root_from_a", reference=VarPowerFlowReferenceType.vf_A)
+    child_target: Var = Var(name="child_from_a", reference=VarPowerFlowReferenceType.vf_A)
+    child_block: Block = Block(
+        external_mapping=dict(((VarPowerFlowReferenceType.vf_A, child_target),)),
+    )
+    root_block: Block = Block(
+        children=list((child_block,)),
+        external_mapping=dict(((VarPowerFlowReferenceType.vf_A, root_target),)),
+    )
+    problem: EmtProblemDae = _build_terminal_mapping_test_problem(logger=None)
+
+    with pytest.raises(EmtTopologyError, match="targets both"):
+        _register_terminal_mapping(problem=problem, line=line, block=root_block)
+
+
+@pytest.mark.parametrize(
+    "phase_mask, terminal_refs",
+    list((
+        (
+            (False, True, True, True),
+            (
+                VarPowerFlowReferenceType.vf_A,
+                VarPowerFlowReferenceType.vf_B,
+                VarPowerFlowReferenceType.vf_C,
+                VarPowerFlowReferenceType.vt_A,
+                VarPowerFlowReferenceType.vt_B,
+                VarPowerFlowReferenceType.vt_C,
+            ),
+        ),
+        (
+            (True, True, True, True),
+            (
+                VarPowerFlowReferenceType.vf_N,
+                VarPowerFlowReferenceType.vf_A,
+                VarPowerFlowReferenceType.vf_B,
+                VarPowerFlowReferenceType.vf_C,
+                VarPowerFlowReferenceType.vt_N,
+                VarPowerFlowReferenceType.vt_A,
+                VarPowerFlowReferenceType.vt_B,
+                VarPowerFlowReferenceType.vt_C,
+            ),
+        ),
+        (
+            (False, False, True, False),
+            (
+                VarPowerFlowReferenceType.vf_B,
+                VarPowerFlowReferenceType.vt_B,
+            ),
+        ),
+        (
+            (False, True, False, True),
+            (
+                VarPowerFlowReferenceType.vf_A,
+                VarPowerFlowReferenceType.vf_C,
+                VarPowerFlowReferenceType.vt_A,
+                VarPowerFlowReferenceType.vt_C,
+            ),
+        ),
+    )),
+)
+def test_line_phase_layout_accepts_canonical_phase_variants(
+        phase_mask: tuple[bool, bool, bool, bool],
+        terminal_refs: tuple[VarPowerFlowReferenceType, ...],
+) -> None:
+    """Accept ABC, NABC, single-phase and non-contiguous two-phase layouts.
+
+    :param phase_mask: Active physical conductors in NABC order.
+    :param terminal_refs: Expected canonical terminal sequence.
+    :return: None.
+    """
+    line: gce.Line = _build_line_for_phase_layout(phase_mask)
+    effective_mapping: dict[object, Var] = dict()
+    terminal_ref: VarPowerFlowReferenceType
+    for terminal_ref in terminal_refs:
+        effective_mapping[terminal_ref] = Var(
+            name=f"mapped_{terminal_ref.value}",
+            reference=terminal_ref,
+        )
+    block: Block = Block(external_mapping=dict(effective_mapping))
+
+    assert validate_line_phase_layout(
+        branch=line,
+        mdl=block,
+        effective_external_mapping=effective_mapping,
+        logger=None,
+    )
+
+
+def test_line_phase_layout_rejects_missing_terminal_without_logger() -> None:
+    """Reject an incomplete phase layout even when diagnostics are disabled.
+
+    :return: None.
+    """
+    line: gce.Line = _build_line_for_phase_layout((False, True, False, False))
+    from_target: Var = Var(name="only_from_a", reference=VarPowerFlowReferenceType.vf_A)
+    effective_mapping: dict[object, Var] = dict(((VarPowerFlowReferenceType.vf_A, from_target),))
+    block: Block = Block(external_mapping=dict(effective_mapping))
+
+    assert not validate_line_phase_layout(
+        branch=line,
+        mdl=block,
+        effective_external_mapping=effective_mapping,
+        logger=None,
+    )
+
+
+def test_connection_validation_stops_invalid_line_layout_without_logger() -> None:
+    """Stop invalid topology construction even when no logger is available.
+
+    :return: None.
+    """
+    grid: gce.MultiCircuit = gce.MultiCircuit(Sbase=100.0, fbase=50.0)
+    line: gce.Line = _build_line_for_phase_layout((False, True, False, False))
+    grid.add_bus(line.bus_from)
+    grid.add_bus(line.bus_to)
+    grid.add_line(line)
+    line.bus_from.emt_model = _make_external_mapping_block(
+        refs=list((VarPowerFlowReferenceType.v_A,)),
+        name_suffix="invalid_from_bus",
+    )
+    line.bus_to.emt_model = _make_external_mapping_block(
+        refs=list((VarPowerFlowReferenceType.v_A,)),
+        name_suffix="invalid_to_bus",
+    )
+    from_target: Var = Var(name="invalid_only_from_a", reference=VarPowerFlowReferenceType.vf_A)
+    line_block: Block = Block(
+        in_vars=list((from_target,)),
+        external_mapping=dict(((VarPowerFlowReferenceType.vf_A, from_target),)),
+    )
+    line.emt_model = line_block
+    problem: EmtProblemDae = _build_interface_validation_problem(grid=grid)
+    problem.logger = None
+    problem._local_external_mapping_by_block_uid[line_block.uid] = dict(line_block.external_mapping)
+
+    with pytest.raises(EmtTopologyError, match="Invalid EMT line terminal layouts detected"):
+        problem._validate_connections()
+
+
+def test_line_phase_layout_reports_unexpected_terminal_to_driver_logger() -> None:
+    """Report source, resolved, missing and unexpected terminal sets.
+
+    :return: None.
+    """
+    line: gce.Line = _build_line_for_phase_layout((False, True, False, False))
+    refs: tuple[VarPowerFlowReferenceType, ...] = (
+        VarPowerFlowReferenceType.vf_A,
+        VarPowerFlowReferenceType.vf_B,
+        VarPowerFlowReferenceType.vt_A,
+    )
+    effective_mapping: dict[object, Var] = dict()
+    terminal_ref: VarPowerFlowReferenceType
+    for terminal_ref in refs:
+        effective_mapping[terminal_ref] = Var(
+            name=f"mapped_{terminal_ref.value}",
+            reference=terminal_ref,
+        )
+    block: Block = Block(external_mapping=dict(effective_mapping))
+    driver_logger: Logger = Logger()
+
+    assert not validate_line_phase_layout(
+        branch=line,
+        mdl=block,
+        effective_external_mapping=effective_mapping,
+        logger=driver_logger,
+    )
+    assert driver_logger.has_errors()
+    assert "resolved=" in driver_logger.entries[-1].value
+    assert "missing=" in driver_logger.entries[-1].value
+    assert "unexpected=" in driver_logger.entries[-1].value
 
 
 def test_bus_readiness_validation_rejects_missing_bus_emt_model() -> None:

@@ -17,9 +17,14 @@ from typing import List, Dict, Tuple
 from VeraGridEngine.Utils.Symbolic.diagnostic import NewtonTraceCollector
 from VeraGridEngine.Utils.Symbolic.symbolic import Var, Const, Expr
 from VeraGridEngine.Utils.Symbolic.block import Block
+from VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic import (
+    ExplicitInitializationResult,
+    SymbolicVectorSingleEquationCompiler,
+    build_symbolic_vector_single_equation_compiler,
+    init_explicit_common,
+)
 from VeraGridEngine.Simulations.EMT.problems.emt_problem_template import EmtProblemTemplate
 from VeraGridEngine.enumerations import DynamicIntegrationMethod
-from VeraGridEngine.Simulations.EMT.initialization_emt import init_explicit_emt
 from VeraGridEngine.enumerations import EmtSolverTypes
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Simulations.EMT.solvers.solver_AD import JitAdSolver
@@ -44,46 +49,50 @@ class GenericEmtProblem(EmtProblemTemplate):
 
         self._run_explicit_initialization()
 
-    def _run_explicit_initialization(self):
+    def _run_explicit_initialization(self) -> None:
         """
-        Runs init_explicit for every block that defines init_eqs.
+        Run the common explicit initializer used by production EMT problems.
 
-        - init_explicit expects sys_vars: Dict[int, Var] (it only uses len(sys_vars) but we comply)
-        - init_explicit may MODIFY self._event_parameters_eqs (fill Const(None) -> Const(val)).
-          BaseProblem builds event fn from a COPY; therefore we MUST rebuild runtime vectors after.
+        :return: None.
+        :rtype: None
         """
-
-        # sys_vars dict (uid -> Var), size = n_vars
+        # Adapt the generic test problem to the exact common initialization
+        # engine called by ``EmtProblemDae``.
         sys_vars: Dict[int, Var] = {v.uid: v for v in (self._state_vars + self._algebraic_vars)}
         sys_diff_vars: Dict[int, Var] = {dv.uid: dv for dv in self._diff_vars}
-
-        try:
-            init_explicit_emt(
-                mdl=self.sys_block,
-                sys_vars=sys_vars,
-                sys_diff_vars=sys_diff_vars,
-                variable_parameters=self._variable_parameters,
-                event_parameters_eqs=self._event_parameters_eqs,
-                constant_parameters=self._constant_parameters,
-                constant_parameter_values=self.get_parameters_values(),
-                init_guess=self.init_guess,
-                diff_init_guess=self.diff_init_guess,
-                uid2idx_vars=self.uid2idx_vars,
-                uid2idx_diff=self.uid2idx_diff,
-                uid2idx_params=self.uid2idx_params,
-                uid2idx_event_params=self.uid2idx_event_params,
-                compiler_names_dict=self._compiler_names_dict,
-                alias_names_dict=self._alias_names_dict,
-                VARIABLE_PARAMS_NAME=self.VARIABLE_PARAMS_NAME,
-                VARS_NAME=self.VARS_NAME,
-                DIFF_NAME=self.DIFF_NAME,
-                CONSTANT_PARAMS_NAME=self.CONSTANT_PARAMS_NAME
+        compile_single_equation: SymbolicVectorSingleEquationCompiler = (
+            build_symbolic_vector_single_equation_compiler(
+                compiler_names_dict=self.get_compiler_names_dict(),
+                alias_names_dict=self.get_alias_names_dict(),
+                vars_name=self.VARS_NAME,
+                diff_name=self.DIFF_NAME,
+                event_params_name=self.VARIABLE_PARAMS_NAME,
+                params_name=self.CONSTANT_PARAMS_NAME,
             )
-        except Exception as e:
-            block_name = self.sys_block.name if isinstance(self.sys_block, Block) else "unknown"
-            print(f"[EMT][init_explicit] failed for block '{block_name}'. Error: {e}")
+        )
+        result: ExplicitInitializationResult = init_explicit_common(
+            mdl=self.sys_block,
+            sys_vars=sys_vars,
+            sys_diff_vars=sys_diff_vars,
+            variable_parameters=self.get_variable_parameters(),
+            event_parameters_eqs=self.event_parameters_eqs,
+            constant_parameters=self.get_constant_parameters(),
+            init_guess=self.init_guess,
+            event_param_init_dict=self.event_params_init_dict,
+            diff_init_guess=self.diff_init_guess,
+            uid2idx_vars=self.uid2idx_vars,
+            uid2idx_diff=self.uid2idx_diff,
+            uid2idx_params=self.uid2idx_params,
+            uid2idx_event_params=self.uid2idx_event_params,
+            params_array=self.get_parameters_values(),
+            compile_single_equation=compile_single_equation,
+            event_params_array_seed=self.event_params_values,
+        )
 
-        self._build_runtime_param_vectors()
+        if result.converged:
+            self.rebuild_runtime_param_vectors()
+        else:
+            raise RuntimeError(result.message)
 
     def get_init_guess_table(self,
                              include_all_vars: bool = True,

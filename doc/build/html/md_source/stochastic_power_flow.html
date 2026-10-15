@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🎲 Stochastic power flow &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>🎲 Stochastic power flow &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -94,6 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
@@ -302,7 +303,7 @@ estimates voltages for a new injection vector using a regression model trained o
     <span class="n">StochasticPowerFlowType</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"my_grid.veragrid"</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;my_grid.veragrid&quot;</span><span class="p">)</span>
 
 <span class="n">drv</span> <span class="o">=</span> <span class="n">StochasticPowerFlowDriver</span><span class="p">(</span>
     <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
@@ -314,9 +315,9 @@ estimates voltages for a new injection vector using a regression model trained o
 
 <span class="n">results</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">results</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Average bus voltage magnitudes:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">voltage</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Average branch loading:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">loading</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Average branch losses:"</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">losses</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Average bus voltage magnitudes:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">voltage</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Average branch loading:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">loading</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Average branch losses:&quot;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">losses</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Using plain Monte Carlo sampling:</p>
@@ -327,7 +328,7 @@ estimates voltages for a new injection vector using a regression model trained o
     <span class="n">StochasticPowerFlowType</span><span class="p">,</span>
 <span class="p">)</span>
 
-<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">"my_grid.veragrid"</span><span class="p">)</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="s2">&quot;my_grid.veragrid&quot;</span><span class="p">)</span>
 
 <span class="n">drv</span> <span class="o">=</span> <span class="n">StochasticPowerFlowDriver</span><span class="p">(</span>
     <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
@@ -338,8 +339,8 @@ estimates voltages for a new injection vector using a regression model trained o
 <span class="p">)</span>
 <span class="n">drv</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Computed samples:"</span><span class="p">,</span> <span class="n">drv</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">points_number</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Error series length:"</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">drv</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">error_series</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Computed samples:&quot;</span><span class="p">,</span> <span class="n">drv</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">points_number</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error series length:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">drv</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">error_series</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Getting a result table:</p>
@@ -352,8 +353,8 @@ estimates voltages for a new injection vector using a regression model trained o
 <p>Finding overloaded branches probabilistically:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">idx</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="n">prob</span><span class="p">,</span> <span class="n">loading</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">get_index_loading_cdf</span><span class="p">(</span><span class="n">max_val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Candidate branch indices:"</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Overload probabilities:"</span><span class="p">,</span> <span class="n">prob</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Candidate branch indices:&quot;</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Overload probabilities:&quot;</span><span class="p">,</span> <span class="n">prob</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The main constructor arguments are:</p>

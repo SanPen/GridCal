@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Branches.transformer3w &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Devices.Branches.transformer3w &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -69,7 +69,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -121,16 +122,16 @@
 <div class="viewcode-block" id="delta_to_star">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.transformer3w.delta_to_star">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">delta_to_star</span><span class="p">(</span><span class="n">z12</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z23</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z31</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform the delta-&gt;star transformation</span>
 <span class="sd">    See: https://www.electronics-tutorials.ws/dccircuits/dcp_10.html</span>
 <span class="sd">    :param z12: 1 to 2 delta value</span>
 <span class="sd">    :param z23: 2 to 3 delta value</span>
 <span class="sd">    :param z31: 3 to 1 delta value</span>
 <span class="sd">    :return: 0-&gt;1, 0-&gt;2, 0-&gt;3 star values</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    NOTE: Why this formulation is not?</span>
 <span class="sd">    because the triangle of the short-circuit measurements for the</span>
 <span class="sd">    3W transformer are not forming an actual connected triangle.</span>
@@ -175,7 +176,7 @@
 <span class="sd">    Z3 = (Z23 + Z31 - Z12)/2</span>
 <span class="sd">    </span>
 <span class="sd">    Validated against PowerFactory.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># zt = z12 + z23 + z31</span>
     <span class="c1"># if zt &gt; 0:</span>
@@ -196,14 +197,14 @@
 <div class="viewcode-block" id="star_to_delta">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.transformer3w.star_to_delta">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">star_to_delta</span><span class="p">(</span><span class="n">z1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z3</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform the star-&gt;delta transformation</span>
 <span class="sd">    See: https://www.electronics-tutorials.ws/dccircuits/dcp_10.html</span>
 <span class="sd">    :param z1: 0-&gt;1 impedance</span>
 <span class="sd">    :param z2: 0-&gt;2 impedance</span>
 <span class="sd">    :param z3: 0-&gt;3 impedance</span>
 <span class="sd">    :return: z12, z23, z31 impedances</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">zt</span> <span class="o">=</span> <span class="n">z1</span> <span class="o">*</span> <span class="n">z2</span> <span class="o">+</span> <span class="n">z2</span> <span class="o">*</span> <span class="n">z3</span> <span class="o">+</span> <span class="n">z3</span> <span class="o">*</span> <span class="n">z1</span>
     <span class="n">z12</span> <span class="o">=</span> <span class="n">zt</span> <span class="o">/</span> <span class="n">z3</span>
     <span class="n">z23</span> <span class="o">=</span> <span class="n">zt</span> <span class="o">/</span> <span class="n">z1</span>
@@ -217,270 +218,270 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.transformer3w.Transformer3W">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Transformer3W</span><span class="p">(</span><span class="n">DynamicDevice</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">'bus0'</span><span class="p">,</span>
-        <span class="s1">'cn0'</span><span class="p">,</span>
-        <span class="s1">'_bus1'</span><span class="p">,</span>
-        <span class="s1">'_bus2'</span><span class="p">,</span>
-        <span class="s1">'_bus3'</span><span class="p">,</span>
-        <span class="s1">'_cn1'</span><span class="p">,</span>
-        <span class="s1">'_cn2'</span><span class="p">,</span>
-        <span class="s1">'_cn3'</span><span class="p">,</span>
-        <span class="s1">'_active'</span><span class="p">,</span>
-        <span class="s1">'_active_prof'</span><span class="p">,</span>
-        <span class="s1">'_V1'</span><span class="p">,</span>
-        <span class="s1">'_V2'</span><span class="p">,</span>
-        <span class="s1">'_V3'</span><span class="p">,</span>
-        <span class="s1">'_r12'</span><span class="p">,</span>
-        <span class="s1">'_r23'</span><span class="p">,</span>
-        <span class="s1">'_r31'</span><span class="p">,</span>
-        <span class="s1">'_x12'</span><span class="p">,</span>
-        <span class="s1">'_x23'</span><span class="p">,</span>
-        <span class="s1">'_x31'</span><span class="p">,</span>
-        <span class="s1">'_rate1'</span><span class="p">,</span>
-        <span class="s1">'_rate2'</span><span class="p">,</span>
-        <span class="s1">'_rate3'</span><span class="p">,</span>
-        <span class="s1">'_Pcu12'</span><span class="p">,</span>
-        <span class="s1">'_Pcu23'</span><span class="p">,</span>
-        <span class="s1">'_Pcu31'</span><span class="p">,</span>
-        <span class="s1">'_Vsc12'</span><span class="p">,</span>
-        <span class="s1">'_Vsc23'</span><span class="p">,</span>
-        <span class="s1">'_Vsc31'</span><span class="p">,</span>
-        <span class="s1">'_Pfe'</span><span class="p">,</span>
-        <span class="s1">'_I0'</span><span class="p">,</span>
-        <span class="s1">'_winding1'</span><span class="p">,</span>
-        <span class="s1">'_winding2'</span><span class="p">,</span>
-        <span class="s1">'_winding3'</span><span class="p">,</span>
-        <span class="s1">'_x'</span><span class="p">,</span>
-        <span class="s1">'_y'</span><span class="p">,</span>
+        <span class="s1">&#39;bus0&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;cn0&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_bus1&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_bus2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_bus3&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_cn1&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_cn2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_cn3&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_active&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_active_prof&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_V1&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_V2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_V3&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_r12&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_r23&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_r31&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_x12&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_x23&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_x31&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_rate1&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_rate2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_rate3&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_Pcu12&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_Pcu23&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_Pcu31&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_Vsc12&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_Vsc23&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_Vsc31&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_Pfe&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_I0&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_winding1&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_winding2&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_winding3&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_x&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_y&#39;</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'bus0'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;bus0&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Middle point connection bus.'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Middle point connection bus.&#39;</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'bus1'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;bus1&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Bus 1.'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Bus 1.&#39;</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'bus2'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;bus2&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Bus 2.'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Bus 2.&#39;</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'bus3'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;bus3&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Bus 3.'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Bus 3.&#39;</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'active'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;active&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Is active?'</span><span class="p">,</span>
-            <span class="n">profile_name</span><span class="o">=</span><span class="s2">"active_prof"</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Is active?&#39;</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s2">&quot;active_prof&quot;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'winding1'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;winding1&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">WindingDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Winding 1.'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Winding 1.&#39;</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'winding2'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;winding2&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">WindingDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Winding 2.'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Winding 2.&#39;</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'winding3'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;winding3&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">WindingDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Winding 3.'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Winding 3.&#39;</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'V1'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'kV'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;V1&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kV&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Side 1 rating'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Side 1 rating&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'V2'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'kV'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;V2&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kV&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Side 2 rating'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Side 2 rating&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'V3'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'kV'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;V3&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kV&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Side 3 rating'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Side 3 rating&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'r12'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;r12&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Resistance measured from 1-&gt;2'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Resistance measured from 1-&gt;2&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'r23'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;r23&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Resistance measured from 2-&gt;3'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Resistance measured from 2-&gt;3&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'r31'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;r31&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Resistance measured from 3-&gt;1'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Resistance measured from 3-&gt;1&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'x12'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;x12&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Reactance measured from 1-&gt;2'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Reactance measured from 1-&gt;2&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'x23'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;x23&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Reactance measured from 2-&gt;3'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Reactance measured from 2-&gt;3&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'x31'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;x31&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Reactance measured from 3-&gt;1'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Reactance measured from 3-&gt;1&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'rate1'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'MVA'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;rate1&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;MVA&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Rating 1'</span><span class="p">,</span>
-            <span class="n">old_names</span><span class="o">=</span><span class="p">[</span><span class="s1">'rate12'</span><span class="p">],</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Rating 1&#39;</span><span class="p">,</span>
+            <span class="n">old_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;rate12&#39;</span><span class="p">],</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'rate2'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'MVA'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;rate2&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;MVA&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Rating 2'</span><span class="p">,</span>
-            <span class="n">old_names</span><span class="o">=</span><span class="p">[</span><span class="s1">'rate23'</span><span class="p">],</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Rating 2&#39;</span><span class="p">,</span>
+            <span class="n">old_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;rate23&#39;</span><span class="p">],</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'rate3'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'MVA'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;rate3&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;MVA&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Rating 3'</span><span class="p">,</span>
-            <span class="n">old_names</span><span class="o">=</span><span class="p">[</span><span class="s1">'rate31'</span><span class="p">],</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Rating 3&#39;</span><span class="p">,</span>
+            <span class="n">old_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;rate31&#39;</span><span class="p">],</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Pcu12'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'KW'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Pcu12&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;KW&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Copper loss between 1-&gt;2'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Copper loss between 1-&gt;2&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Pcu23'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'KW'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Pcu23&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;KW&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Copper loss between 2-&gt;3'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Copper loss between 2-&gt;3&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Pcu31'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'KW'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Pcu31&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;KW&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Copper loss between 3-&gt;1'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Copper loss between 3-&gt;1&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Vsc12'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'%'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Vsc12&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;%&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Short-circuit voltage between 1-&gt;2'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Short-circuit voltage between 1-&gt;2&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Vsc23'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'%'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Vsc23&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;%&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Short-circuit voltage between 2-&gt;3'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Short-circuit voltage between 2-&gt;3&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Vsc31'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'%'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Vsc31&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;%&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Short-circuit voltage between 3-&gt;1'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Short-circuit voltage between 3-&gt;1&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'Pfe'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'KW'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;Pfe&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;KW&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Iron loss'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Iron loss&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'I0'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'%'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;I0&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;%&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'No-load current'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;No-load current&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'x'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'px'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;px&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'x position'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;x position&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'y'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'px'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;y&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;px&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'y position'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;y position&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idtag</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
-                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'Branch'</span><span class="p">,</span>
+                 <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Branch&#39;</span><span class="p">,</span>
                  <span class="n">bus0</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">bus1</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">bus2</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -493,7 +494,7 @@
                  <span class="n">rate12</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">rate23</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">rate31</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">x</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">build_status</span><span class="p">:</span> <span class="n">BuildStatus</span> <span class="o">=</span> <span class="n">BuildStatus</span><span class="o">.</span><span class="n">Commissioned</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Constructor</span>
 <span class="sd">        :param idtag: Unique identifier</span>
 <span class="sd">        :param code: Secondary identifier</span>
@@ -517,7 +518,7 @@
 <span class="sd">        :param rate31: 3-&gt;1 rating (MVA)</span>
 <span class="sd">        :param x: graphical x position (px)</span>
 <span class="sd">        :param y: graphical y position (px)</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">DynamicDevice</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
                                <span class="n">idtag</span><span class="o">=</span><span class="n">idtag</span><span class="p">,</span>
@@ -526,7 +527,7 @@
                                <span class="n">build_status</span><span class="o">=</span><span class="n">build_status</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">bus0</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">bus0</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">=</span> <span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s1">'_bus'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bus0</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">=</span> <span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_bus&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
                             <span class="n">xpos</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">is_internal</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">bus0</span><span class="o">.</span><span class="n">internal</span> <span class="o">=</span> <span class="kc">True</span>
@@ -570,23 +571,23 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_winding1</span> <span class="o">=</span> <span class="n">Winding</span><span class="p">(</span><span class="n">bus_from</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">idtag</span><span class="o">=</span><span class="n">w1_idtag</span><span class="p">,</span>
                                  <span class="n">bus_to</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus0</span><span class="p">,</span>
-                                 <span class="n">HV</span><span class="o">=</span><span class="n">V1</span><span class="p">,</span> <span class="n">LV</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">"_W1"</span><span class="p">)</span>
+                                 <span class="n">HV</span><span class="o">=</span><span class="n">V1</span><span class="p">,</span> <span class="n">LV</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_W1&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_winding2</span> <span class="o">=</span> <span class="n">Winding</span><span class="p">(</span><span class="n">bus_from</span><span class="o">=</span><span class="n">bus2</span><span class="p">,</span> <span class="n">idtag</span><span class="o">=</span><span class="n">w2_idtag</span><span class="p">,</span>
                                  <span class="n">bus_to</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus0</span><span class="p">,</span>
-                                 <span class="n">HV</span><span class="o">=</span><span class="n">V2</span><span class="p">,</span> <span class="n">LV</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">"_W2"</span><span class="p">)</span>
+                                 <span class="n">HV</span><span class="o">=</span><span class="n">V2</span><span class="p">,</span> <span class="n">LV</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_W2&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_winding3</span> <span class="o">=</span> <span class="n">Winding</span><span class="p">(</span><span class="n">bus_from</span><span class="o">=</span><span class="n">bus3</span><span class="p">,</span> <span class="n">idtag</span><span class="o">=</span><span class="n">w3_idtag</span><span class="p">,</span>
                                  <span class="n">bus_to</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bus0</span><span class="p">,</span>
-                                 <span class="n">HV</span><span class="o">=</span><span class="n">V3</span><span class="p">,</span> <span class="n">LV</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">"_W3"</span><span class="p">)</span>
+                                 <span class="n">HV</span><span class="o">=</span><span class="n">V3</span><span class="p">,</span> <span class="n">LV</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_W3&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">winding1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Winding</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Winding 1 getter</span>
 <span class="sd">        :return: Winding</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_winding1</span>
 
     <span class="nd">@winding1</span><span class="o">.</span><span class="n">setter</span>
@@ -595,10 +596,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">winding2</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Winding</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Winding 2 getter</span>
 <span class="sd">        :return: Winding</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_winding2</span>
 
     <span class="nd">@winding2</span><span class="o">.</span><span class="n">setter</span>
@@ -607,10 +608,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">winding3</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Winding</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Winding 3 getter</span>
 <span class="sd">        :return: Winding</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_winding3</span>
 
     <span class="nd">@winding3</span><span class="o">.</span><span class="n">setter</span>
@@ -619,10 +620,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">active_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileBool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active_prof</span>
 
     <span class="nd">@active_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -632,32 +633,32 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_active_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a active_prof'</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a active_prof&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Transformer3W.get_active_at">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.transformer3w.Transformer3W.get_active_at">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_active_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param t:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">active</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">active_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Transformer3W.all_connected">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.transformer3w.Transformer3W.all_connected">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">all_connected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Check that all three windings are connected to something</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bus1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bus2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bus3</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bus1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bus</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Bus 1</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bus1</span>
 
     <span class="nd">@bus1</span><span class="o">.</span><span class="n">setter</span>
@@ -671,9 +672,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bus2</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bus</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Bus 2</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bus2</span>
 
     <span class="nd">@bus2</span><span class="o">.</span><span class="n">setter</span>
@@ -687,9 +688,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bus3</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Bus</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Bus 3</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bus3</span>
 
     <span class="nd">@bus3</span><span class="o">.</span><span class="n">setter</span>
@@ -703,9 +704,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">V1</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Nominal voltage 1 in kV</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_V1</span>
 
     <span class="nd">@V1</span><span class="o">.</span><span class="n">setter</span>
@@ -716,9 +717,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">V2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Nominal voltage 2 in kV</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_V2</span>
 
     <span class="nd">@V2</span><span class="o">.</span><span class="n">setter</span>
@@ -729,9 +730,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">V3</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Nominal voltage 3 in kV</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_V3</span>
 
     <span class="nd">@V3</span><span class="o">.</span><span class="n">setter</span>
@@ -743,10 +744,10 @@
 <div class="viewcode-block" id="Transformer3W.compute_delta_to_star">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.transformer3w.Transformer3W.compute_delta_to_star">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">compute_delta_to_star</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform the delta -&gt; star transformation</span>
 <span class="sd">        and apply it to the windings</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">r1</span><span class="p">,</span> <span class="n">r2</span><span class="p">,</span> <span class="n">r3</span> <span class="o">=</span> <span class="n">delta_to_star</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">r12</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r23</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">r31</span><span class="p">)</span>
         <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">x3</span> <span class="o">=</span> <span class="n">delta_to_star</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x12</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x23</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x31</span><span class="p">)</span>
@@ -776,13 +777,13 @@
 <div class="viewcode-block" id="Transformer3W.fill_zero_sequence">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.transformer3w.Transformer3W.fill_zero_sequence">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fill_zero_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z12</span><span class="p">:</span> <span class="nb">complex</span><span class="p">,</span> <span class="n">z23</span><span class="p">:</span> <span class="nb">complex</span><span class="p">,</span> <span class="n">z31</span><span class="p">:</span> <span class="nb">complex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Store the zero-sequence star equivalent on the existing windings.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store the zero-sequence star equivalent on the existing windings.</span>
 
 <span class="sd">        :param z12: Pairwise HV-MV impedance on the system base, p.u.</span>
 <span class="sd">        :param z23: Pairwise MV-LV impedance on the system base, p.u.</span>
 <span class="sd">        :param z31: Pairwise LV-HV impedance on the system base, p.u.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">resistances</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">delta_to_star</span><span class="p">(</span><span class="n">z12</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">z23</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">z31</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
         <span class="n">reactances</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">delta_to_star</span><span class="p">(</span><span class="n">z12</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">z23</span><span class="o">.</span><span class="n">imag</span><span class="p">,</span> <span class="n">z31</span><span class="o">.</span><span class="n">imag</span><span class="p">)</span>
         <span class="n">winding</span><span class="p">:</span> <span class="n">Winding</span>
@@ -799,7 +800,7 @@
 <div class="viewcode-block" id="Transformer3W.fill_from_star">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.transformer3w.Transformer3W.fill_from_star">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fill_from_star</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">r2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">r3</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x3</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fill from Star values</span>
 <span class="sd">        :param r1: resistance of branch 1 (p.u.)</span>
 <span class="sd">        :param r2: resistance of branch 2 (p.u.)</span>
@@ -807,7 +808,7 @@
 <span class="sd">        :param x1: reactance of branch 1 (p.u.)</span>
 <span class="sd">        :param x2: reactance of branch 2 (p.u.)</span>
 <span class="sd">        :param x3: reactance of branch 3 (p.u.)</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_r12</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_r23</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_r31</span> <span class="o">=</span> <span class="n">star_to_delta</span><span class="p">(</span><span class="n">z1</span><span class="o">=</span><span class="n">r1</span><span class="p">,</span> <span class="n">z2</span><span class="o">=</span><span class="n">r2</span><span class="p">,</span> <span class="n">z3</span><span class="o">=</span><span class="n">r3</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_x12</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x23</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x31</span> <span class="o">=</span> <span class="n">star_to_delta</span><span class="p">(</span><span class="n">z1</span><span class="o">=</span><span class="n">x1</span><span class="p">,</span> <span class="n">z2</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span> <span class="n">z3</span><span class="o">=</span><span class="n">x3</span><span class="p">)</span>
 
@@ -823,9 +824,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">r12</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        1-&gt;2 measured resistance in p.u.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_r12</span>
 
     <span class="nd">@r12</span><span class="o">.</span><span class="n">setter</span>
@@ -836,9 +837,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">r23</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        2-&gt;3 measured resistance in p.u.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_r23</span>
 
     <span class="nd">@r23</span><span class="o">.</span><span class="n">setter</span>
@@ -849,9 +850,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">r31</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        3-&gt;1 measured resistance in p.u.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_r31</span>
 
     <span class="nd">@r31</span><span class="o">.</span><span class="n">setter</span>
@@ -862,9 +863,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">x12</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        1-&gt;2 measured reactance in p.u.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x12</span>
 
     <span class="nd">@x12</span><span class="o">.</span><span class="n">setter</span>
@@ -875,9 +876,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">x23</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        2-&gt;3 measured reactance in p.u.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x23</span>
 
     <span class="nd">@x23</span><span class="o">.</span><span class="n">setter</span>
@@ -888,9 +889,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">x31</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        3-&gt;1 measured reactance in p.u.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x31</span>
 
     <span class="nd">@x31</span><span class="o">.</span><span class="n">setter</span>
@@ -901,9 +902,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">rate1</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        1 measured rate in MVA</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rate1</span>
 
     <span class="nd">@rate1</span><span class="o">.</span><span class="n">setter</span>
@@ -914,9 +915,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">rate2</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        2 measured rate in MVA</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rate2</span>
 
     <span class="nd">@rate2</span><span class="o">.</span><span class="n">setter</span>
@@ -927,9 +928,9 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">rate3</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        3-&gt;1 measured rate in MVA</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rate3</span>
 
     <span class="nd">@rate3</span><span class="o">.</span><span class="n">setter</span>
@@ -940,10 +941,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pcu12</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Pcu12</span>
 
     <span class="nd">@Pcu12</span><span class="o">.</span><span class="n">setter</span>
@@ -955,10 +956,10 @@
     <span class="c1"># Property for _Pcu23</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pcu23</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Pcu23</span>
 
     <span class="nd">@Pcu23</span><span class="o">.</span><span class="n">setter</span>
@@ -970,10 +971,10 @@
     <span class="c1"># Property for _Pcu31</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pcu31</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Pcu31</span>
 
     <span class="nd">@Pcu31</span><span class="o">.</span><span class="n">setter</span>
@@ -985,10 +986,10 @@
     <span class="c1"># Property for _Vsc12</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Vsc12</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Vsc12</span>
 
     <span class="nd">@Vsc12</span><span class="o">.</span><span class="n">setter</span>
@@ -1000,10 +1001,10 @@
     <span class="c1"># Property for _Vsc23</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Vsc23</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Vsc23</span>
 
     <span class="nd">@Vsc23</span><span class="o">.</span><span class="n">setter</span>
@@ -1015,10 +1016,10 @@
     <span class="c1"># Property for _Vsc31</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Vsc31</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Vsc31</span>
 
     <span class="nd">@Vsc31</span><span class="o">.</span><span class="n">setter</span>
@@ -1030,10 +1031,10 @@
     <span class="c1"># Property for _Pfe</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">Pfe</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_Pfe</span>
 
     <span class="nd">@Pfe</span><span class="o">.</span><span class="n">setter</span>
@@ -1045,10 +1046,10 @@
     <span class="c1"># Property for _I0</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">I0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_I0</span>
 
     <span class="nd">@I0</span><span class="o">.</span><span class="n">setter</span>
@@ -1060,11 +1061,11 @@
 <div class="viewcode-block" id="Transformer3W.get_winding">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.transformer3w.Transformer3W.get_winding">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_winding</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Winding</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get winding from an integer</span>
 <span class="sd">        :param i: winding index</span>
 <span class="sd">        :return: Winding at i</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">winding1</span>
         <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -1072,15 +1073,15 @@
         <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">winding3</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Windings int positions go from 0 to 2"</span><span class="p">)</span></div>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Windings int positions go from 0 to 2&quot;</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_recalc_from_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Recompute from the definition stored data</span>
 <span class="sd">        :param Sbase:</span>
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">z_series12</span><span class="p">,</span> <span class="n">y_shunt12</span> <span class="o">=</span> <span class="n">get_impedances</span><span class="p">(</span>
             <span class="c1"># VH_bus=max(self.bus1.Vnom, self.bus2.Vnom),</span>
             <span class="c1"># VL_bus=min(self.bus1.Vnom, self.bus2.Vnom),</span>
@@ -1146,7 +1147,7 @@
                                 <span class="n">Pcu12</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Pcu23</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Pcu31</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                 <span class="n">Vsc12</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Vsc23</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Vsc31</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                 <span class="n">Pfe</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">I0</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fill winding per unit impedances from the short circuit study values</span>
 <span class="sd">        :param V1: Primary voltage (kV)</span>
 <span class="sd">        :param V2: Secondary voltage (kV)</span>
@@ -1164,7 +1165,7 @@
 <span class="sd">        :param I0: I0(%)</span>
 <span class="sd">        :param Sbase: base power</span>
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_V1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">V1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_V2</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">V2</span><span class="p">)</span>
@@ -1199,59 +1200,59 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">active</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get ``active``.</span>
 
 <span class="sd">        :return: bool</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_active</span>
 
     <span class="nd">@active</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">active</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set ``active``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_active</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get ``x``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_x</span>
 
     <span class="nd">@x</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">x</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set ``x``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_x</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">y</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get ``y``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_y</span>
 
     <span class="nd">@y</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">y</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set ``y``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_y</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
 
 </pre></div>

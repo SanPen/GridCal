@@ -213,6 +213,201 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
 </context>
 <context>
+    <name>AddSymbolDialog</name>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="12"/>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
+        <source>Add block property</source>
+        <translation>ब्लॉक प्रॉपर्टी जोड़ें</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="31"/>
+        <source>Define a new property for the selected block.</source>
+        <translation>चयनित ब्लॉक के लिए एक नया गुण परिभाषित करें।</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="48"/>
+        <source>Owner block</source>
+        <translation>मालिक ब्लॉक</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="58"/>
+        <source>Name</source>
+        <translation>नाम</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="64"/>
+        <source>Enter a valid symbol name</source>
+        <translation>एक वैध प्रतीक नाम दर्ज करें</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="70"/>
+        <source>Variable type</source>
+        <translation>चर प्रकार</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="80"/>
+        <source>Choose how this symbol participates in the dynamic model.</source>
+        <translation>चुनें कि यह प्रतीक गतिशील मॉडल में कैसे भाग लेता है।</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="98"/>
+        <source>Options</source>
+        <translation>विकल्प</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="111"/>
+        <source>Expose as output</source>
+        <translation>आउटपुट के रूप में उजागर करें</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="116"/>
+        <source>Create derivative variable</source>
+        <translation>व्युत्पन्न चर बनाएं</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="130"/>
+        <source>Power-flow variable used to initialize this dynamic variable.</source>
+        <translation>इस गतिशील चर को आरंभ करने के लिए उपयोग किया जाने वाला पावर-फ्लो चर।</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="131"/>
+        <source>Power-flow initialization source</source>
+        <translation>पावर-फ्लो इनिशियलाइज़ेशन स्रोत</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="154"/>
+        <source>Local initial value</source>
+        <translation>स्थानीय प्रारंभिक मान</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="167"/>
+        <source>Device initial value</source>
+        <translation>उपकरण प्रारंभिक मान</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="186"/>
+        <source>Retained modes preserve discrete state between simulation steps.</source>
+        <translation>रिटेन्ड मोड सिमुलेशन चरणों के बीच असतत स्थिति को संरक्षित करते हैं।</translation>
+    </message>
+    <message>
+        <source>Add parameter</source>
+        <translation>पैरामीटर जोड़ें</translation>
+    </message>
+    <message>
+        <source>Add retained mode</source>
+        <translation>रिटेन्ड मोड जोड़ें</translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation>चर जोड़ें</translation>
+    </message>
+    <message>
+        <source>Algebraic</source>
+        <translation>बीजगणितीय</translation>
+    </message>
+    <message>
+        <source>Declare a configurable value owned by the selected dynamic block.</source>
+        <translation>चयनित गतिशील ब्लॉक द्वारा स्वामित्व वाला एक कॉन्फ़िगर करने योग्य मान घोषित करें।</translation>
+    </message>
+    <message>
+        <source>Declare a variable owned by the selected dynamic block.</source>
+        <translation>चयनित गतिशील ब्लॉक द्वारा स्वामित्व वाला एक चर घोषित करें।</translation>
+    </message>
+    <message>
+        <source>Declare discrete state that persists between simulation steps.</source>
+        <translation>असतत स्थिति घोषित करें जो सिमुलेशन चरणों के बीच बनी रहती है।</translation>
+    </message>
+    <message>
+        <source>Dynamic parameter</source>
+        <translation>गतिशील पैरामीटर</translation>
+    </message>
+    <message>
+        <source>Enter a valid Python symbol name.</source>
+        <translation>एक वैध पायथन प्रतीक नाम दर्ज करें।</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>इनपुट</translation>
+    </message>
+    <message>
+        <source>May change during the simulation and can optionally start from a grid-device value.</source>
+        <translation>सिमुलेशन के दौरान बदल सकता है और वैकल्पिक रूप से एक ग्रिड-उपकरण मान से शुरू हो सकता है।</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>कोई नहीं</translation>
+    </message>
+    <message>
+        <source>Nothing was added: {message}</source>
+        <translation>कुछ भी नहीं जोड़ा गया: {message}</translation>
+    </message>
+    <message>
+        <source>Parameter type</source>
+        <translation>पैरामीटर प्रकार</translation>
+    </message>
+    <message>
+        <source>Preserves discrete state between simulation steps.</source>
+        <translation>सिमुलेशन चरणों के बीच असतत स्थिति को संरक्षित करता है।</translation>
+    </message>
+    <message>
+        <source>Receives its value from an incoming block connection.</source>
+        <translation>इसे एक इनकमिंग ब्लॉक कनेक्शन से अपना मान प्राप्त होता है।</translation>
+    </message>
+    <message>
+        <source>Remains fixed during the simulation and can optionally start from a grid-device value.</source>
+        <translation>सिमुलेशन के दौरान स्थिर रहता है और वैकल्पिक रूप से एक ग्रिड-उपकरण मान से शुरू हो सकता है।</translation>
+    </message>
+    <message>
+        <source>Represents a differential state integrated during the simulation.</source>
+        <translation>सिमुलेशन के दौरान एकीकृत एक विभेदक स्थिति का प्रतिनिधित्व करता है।</translation>
+    </message>
+    <message>
+        <source>Represents a value solved by the algebraic equations.</source>
+        <translation>बीजगणितीय समीकरणों द्वारा हल किए गए मान का प्रतिनिधित्व करता है।</translation>
+    </message>
+    <message>
+        <source>Retained mode</source>
+        <translation>बरकरार मोड</translation>
+    </message>
+    <message>
+        <source>Search device parameters</source>
+        <translation>उपकरण पैरामीटर खोजें</translation>
+    </message>
+    <message>
+        <source>Search power-flow variables</source>
+        <translation>पावर-फ्लो चर खोजें</translation>
+    </message>
+    <message>
+        <source>Select a device initialization source from the list.</source>
+        <translation>सूची से एक उपकरण इनिशियलाइज़ेशन स्रोत चुनें।</translation>
+    </message>
+    <message>
+        <source>Select a power-flow initialization source from the list.</source>
+        <translation>सूची से एक पावर-फ्लो इनिशियलाइज़ेशन स्रोत चुनें।</translation>
+    </message>
+    <message>
+        <source>Select a valid owner block.</source>
+        <translation>एक वैध मालिक ब्लॉक चुनें।</translation>
+    </message>
+    <message>
+        <source>Select a valid symbol type.</source>
+        <translation>एक वैध प्रतीक प्रकार चुनें।</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>स्थिति</translation>
+    </message>
+    <message>
+        <source>Static parameter</source>
+        <translation>स्थिर पैरामीटर</translation>
+    </message>
+    <message>
+        <source>Use local numeric value</source>
+        <translation>स्थानीय संख्यात्मक मान का उपयोग करें</translation>
+    </message>
+</context>
+<context>
     <name>AdmittanceMatrixEditorWidget</name>
     <message>
         <location filename="../DeviceEditors/AdmittanceMatrixEditor/admittance_matrix_editor_gui.ui" line="19"/>
@@ -804,7 +999,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <name>BlockPropertyTreeModel</name>
     <message>
         <source>Missing PF mapping</source>
-        <translation>PF मैपिंग गुम है</translation>
+        <translation type="vanished">PF मैपिंग गुम है</translation>
     </message>
     <message>
         <source>Name</source>
@@ -820,7 +1015,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
     <message>
         <source>Template issue: static parameters require api_obj_mapping. An independently editable parameter should be in event_dict. This refactor does not migrate templates automatically.</source>
-        <translation>टेम्पलेट समस्या: स्थिर मापदंडों को api_obj_mapping की आवश्यकता होती है। एक स्वतंत्र रूप से संपादन योग्य पैरामीटर event_dict में होना चाहिए। यह रीफैक्टर टेम्पलेट्स को स्वचालित रूप से माइग्रेट नहीं करता है।</translation>
+        <translation type="vanished">टेम्पलेट समस्या: स्थिर मापदंडों को api_obj_mapping की आवश्यकता होती है। एक स्वतंत्र रूप से संपादन योग्य पैरामीटर event_dict में होना चाहिए। यह रीफैक्टर टेम्पलेट्स को स्वचालित रूप से माइग्रेट नहीं करता है।</translation>
     </message>
     <message>
         <source>Type</source>
@@ -829,6 +1024,14 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <message>
         <source>Value / PF reference</source>
         <translation>मान / PF संदर्भ</translation>
+    </message>
+    <message>
+        <source>Fixed local value. Select a device initialization mapping only when this value must come from the associated grid device.</source>
+        <translation>निश्चित स्थानीय मान। केवल तभी उपकरण इनिशियलाइज़ेशन मैपिंग चुनें जब यह मान संबंधित ग्रिड उपकरण से आना चाहिए।</translation>
+    </message>
+    <message>
+        <source>Invalid device initialization mapping: the target is not declared in this block's parameters or event_dict.</source>
+        <translation>अमान्य उपकरण इनिशियलाइज़ेशन मैपिंग: लक्ष्य इस ब्लॉक के मापदंडों या event_dict में घोषित नहीं है।</translation>
     </message>
 </context>
 <context>
@@ -2686,6 +2889,58 @@ Reference: {status}</source>
         <source>Valid</source>
         <translation>मान्य</translation>
     </message>
+    <message>
+        <source>Equation counts</source>
+        <translation>समीकरण गणनाएँ</translation>
+    </message>
+    <message>
+        <source>Repeated variable names</source>
+        <translation>दोहराए गए चर नाम</translation>
+    </message>
+    <message>
+        <source>Static parameter mappings</source>
+        <translation>स्थिर पैरामीटर मैपिंग</translation>
+    </message>
+    <message>
+        <source>Unnamed block</source>
+        <translation>नामहीन ब्लॉक</translation>
+    </message>
+    <message>
+        <source>Variable initialization</source>
+        <translation>चर इनिशियलाइज़ेशन</translation>
+    </message>
+    <message>
+        <source>algebraic variables={variable_count}, algebraic equations={equation_count}</source>
+        <translation>बीजगणितीय चर={variable_count}, बीजगणितीय समीकरण={equation_count}</translation>
+    </message>
+    <message>
+        <source>derivative variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>व्युत्पन्न चर को इनिशियलाइज़ेशन या पावर-फ्लो स्रोत की आवश्यकता है: {variable_names}</translation>
+    </message>
+    <message>
+        <source>event parameters with no value: {parameter_names}</source>
+        <translation>बिना मान वाले इवेंट पैरामीटर: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>mapping targets not declared as local parameters: {parameter_names}</source>
+        <translation>स्थानीय पैरामीटर के रूप में घोषित नहीं किए गए मैपिंग लक्ष्य: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>parameters missing a static mapping: {parameter_names}</source>
+        <translation>स्थिर मैपिंग की कमी वाले पैरामीटर: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>state variables={variable_count}, state equations={equation_count}</source>
+        <translation>स्थिति चर={variable_count}, स्थिति समीकरण={equation_count}</translation>
+    </message>
+    <message>
+        <source>variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>इनिशियलाइज़ेशन या पावर-फ्लो स्रोत की कमी वाले चर: {variable_names}</translation>
+    </message>
+    <message>
+        <source>variables: {variable_names}</source>
+        <translation>चर: {variable_names}</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -2790,7 +3045,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Enter a valid Python symbol name.</source>
-        <translation>एक वैध Python सिंबल नाम दर्ज करें।</translation>
+        <translation type="vanished">एक वैध Python सिंबल नाम दर्ज करें।</translation>
     </message>
     <message>
         <source>Equation PDF created: {path}</source>
@@ -2893,7 +3148,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>None</source>
-        <translation>कोई नहीं</translation>
+        <translation type="vanished">कोई नहीं</translation>
     </message>
     <message>
         <source>Nothing was applied: {message}</source>
@@ -2925,7 +3180,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Parameter whose value may change during the simulation.</source>
-        <translation>पैरामीटर जिसका मान सिमुलेशन के दौरान बदल सकता है।</translation>
+        <translation type="vanished">पैरामीटर जिसका मान सिमुलेशन के दौरान बदल सकता है।</translation>
     </message>
     <message>
         <source>Parameters</source>
@@ -2974,11 +3229,11 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Select a valid owner block.</source>
-        <translation>एक वैध मालिक ब्लॉक का चयन करें।</translation>
+        <translation type="vanished">एक वैध मालिक ब्लॉक का चयन करें।</translation>
     </message>
     <message>
         <source>Select a valid symbol type.</source>
-        <translation>एक वैध प्रतीक प्रकार का चयन करें।</translation>
+        <translation type="vanished">एक वैध प्रतीक प्रकार का चयन करें।</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="319"/>
@@ -3079,7 +3334,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Retained mode</source>
-        <translation>बरकरार मोड</translation>
+        <translation type="vanished">बरकरार मोड</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="82"/>
@@ -3134,7 +3389,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Nothing was added: {message}</source>
-        <translation>कुछ भी नहीं जोड़ा गया: {message}</translation>
+        <translation type="vanished">कुछ भी नहीं जोड़ा गया: {message}</translation>
     </message>
     <message>
         <source>Add to plot...</source>
@@ -4391,74 +4646,60 @@ select the expected processing format</source>
 <context>
     <name>Form</name>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="14"/>
         <source>Add block property</source>
-        <translation>ब्लॉक प्रॉपर्टी जोड़ें</translation>
+        <translation type="vanished">ब्लॉक प्रॉपर्टी जोड़ें</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
         <source>Add symbol to selected block</source>
-        <translation>चयनित ब्लॉक में सिंबल जोड़ें</translation>
+        <translation type="vanished">चयनित ब्लॉक में सिंबल जोड़ें</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="71"/>
         <source>Output</source>
-        <translation>आउटपुट</translation>
+        <translation type="vanished">आउटपुट</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="78"/>
         <source>Create derivative variable</source>
-        <translation>व्युत्पन्न चर बनाएं</translation>
+        <translation type="vanished">व्युत्पन्न चर बनाएं</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="144"/>
         <source>New symbol name</source>
-        <translation>नया सिंबल नाम</translation>
+        <translation type="vanished">नया सिंबल नाम</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="151"/>
         <source>Symbol category</source>
-        <translation>प्रतीक श्रेणी</translation>
+        <translation type="vanished">प्रतीक श्रेणी</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="158"/>
         <source>Owner block</source>
-        <translation>मालिक ब्लॉक</translation>
+        <translation type="vanished">मालिक ब्लॉक</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="165"/>
         <source>Type</source>
-        <translation>प्रकार</translation>
+        <translation type="vanished">प्रकार</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="172"/>
         <source>Add symbol</source>
-        <translation>सिंबल जोड़ें</translation>
+        <translation type="vanished">सिंबल जोड़ें</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="195"/>
         <source>Static device mapping</source>
-        <translation>स्थैतिक उपकरण मैपिंग</translation>
+        <translation type="vanished">स्थैतिक उपकरण मैपिंग</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="202"/>
         <source>Power-flow variable used to initialize this dynamic variable.</source>
-        <translation>इस गतिशील चर को आरंभ करने के लिए उपयोग किया जाने वाला पावर-फ्लो चर।</translation>
+        <translation type="vanished">इस गतिशील चर को आरंभ करने के लिए उपयोग किया जाने वाला पावर-फ्लो चर।</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="205"/>
         <source>Power-flow variable</source>
-        <translation>पावर-फ्लो चर</translation>
+        <translation type="vanished">पावर-फ्लो चर</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="266"/>
         <source>Enter a name</source>
-        <translation>एक नाम दर्ज करें</translation>
+        <translation type="vanished">एक नाम दर्ज करें</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="273"/>
         <source>Initial numeric value</source>
-        <translation>प्रारंभिक संख्यात्मक मान</translation>
+        <translation type="vanished">प्रारंभिक संख्यात्मक मान</translation>
     </message>
 </context>
 <context>
@@ -7152,6 +7393,195 @@ Please correct the data and try again.</source>
     </message>
 </context>
 <context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>दोनों घोषणाएं निर्माता वितरण अनुबंध का हिस्सा हैं और योग्यता से पहले आवश्यक हैं।</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>ब्राउज़...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>एक मौजूदा निर्माता बाइनरी चुनें।</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>चयनित इंटरफ़ेस द्वारा आवश्यक निर्माता घोषणाएं पूरी करें।</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>गंतव्य प्रदाता</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>प्रत्येक कॉमा-पृथक मान उस स्थिति पर स्रोत क्रम के लिए गंतव्य क्रम है। उदाहरण: 1,0 स्रोत 0 को गंतव्य 1 और स्रोत 1 को गंतव्य 0 मैप करता है।</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>उदाहरण: 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>उदाहरण: 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>उदाहरण: 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>निर्माता मूल मॉडल आयात करें</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>इनपुट गंतव्य क्रम</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>विविधता का निरीक्षण करें और संलग्न करें</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>निरीक्षण करें और आयात करें</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>एक अलग वर्कर में बाइनरी का निरीक्षण किया जा रहा है...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>लिनक्स लाइब्रेरी (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>निर्माता बाइनरी</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>निर्माता इंटरफ़ेस</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>निर्माता मूल मॉडल तैयार</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>निर्माता मूल मॉडल विविधताएं</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>अभी तक कोई प्रदाता आयात नहीं किया गया है।</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>कोई नहीं</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>आउटपुट गंतव्य क्रम</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>पैरामीटर गंतव्य क्रम</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>प्लेटफ़ॉर्म विविधता</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>प्रदाता: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>प्रदाता: {provider}
+संलग्न प्लेटफ़ॉर्म: {platform}
+टेम्पलेट बनाए गए: कोई नहीं (मौजूदा टेम्पलेट बरकरार)।</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>प्रदाता: {provider}
+प्लेटफ़ॉर्म: {platform}
+RMS टेम्पलेट बनाए गए: {rms}
+EMT टेम्पलेट बनाए गए: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>योग्य और संलग्न {platform}: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>{name} योग्य और आयात किया गया। {rms} RMS और {emt} EMT टेम्पलेट(s) बनाए गए।</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>मौजूदा टेम्पलेट को पुन: बाँधें</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>चयनित टेम्पलेट को पुन: बाँधें</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>{consumer} को {provider} से पुन: जोड़ा गया।</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>एक स्रोत, गंतव्य और टेम्पलेट चुनें।</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>निर्माता लाइब्रेरी चुनें</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>निर्माता अनुबंध और इसकी पूर्व-संकलित प्लेटफ़ॉर्म लाइब्रेरी चुनें। VeraGrid बाइनरी को एक अलग वर्कर में मान्य और चलाता है।</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>टेम्पलेट</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>निर्माता घोषणा करता है कि सभी परिवर्तनीय मॉडल स्थिति प्रत्येक Instance के स्वामित्व में है।</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>निर्माता घोषणा करता है कि लाइब्रेरी कोई देर से नेटिव लोडिंग नहीं करती है।</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>विंडोज लाइब्रेरी (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: अनुपलब्ध</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
+    </message>
+    <message>
+        <source>Choose the LLVM bin directory</source>
+        <translation>LLVM बिन निर्देशिका चुनें</translation>
+    </message>
+    <message>
+        <source>Choose the MinGW/UCRT support directory</source>
+        <translation>MinGW/UCRT समर्थन निर्देशिका चुनें</translation>
+    </message>
+    <message>
+        <source>LLVM selection was cancelled; the manufacturer model was not imported.</source>
+        <translation>LLVM चयन रद्द कर दिया गया; निर्माता मॉडल आयात नहीं किया गया।</translation>
+    </message>
+</context>
+<context>
     <name>MapGeneratorGraphicItem</name>
     <message>
         <source>Are you sure that you want to convert this generator into a battery?</source>
@@ -9842,6 +10272,10 @@ Modify the number of clusters in the ML settings.</source>
         <source>The short-circuit worker finished without results.</source>
         <translation>शॉर्ट-सर्किट वर्कर बिना परिणामों के समाप्त हो गया।</translation>
     </message>
+    <message>
+        <source>Power flow 3ph failed</source>
+        <translation>3-फेज पावर फ्लो विफल</translation>
+    </message>
 </context>
 <context>
     <name>SolarPvWizard</name>
@@ -10772,12 +11206,91 @@ You need to load or create a grid!</source>
         <translation type="vanished">इस अनुभाग में समस्याएँ मिलीं</translation>
     </message>
     <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="20"/>
         <source>Model Consistency Validation</source>
-        <translation type="vanished">मॉडल स्थिरता सत्यापन</translation>
+        <translation>मॉडल स्थिरता सत्यापन</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="31"/>
+        <source>Check the edited model&apos;s equation counts, variable names, parameter mappings, and variable initialization. This report is informational and does not block saving the model.</source>
+        <translation>संपादित मॉडल के समीकरणों की संख्या, चर नामों, पैरामीटर मैपिंग और चर आरंभीकरण की जाँच करें। यह रिपोर्ट केवल सूचनात्मक है और मॉडल को सहेजने को नहीं रोकती है।</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="53"/>
+        <source>Show:</source>
+        <translation>दिखाएँ:</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="60"/>
+        <source>Filter validation results by check</source>
+        <translation>जाँच द्वारा सत्यापन परिणामों को फ़िल्टर करें</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="85"/>
+        <source>No validation results match this filter.</source>
+        <translation>कोई सत्यापन परिणाम इस फ़िल्टर से मेल नहीं खाता।</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="95"/>
+        <source>Show issues in the model</source>
+        <translation>मॉडल में समस्याएँ दिखाएँ</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="96"/>
+        <source>Show Issues</source>
+        <translation>समस्याएँ दिखाएँ</translation>
     </message>
     <message>
         <source>Run an informational validation of the edited model structure, mappings, initialization, and port connectivity. This check reports issues but does not block saving the model.</source>
         <translation type="vanished">संपादित मॉडल संरचना, मैपिंग, आरंभीकरण और पोर्ट कनेक्टिविटी का एक सूचनात्मक सत्यापन चलाएँ। यह जांच समस्याओं की रिपोर्ट करती है लेकिन मॉडल को सहेजने से नहीं रोकती है।</translation>
+    </message>
+    <message>
+        <source>All checks</source>
+        <translation>सभी जाँचें</translation>
+    </message>
+    <message>
+        <source>Block</source>
+        <translation>ब्लॉक</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>जाँच</translation>
+    </message>
+    <message>
+        <source>Details</source>
+        <translation>विवरण</translation>
+    </message>
+    <message>
+        <source>Issue</source>
+        <translation>समस्या</translation>
+    </message>
+    <message>
+        <source>Issues only</source>
+        <translation>केवल समस्याएँ</translation>
+    </message>
+    <message>
+        <source>No issues found</source>
+        <translation>कोई समस्या नहीं मिली</translation>
+    </message>
+    <message>
+        <source>No issues found.</source>
+        <translation>कोई समस्या नहीं मिली।</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>ठीक है</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>स्थिति</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · No issues found</source>
+        <translation>{check_count} जाँचें · कोई समस्या नहीं मिली</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · {issue_section_count} checks with issues · {finding_count} findings</source>
+        <translation>{check_count} जाँचें · {issue_section_count} जाँचें जिनमें समस्याएँ हैं · {finding_count} निष्कर्ष</translation>
     </message>
 </context>
 <context>
@@ -16726,183 +17239,6 @@ You need to load or create a grid!</source>
     <message>
         <source>Question</source>
         <translation>प्रश्न</translation>
-    </message>
-</context>
-<context>
-    <name>ManufacturerNativeImporterDialog</name>
-    <message>
-        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
-        <translation>दोनों घोषणाएं निर्माता वितरण अनुबंध का हिस्सा हैं और योग्यता से पहले आवश्यक हैं।</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>ब्राउज़...</translation>
-    </message>
-    <message>
-        <source>Choose an existing manufacturer binary.</source>
-        <translation>एक मौजूदा निर्माता बाइनरी चुनें।</translation>
-    </message>
-    <message>
-        <source>Complete the manufacturer declarations required by the selected interface.</source>
-        <translation>चयनित इंटरफ़ेस द्वारा आवश्यक निर्माता घोषणाएं पूरी करें।</translation>
-    </message>
-    <message>
-        <source>Destination provider</source>
-        <translation>गंतव्य प्रदाता</translation>
-    </message>
-    <message>
-        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
-        <translation>प्रत्येक कॉमा-पृथक मान उस स्थिति पर स्रोत क्रम के लिए गंतव्य क्रम है। उदाहरण: 1,0 स्रोत 0 को गंतव्य 1 और स्रोत 1 को गंतव्य 0 मैप करता है।</translation>
-    </message>
-    <message>
-        <source>Example: 0,1</source>
-        <translation>उदाहरण: 0,1</translation>
-    </message>
-    <message>
-        <source>Example: 1,0</source>
-        <translation>उदाहरण: 1,0</translation>
-    </message>
-    <message>
-        <source>Example: 2,0,1</source>
-        <translation>उदाहरण: 2,0,1</translation>
-    </message>
-    <message>
-        <source>Import manufacturer native model</source>
-        <translation>निर्माता मूल मॉडल आयात करें</translation>
-    </message>
-    <message>
-        <source>Input destination ordinals</source>
-        <translation>इनपुट गंतव्य क्रम</translation>
-    </message>
-    <message>
-        <source>Inspect and attach variant</source>
-        <translation>विविधता का निरीक्षण करें और संलग्न करें</translation>
-    </message>
-    <message>
-        <source>Inspect and import</source>
-        <translation>निरीक्षण करें और आयात करें</translation>
-    </message>
-    <message>
-        <source>Inspecting the binary in an isolated worker...</source>
-        <translation>एक अलग वर्कर में बाइनरी का निरीक्षण किया जा रहा है...</translation>
-    </message>
-    <message>
-        <source>Linux libraries (*.so)</source>
-        <translation>लिनक्स लाइब्रेरी (*.so)</translation>
-    </message>
-    <message>
-        <source>Manufacturer binary</source>
-        <translation>निर्माता बाइनरी</translation>
-    </message>
-    <message>
-        <source>Manufacturer interface</source>
-        <translation>निर्माता इंटरफ़ेस</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model ready</source>
-        <translation>निर्माता मूल मॉडल तैयार</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model variants</source>
-        <translation>निर्माता मूल मॉडल विविधताएं</translation>
-    </message>
-    <message>
-        <source>No provider has been imported yet.</source>
-        <translation>अभी तक कोई प्रदाता आयात नहीं किया गया है।</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>कोई नहीं</translation>
-    </message>
-    <message>
-        <source>Output destination ordinals</source>
-        <translation>आउटपुट गंतव्य क्रम</translation>
-    </message>
-    <message>
-        <source>Parameter destination ordinals</source>
-        <translation>पैरामीटर गंतव्य क्रम</translation>
-    </message>
-    <message>
-        <source>Platform variant</source>
-        <translation>प्लेटफ़ॉर्म विविधता</translation>
-    </message>
-    <message>
-        <source>Provider: {name}</source>
-        <translation>प्रदाता: {name}</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform attached: {platform}
-Templates created: None (existing templates retained).</source>
-        <translation>प्रदाता: {provider}
-संलग्न प्लेटफ़ॉर्म: {platform}
-टेम्पलेट बनाए गए: कोई नहीं (मौजूदा टेम्पलेट बरकरार)।</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform: {platform}
-RMS templates created: {rms}
-EMT templates created: {emt}</source>
-        <translation>प्रदाता: {provider}
-प्लेटफ़ॉर्म: {platform}
-RMS टेम्पलेट बनाए गए: {rms}
-EMT टेम्पलेट बनाए गए: {emt}</translation>
-    </message>
-    <message>
-        <source>Qualified and attached {platform}: {digest}</source>
-        <translation>योग्य और संलग्न {platform}: {digest}</translation>
-    </message>
-    <message>
-        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
-        <translation>{name} योग्य और आयात किया गया। {rms} RMS और {emt} EMT टेम्पलेट(s) बनाए गए।</translation>
-    </message>
-    <message>
-        <source>Rebind an existing template</source>
-        <translation>मौजूदा टेम्पलेट को पुन: बाँधें</translation>
-    </message>
-    <message>
-        <source>Rebind selected template</source>
-        <translation>चयनित टेम्पलेट को पुन: बाँधें</translation>
-    </message>
-    <message>
-        <source>Rebound {consumer} to {provider}.</source>
-        <translation>{consumer} को {provider} से पुन: जोड़ा गया।</translation>
-    </message>
-    <message>
-        <source>Select a source, destination and template.</source>
-        <translation>एक स्रोत, गंतव्य और टेम्पलेट चुनें।</translation>
-    </message>
-    <message>
-        <source>Select manufacturer library</source>
-        <translation>निर्माता लाइब्रेरी चुनें</translation>
-    </message>
-    <message>
-        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
-        <translation>निर्माता अनुबंध और इसकी पूर्व-संकलित प्लेटफ़ॉर्म लाइब्रेरी चुनें। VeraGrid बाइनरी को एक अलग वर्कर में मान्य और चलाता है।</translation>
-    </message>
-    <message>
-        <source>Template</source>
-        <translation>टेम्पलेट</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
-        <translation>निर्माता घोषणा करता है कि सभी परिवर्तनीय मॉडल स्थिति प्रत्येक Instance के स्वामित्व में है।</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that the library performs no late native loading.</source>
-        <translation>निर्माता घोषणा करता है कि लाइब्रेरी कोई देर से नेटिव लोडिंग नहीं करती है।</translation>
-    </message>
-    <message>
-        <source>Windows libraries (*.dll)</source>
-        <translation>विंडोज लाइब्रेरी (*.dll)</translation>
-    </message>
-    <message>
-        <source>{platform}: missing</source>
-        <translation>{platform}: अनुपलब्ध</translation>
-    </message>
-    <message>
-        <source>{platform}: {status}, SHA-256 {digest}</source>
-        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

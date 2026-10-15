@@ -185,6 +185,201 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
 </context>
 <context>
+    <name>AddSymbolDialog</name>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="12"/>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
+        <source>Add block property</source>
+        <translation>Blok Özelliği Ekle</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="31"/>
+        <source>Define a new property for the selected block.</source>
+        <translation>Seçilen blok için yeni bir özellik tanımlayın.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="48"/>
+        <source>Owner block</source>
+        <translation>Sahip Blok</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="58"/>
+        <source>Name</source>
+        <translation>Ad</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="64"/>
+        <source>Enter a valid symbol name</source>
+        <translation>Geçerli bir sembol adı girin</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="70"/>
+        <source>Variable type</source>
+        <translation>Değişken tipi</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="80"/>
+        <source>Choose how this symbol participates in the dynamic model.</source>
+        <translation>Bu sembolün dinamik modelde nasıl yer aldığını seçin.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="98"/>
+        <source>Options</source>
+        <translation>Seçenekler</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="111"/>
+        <source>Expose as output</source>
+        <translation>Çıkış olarak açığa çıkar</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="116"/>
+        <source>Create derivative variable</source>
+        <translation>Türev Değişken Oluştur</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="130"/>
+        <source>Power-flow variable used to initialize this dynamic variable.</source>
+        <translation>Bu dinamik değişkeni başlatmak için kullanılan yük akışı değişkeni.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="131"/>
+        <source>Power-flow initialization source</source>
+        <translation>Güç akışı başlatma kaynağı</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="154"/>
+        <source>Local initial value</source>
+        <translation>Yerel başlangıç değeri</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="167"/>
+        <source>Device initial value</source>
+        <translation>Cihaz başlangıç değeri</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="186"/>
+        <source>Retained modes preserve discrete state between simulation steps.</source>
+        <translation>Korunan modlar, simülasyon adımları arasında ayrık durumu korur.</translation>
+    </message>
+    <message>
+        <source>Add parameter</source>
+        <translation>Parametre ekle</translation>
+    </message>
+    <message>
+        <source>Add retained mode</source>
+        <translation>Korunan mod ekle</translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation>Değişken ekle</translation>
+    </message>
+    <message>
+        <source>Algebraic</source>
+        <translation>Cebirsel</translation>
+    </message>
+    <message>
+        <source>Declare a configurable value owned by the selected dynamic block.</source>
+        <translation>Seçilen dinamik blok tarafından sahip olunan yapılandırılabilir bir değer tanımlayın.</translation>
+    </message>
+    <message>
+        <source>Declare a variable owned by the selected dynamic block.</source>
+        <translation>Seçilen dinamik blok tarafından sahip olunan bir değişken tanımlayın.</translation>
+    </message>
+    <message>
+        <source>Declare discrete state that persists between simulation steps.</source>
+        <translation>Simülasyon adımları arasında devam eden ayrık bir durum tanımlayın.</translation>
+    </message>
+    <message>
+        <source>Dynamic parameter</source>
+        <translation>Dinamik parametre</translation>
+    </message>
+    <message>
+        <source>Enter a valid Python symbol name.</source>
+        <translation>Geçerli bir Python sembol adı girin.</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>Giriş</translation>
+    </message>
+    <message>
+        <source>May change during the simulation and can optionally start from a grid-device value.</source>
+        <translation>Simülasyon sırasında değişebilir ve isteğe bağlı olarak bir şebeke cihazı değerinden başlayabilir.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Yok</translation>
+    </message>
+    <message>
+        <source>Nothing was added: {message}</source>
+        <translation>Hiçbir şey eklenmedi: {message}</translation>
+    </message>
+    <message>
+        <source>Parameter type</source>
+        <translation>Parametre tipi</translation>
+    </message>
+    <message>
+        <source>Preserves discrete state between simulation steps.</source>
+        <translation>Simülasyon adımları arasında ayrık durumu korur.</translation>
+    </message>
+    <message>
+        <source>Receives its value from an incoming block connection.</source>
+        <translation>Değerini gelen bir blok bağlantısından alır.</translation>
+    </message>
+    <message>
+        <source>Remains fixed during the simulation and can optionally start from a grid-device value.</source>
+        <translation>Simülasyon sırasında sabit kalır ve isteğe bağlı olarak bir şebeke cihazı değerinden başlayabilir.</translation>
+    </message>
+    <message>
+        <source>Represents a differential state integrated during the simulation.</source>
+        <translation>Simülasyon sırasında entegre edilen bir diferansiyel durumu temsil eder.</translation>
+    </message>
+    <message>
+        <source>Represents a value solved by the algebraic equations.</source>
+        <translation>Cebirsel denklemlerle çözülen bir değeri temsil eder.</translation>
+    </message>
+    <message>
+        <source>Retained mode</source>
+        <translation>Kalıcı Mod</translation>
+    </message>
+    <message>
+        <source>Search device parameters</source>
+        <translation>Cihaz parametrelerini ara</translation>
+    </message>
+    <message>
+        <source>Search power-flow variables</source>
+        <translation>Güç akışı değişkenlerini ara</translation>
+    </message>
+    <message>
+        <source>Select a device initialization source from the list.</source>
+        <translation>Listeden bir cihaz başlatma kaynağı seçin.</translation>
+    </message>
+    <message>
+        <source>Select a power-flow initialization source from the list.</source>
+        <translation>Listeden bir güç akışı başlatma kaynağı seçin.</translation>
+    </message>
+    <message>
+        <source>Select a valid owner block.</source>
+        <translation>Geçerli bir sahip blok seçin.</translation>
+    </message>
+    <message>
+        <source>Select a valid symbol type.</source>
+        <translation>Geçerli bir sembol tipi seçin.</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>Durum</translation>
+    </message>
+    <message>
+        <source>Static parameter</source>
+        <translation>Statik parametre</translation>
+    </message>
+    <message>
+        <source>Use local numeric value</source>
+        <translation>Yerel sayısal değeri kullan</translation>
+    </message>
+</context>
+<context>
     <name>AdmittanceMatrixEditorWidget</name>
     <message>
         <location filename="../DeviceEditors/AdmittanceMatrixEditor/admittance_matrix_editor_gui.ui" line="19"/>
@@ -652,7 +847,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <name>BlockPropertyTreeModel</name>
     <message>
         <source>Missing PF mapping</source>
-        <translation>Eksik PF eşlemesi</translation>
+        <translation type="vanished">Eksik PF eşlemesi</translation>
     </message>
     <message>
         <source>Name</source>
@@ -668,7 +863,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
     <message>
         <source>Template issue: static parameters require api_obj_mapping. An independently editable parameter should be in event_dict. This refactor does not migrate templates automatically.</source>
-        <translation>Şablon sorunu: statik parametreler api_obj_mapping gerektirir. Bağımsız düzenlenebilir bir parametre event_dict içinde olmalıdır. Bu yeniden düzenleme şablonları otomatik olarak taşımaz.</translation>
+        <translation type="vanished">Şablon sorunu: statik parametreler api_obj_mapping gerektirir. Bağımsız düzenlenebilir bir parametre event_dict içinde olmalıdır. Bu yeniden düzenleme şablonları otomatik olarak taşımaz.</translation>
     </message>
     <message>
         <source>Type</source>
@@ -677,6 +872,14 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <message>
         <source>Value / PF reference</source>
         <translation>Değer / PF referansı</translation>
+    </message>
+    <message>
+        <source>Fixed local value. Select a device initialization mapping only when this value must come from the associated grid device.</source>
+        <translation>Sabit yerel değer. Bu değer ilgili şebeke cihazından gelmek zorundaysa bir cihaz başlatma eşlemesi seçin.</translation>
+    </message>
+    <message>
+        <source>Invalid device initialization mapping: the target is not declared in this block's parameters or event_dict.</source>
+        <translation>Geçersiz cihaz başlatma eşlemesi: hedef, bu bloğun parametrelerinde veya event_dict'inde tanımlanmamış.</translation>
     </message>
 </context>
 <context>
@@ -2445,6 +2648,58 @@ Referans: {status}</translation>
         <source>Valid</source>
         <translation>Geçerli</translation>
     </message>
+    <message>
+        <source>Equation counts</source>
+        <translation>Denklem sayıları</translation>
+    </message>
+    <message>
+        <source>Repeated variable names</source>
+        <translation>Tekrarlanan değişken adları</translation>
+    </message>
+    <message>
+        <source>Static parameter mappings</source>
+        <translation>Statik parametre eşlemeleri</translation>
+    </message>
+    <message>
+        <source>Unnamed block</source>
+        <translation>Adlandırılmamış blok</translation>
+    </message>
+    <message>
+        <source>Variable initialization</source>
+        <translation>Değişken başlatma</translation>
+    </message>
+    <message>
+        <source>algebraic variables={variable_count}, algebraic equations={equation_count}</source>
+        <translation>cebirsel değişkenler={variable_count}, cebirsel denklemler={equation_count}</translation>
+    </message>
+    <message>
+        <source>derivative variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>başlatılması veya bir güç akışı kaynağı eksik olan türev değişkenleri: {variable_names}</translation>
+    </message>
+    <message>
+        <source>event parameters with no value: {parameter_names}</source>
+        <translation>değeri olmayan olay parametreleri: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>mapping targets not declared as local parameters: {parameter_names}</source>
+        <translation>eşleme hedefleri yerel parametre olarak tanımlanmamış: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>parameters missing a static mapping: {parameter_names}</source>
+        <translation>statik eşlemesi eksik parametreler: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>state variables={variable_count}, state equations={equation_count}</source>
+        <translation>durum değişkenleri={variable_count}, durum denklemleri={equation_count}</translation>
+    </message>
+    <message>
+        <source>variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>başlatılması veya bir güç akışı kaynağı eksik olan değişkenler: {variable_names}</translation>
+    </message>
+    <message>
+        <source>variables: {variable_names}</source>
+        <translation>değişkenler: {variable_names}</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -2621,7 +2876,7 @@ Referans: {status}</translation>
     </message>
     <message>
         <source>Enter a valid Python symbol name.</source>
-        <translation>Geçerli bir Python sembol adı girin.</translation>
+        <translation type="vanished">Geçerli bir Python sembol adı girin.</translation>
     </message>
     <message>
         <source>Equation PDF created: {path}</source>
@@ -2645,11 +2900,11 @@ Referans: {status}</translation>
     </message>
     <message>
         <source>None</source>
-        <translation>Yok</translation>
+        <translation type="vanished">Yok</translation>
     </message>
     <message>
         <source>Nothing was added: {message}</source>
-        <translation>Hiçbir şey eklenmedi: {message}</translation>
+        <translation type="vanished">Hiçbir şey eklenmedi: {message}</translation>
     </message>
     <message>
         <source>Nothing was applied: {message}</source>
@@ -2661,7 +2916,7 @@ Referans: {status}</translation>
     </message>
     <message>
         <source>Parameter whose value may change during the simulation.</source>
-        <translation>Simülasyon sırasında değeri değişebilen parametre.</translation>
+        <translation type="vanished">Simülasyon sırasında değeri değişebilen parametre.</translation>
     </message>
     <message>
         <source>Rename</source>
@@ -2669,7 +2924,7 @@ Referans: {status}</translation>
     </message>
     <message>
         <source>Retained mode</source>
-        <translation>Kalıcı Mod</translation>
+        <translation type="vanished">Kalıcı Mod</translation>
     </message>
     <message>
         <source>Save dynamic equations PDF</source>
@@ -2677,7 +2932,7 @@ Referans: {status}</translation>
     </message>
     <message>
         <source>Select a valid owner block.</source>
-        <translation>Geçerli bir sahip blok seçin.</translation>
+        <translation type="vanished">Geçerli bir sahip blok seçin.</translation>
     </message>
     <message>
         <source>Select a valid procedural logic type.</source>
@@ -2685,7 +2940,7 @@ Referans: {status}</translation>
     </message>
     <message>
         <source>Select a valid symbol type.</source>
-        <translation>Geçerli bir sembol türü seçin.</translation>
+        <translation type="vanished">Geçerli bir sembol türü seçin.</translation>
     </message>
     <message>
         <source>Select at least one non-empty equation group.</source>
@@ -3453,74 +3708,60 @@ beklenen işlem biçimini seçin</translation>
 <context>
     <name>Form</name>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="14"/>
         <source>Add block property</source>
-        <translation>Blok Özelliği Ekle</translation>
+        <translation type="vanished">Blok Özelliği Ekle</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
         <source>Add symbol to selected block</source>
-        <translation>Seçili Bloğa Sembol Ekle</translation>
+        <translation type="vanished">Seçili Bloğa Sembol Ekle</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="71"/>
         <source>Output</source>
-        <translation>Çıktı</translation>
+        <translation type="vanished">Çıktı</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="78"/>
         <source>Create derivative variable</source>
-        <translation>Türev Değişken Oluştur</translation>
+        <translation type="vanished">Türev Değişken Oluştur</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="144"/>
         <source>New symbol name</source>
-        <translation>Yeni Sembol Adı</translation>
+        <translation type="vanished">Yeni Sembol Adı</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="151"/>
         <source>Symbol category</source>
-        <translation>Sembol Kategorisi</translation>
+        <translation type="vanished">Sembol Kategorisi</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="158"/>
         <source>Owner block</source>
-        <translation>Sahip Blok</translation>
+        <translation type="vanished">Sahip Blok</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="165"/>
         <source>Type</source>
-        <translation>Tür</translation>
+        <translation type="vanished">Tür</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="172"/>
         <source>Add symbol</source>
-        <translation>Sembol Ekle</translation>
+        <translation type="vanished">Sembol Ekle</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="195"/>
         <source>Static device mapping</source>
-        <translation>Statik Teçhizat Eşleme</translation>
+        <translation type="vanished">Statik Teçhizat Eşleme</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="202"/>
         <source>Power-flow variable used to initialize this dynamic variable.</source>
-        <translation>Bu dinamik değişkeni başlatmak için kullanılan yük akışı değişkeni.</translation>
+        <translation type="vanished">Bu dinamik değişkeni başlatmak için kullanılan yük akışı değişkeni.</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="205"/>
         <source>Power-flow variable</source>
-        <translation>Yük Akışı Değişkeni</translation>
+        <translation type="vanished">Yük Akışı Değişkeni</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="266"/>
         <source>Enter a name</source>
-        <translation>Bir Ad Girin</translation>
+        <translation type="vanished">Bir Ad Girin</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="273"/>
         <source>Initial numeric value</source>
-        <translation>Başlangıç Sayısal Değeri</translation>
+        <translation type="vanished">Başlangıç Sayısal Değeri</translation>
     </message>
 </context>
 <context>
@@ -6060,6 +6301,195 @@ Do you want to continue without a template?</source>
     </message>
 </context>
 <context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>Her iki beyan da üretici teslimat sözleşmesinin bir parçasıdır ve nitelendirmeden önce gereklidir.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Gözat...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>Mevcut bir üretici ikilisi seçin.</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>Seçilen arayüz tarafından istenen üretici beyanlarını tamamlayın.</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>Hedef sağlayıcı</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>Her virgülle ayrılmış değer, o konumdaki kaynak sırasının hedef sırasıdır. Örnek: 1,0, kaynak 0&apos;ı hedef 1&apos;e ve kaynak 1&apos;i hedef 0&apos;a eşler.</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>Örnek: 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>Örnek: 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>Örnek: 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>Üretici yerel modelini içe aktar</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>Giriş hedef sırasları</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>Varyantı incele ve ata</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>İncele ve içe aktar</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>İkilinin izole bir işçi içinde incelenmesi...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>Linux kütüphaneleri (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>Üretici ikilisi</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>Üretici arayüzü</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>Üretici yerel modeli hazır</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>Üretici yerel model varyantları</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>Henüz sağlayıcı içe aktarılmadı.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Yok</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>Çıkış hedef sırasları</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>Parametre hedef sırasları</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>Platform varyantı</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>Sağlayıcı: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>Sağlayıcı: {provider}
+Eklendi platform: {platform}
+Oluşturulan şablonlar: Yok (mevcut şablonlar korundu).</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>Sağlayıcı: {provider}
+Platform: {platform}
+Oluşturulan RMS şablonları: {rms}
+Oluşturulan EMT şablonları: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>Nitelendirilmiş ve eklendi {platform}: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>Nitelendirilmiş ve içe aktarıldı {name}. {rms} RMS ve {emt} EMT şablon(ları) oluşturuldu.</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>Mevcut bir şablonu yeniden bağla</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>Seçili şablonu yeniden bağla</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>{consumer} yeniden {provider}&apos;a bağlandı.</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>Bir kaynak, hedef ve şablon seçin.</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>Üretici kütüphanesi seçin</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>Üretici sözleşmesini ve önceden derlenmiş platform kütüphanesini seçin. VeraGrid, ikili dosyayı izole bir işçi içinde doğrular ve çalıştırır.</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>Şablon</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>Üretici, tüm değiştirilebilir model durumunun her Örnek tarafından sahiplenildiğini beyan eder.</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>Üretici, kütüphanenin geç yerel yükleme yapmadığını beyan eder.</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>Windows kütüphaneleri (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: eksik</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
+    </message>
+    <message>
+        <source>Choose the LLVM bin directory</source>
+        <translation>LLVM bin dizinini seçin</translation>
+    </message>
+    <message>
+        <source>Choose the MinGW/UCRT support directory</source>
+        <translation>MinGW/UCRT destek dizinini seçin</translation>
+    </message>
+    <message>
+        <source>LLVM selection was cancelled; the manufacturer model was not imported.</source>
+        <translation>LLVM seçimi iptal edildi; üretici modeli içe aktarılmadı.</translation>
+    </message>
+</context>
+<context>
     <name>MapGeneratorGraphicItem</name>
     <message>
         <source>Are you sure that you want to convert this generator into a battery?</source>
@@ -8346,6 +8776,10 @@ The results are needed to initialize this simulation.</source>
         <translation>{missing_results}
 Bu simülasyonu başlatmak için sonuçlar gerekiyor.</translation>
     </message>
+    <message>
+        <source>Power flow 3ph failed</source>
+        <translation>3 fazlı güç akışı başarısız</translation>
+    </message>
 </context>
 <context>
     <name>SolarPvWizard</name>
@@ -9264,6 +9698,92 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <source>Underground cable position</source>
         <translation>Yeraltı Kablosu Konumu</translation>
+    </message>
+</context>
+<context>
+    <name>ValidationSectionDialog</name>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="20"/>
+        <source>Model Consistency Validation</source>
+        <translation>Model Tutarlılığı Doğrulaması</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="31"/>
+        <source>Check the edited model&apos;s equation counts, variable names, parameter mappings, and variable initialization. This report is informational and does not block saving the model.</source>
+        <translation>Düzenlenmiş modelin denklem sayılarını, değişken adlarını, parametre eşlemelerini ve değişken başlangıç değerlerini kontrol edin. Bu rapor bilgilendirme amaçlıdır ve modelin kaydedilmesini engellemez.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="53"/>
+        <source>Show:</source>
+        <translation>Göster:</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="60"/>
+        <source>Filter validation results by check</source>
+        <translation>Doğrulama sonuçlarını kontrol başına filtrele</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="85"/>
+        <source>No validation results match this filter.</source>
+        <translation>Bu filtreye uyan doğrulama sonucu bulunmamaktadır.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="95"/>
+        <source>Show issues in the model</source>
+        <translation>Modeldeki sorunları göster</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="96"/>
+        <source>Show Issues</source>
+        <translation>Sorunlar Göster</translation>
+    </message>
+    <message>
+        <source>All checks</source>
+        <translation>Tüm kontroller</translation>
+    </message>
+    <message>
+        <source>Block</source>
+        <translation>Engelle</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Kontrol Et</translation>
+    </message>
+    <message>
+        <source>Details</source>
+        <translation>Detaylar</translation>
+    </message>
+    <message>
+        <source>Issue</source>
+        <translation>Sorun</translation>
+    </message>
+    <message>
+        <source>Issues only</source>
+        <translation>Sadece Sorunlar</translation>
+    </message>
+    <message>
+        <source>No issues found</source>
+        <translation>Sorun bulunamadı</translation>
+    </message>
+    <message>
+        <source>No issues found.</source>
+        <translation>Sorun bulunamadı.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Tamam</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Durum</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · No issues found</source>
+        <translation>{check_count} kontrol · Sorun bulunamadı</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · {issue_section_count} checks with issues · {finding_count} findings</source>
+        <translation>{check_count} kontrol · {issue_section_count} sorun içeren kontrol · {finding_count} bulgu</translation>
     </message>
 </context>
 <context>
@@ -14349,7 +14869,7 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <location filename="../Main/MainWindow.ui" line="11929"/>
         <source>Import a manufacturer FMU as a reusable dynamic model</source>
-        <translation>Yeniden kullanılabilir dinamik model olarak bir üretici FMU'su içe aktarın</translation>
+        <translation>Yeniden kullanılabilir dinamik model olarak bir üretici FMU&apos;su içe aktarın</translation>
     </message>
     <message>
         <location filename="../Main/MainWindow.ui" line="11938"/>
@@ -15120,183 +15640,6 @@ Bir şebeke yüklemeli ya da oluşturmalısınız!</translation>
     <message>
         <source>Warning</source>
         <translation>Uyarı</translation>
-    </message>
-</context>
-<context>
-    <name>ManufacturerNativeImporterDialog</name>
-    <message>
-        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
-        <translation>Her iki beyan da üretici teslimat sözleşmesinin bir parçasıdır ve nitelendirmeden önce gereklidir.</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>Gözat...</translation>
-    </message>
-    <message>
-        <source>Choose an existing manufacturer binary.</source>
-        <translation>Mevcut bir üretici ikilisi seçin.</translation>
-    </message>
-    <message>
-        <source>Complete the manufacturer declarations required by the selected interface.</source>
-        <translation>Seçilen arayüz tarafından istenen üretici beyanlarını tamamlayın.</translation>
-    </message>
-    <message>
-        <source>Destination provider</source>
-        <translation>Hedef sağlayıcı</translation>
-    </message>
-    <message>
-        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
-        <translation>Her virgülle ayrılmış değer, o konumdaki kaynak sırasının hedef sırasıdır. Örnek: 1,0, kaynak 0'ı hedef 1'e ve kaynak 1'i hedef 0'a eşler.</translation>
-    </message>
-    <message>
-        <source>Example: 0,1</source>
-        <translation>Örnek: 0,1</translation>
-    </message>
-    <message>
-        <source>Example: 1,0</source>
-        <translation>Örnek: 1,0</translation>
-    </message>
-    <message>
-        <source>Example: 2,0,1</source>
-        <translation>Örnek: 2,0,1</translation>
-    </message>
-    <message>
-        <source>Import manufacturer native model</source>
-        <translation>Üretici yerel modelini içe aktar</translation>
-    </message>
-    <message>
-        <source>Input destination ordinals</source>
-        <translation>Giriş hedef sırasları</translation>
-    </message>
-    <message>
-        <source>Inspect and attach variant</source>
-        <translation>Varyantı incele ve ata</translation>
-    </message>
-    <message>
-        <source>Inspect and import</source>
-        <translation>İncele ve içe aktar</translation>
-    </message>
-    <message>
-        <source>Inspecting the binary in an isolated worker...</source>
-        <translation>İkilinin izole bir işçi içinde incelenmesi...</translation>
-    </message>
-    <message>
-        <source>Linux libraries (*.so)</source>
-        <translation>Linux kütüphaneleri (*.so)</translation>
-    </message>
-    <message>
-        <source>Manufacturer binary</source>
-        <translation>Üretici ikilisi</translation>
-    </message>
-    <message>
-        <source>Manufacturer interface</source>
-        <translation>Üretici arayüzü</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model ready</source>
-        <translation>Üretici yerel modeli hazır</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model variants</source>
-        <translation>Üretici yerel model varyantları</translation>
-    </message>
-    <message>
-        <source>No provider has been imported yet.</source>
-        <translation>Henüz sağlayıcı içe aktarılmadı.</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Yok</translation>
-    </message>
-    <message>
-        <source>Output destination ordinals</source>
-        <translation>Çıkış hedef sırasları</translation>
-    </message>
-    <message>
-        <source>Parameter destination ordinals</source>
-        <translation>Parametre hedef sırasları</translation>
-    </message>
-    <message>
-        <source>Platform variant</source>
-        <translation>Platform varyantı</translation>
-    </message>
-    <message>
-        <source>Provider: {name}</source>
-        <translation>Sağlayıcı: {name}</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform attached: {platform}
-Templates created: None (existing templates retained).</source>
-        <translation>Sağlayıcı: {provider}
-Eklendi platform: {platform}
-Oluşturulan şablonlar: Yok (mevcut şablonlar korundu).</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform: {platform}
-RMS templates created: {rms}
-EMT templates created: {emt}</source>
-        <translation>Sağlayıcı: {provider}
-Platform: {platform}
-Oluşturulan RMS şablonları: {rms}
-Oluşturulan EMT şablonları: {emt}</translation>
-    </message>
-    <message>
-        <source>Qualified and attached {platform}: {digest}</source>
-        <translation>Nitelendirilmiş ve eklendi {platform}: {digest}</translation>
-    </message>
-    <message>
-        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
-        <translation>Nitelendirilmiş ve içe aktarıldı {name}. {rms} RMS ve {emt} EMT şablon(ları) oluşturuldu.</translation>
-    </message>
-    <message>
-        <source>Rebind an existing template</source>
-        <translation>Mevcut bir şablonu yeniden bağla</translation>
-    </message>
-    <message>
-        <source>Rebind selected template</source>
-        <translation>Seçili şablonu yeniden bağla</translation>
-    </message>
-    <message>
-        <source>Rebound {consumer} to {provider}.</source>
-        <translation>{consumer} yeniden {provider}'a bağlandı.</translation>
-    </message>
-    <message>
-        <source>Select a source, destination and template.</source>
-        <translation>Bir kaynak, hedef ve şablon seçin.</translation>
-    </message>
-    <message>
-        <source>Select manufacturer library</source>
-        <translation>Üretici kütüphanesi seçin</translation>
-    </message>
-    <message>
-        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
-        <translation>Üretici sözleşmesini ve önceden derlenmiş platform kütüphanesini seçin. VeraGrid, ikili dosyayı izole bir işçi içinde doğrular ve çalıştırır.</translation>
-    </message>
-    <message>
-        <source>Template</source>
-        <translation>Şablon</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
-        <translation>Üretici, tüm değiştirilebilir model durumunun her Örnek tarafından sahiplenildiğini beyan eder.</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that the library performs no late native loading.</source>
-        <translation>Üretici, kütüphanenin geç yerel yükleme yapmadığını beyan eder.</translation>
-    </message>
-    <message>
-        <source>Windows libraries (*.dll)</source>
-        <translation>Windows kütüphaneleri (*.dll)</translation>
-    </message>
-    <message>
-        <source>{platform}: missing</source>
-        <translation>{platform}: eksik</translation>
-    </message>
-    <message>
-        <source>{platform}: {status}, SHA-256 {digest}</source>
-        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

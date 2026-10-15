@@ -11,7 +11,8 @@ from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.enumerations import DeviceType, ParamPowerFlowReferenceType, VarPowerFlowReferenceType
 from VeraGridEngine.Templates.template_definition import TemplateDefinition, TemplateProp
-from VeraGridEngine.Utils.procedural_logic import sampled_value
+from VeraGridEngine.Utils.procedural_logic import bool_and, bool_or, flipflop, sampled_value
+from VeraGridEngine.Utils.Symbolic.symbolic import abs as symbolic_abs
 from VeraGridEngine.Utils.Symbolic.symbolic import CmpOp, Comparison, Const, Expr, Var
 
 
@@ -119,6 +120,8 @@ class SwitchEmtTemplate(TemplateDefinition):
                 TemplateProp(name="command_threshold", units="", descr="Control threshold for the external command.", tpe=float, value=0.5),
                 TemplateProp(name="algebraic_branch", units="", descr="Use an instantaneous resistive branch without artificial current dynamics.", tpe=bool, value=False),
                 TemplateProp(name="closed_parallel_conductance", units="S", descr="Parallel snubber conductance present while the switch is closed.", tpe=float, value=0.0),
+                TemplateProp(name="zero_current_opening", units="", descr="Open each phase at its first sampled current zero after an open command.", tpe=bool, value=False),
+                TemplateProp(name="zero_current_threshold", units="p.u.", descr="Current magnitude accepted as a sampled zero for phase opening.", tpe=float, value=1.0e-3),
                 TemplateProp(name="name", units="", descr="Symbolic model name.", tpe=str, value="switch_emt_template"),
             ]
         )
@@ -137,6 +140,8 @@ class SwitchEmtTemplate(TemplateDefinition):
         command_threshold: float = self.get_value("command_threshold")
         algebraic_branch: bool = self.get_value("algebraic_branch")
         closed_parallel_conductance: float = self.get_value("closed_parallel_conductance")
+        zero_current_opening: bool = self.get_value("zero_current_opening")
+        zero_current_threshold: float = self.get_value("zero_current_threshold")
         name: str = self.get_value("name")
 
         return get_switch_emt_template(
@@ -155,6 +160,8 @@ class SwitchEmtTemplate(TemplateDefinition):
             name=name,
             algebraic_branch=algebraic_branch,
             closed_parallel_conductance=closed_parallel_conductance,
+            zero_current_opening=zero_current_opening,
+            zero_current_threshold=zero_current_threshold,
         )
 
 
@@ -174,6 +181,8 @@ def get_switch_emt_template(
     name: str = "switch_emt_template",
     algebraic_branch: bool = False,
     closed_parallel_conductance: float = 0.0,
+    zero_current_opening: bool = False,
+    zero_current_threshold: float = 1.0e-3,
 ) -> EmtModelTemplate:
     """
     Build one phase-selective EMT switch branch template.
@@ -193,6 +202,8 @@ def get_switch_emt_template(
     :param name: Symbolic model name.
     :param algebraic_branch: If True, reproduce an instantaneous resistive breaker instead of adding a current lag.
     :param closed_parallel_conductance: Parallel snubber conductance also present in the closed state.
+    :param zero_current_opening: If True, defer each phase opening until its current crosses zero.
+    :param zero_current_threshold: Per-unit current magnitude treated as zero at a sampled boundary.
     :return: EMT switch template.
     """
     active_phases: List[str] = _get_active_phases(phA=phA, phB=phB, phC=phC)
@@ -201,6 +212,9 @@ def get_switch_emt_template(
     templ.name = name
     templ.block.name = name
 
+    # The command remains the public event target. Optional phase latches below
+    # convert an open command into the zero-current commutation used by the
+    # Simulink Specialized Power Systems three-phase breaker.
     closed_mode: Var = vf.add_var(f"switch_closed_mode")
     templ.block.mode_dict[closed_mode] = Const(1.0 if initial_closed else 0.0, name="switch_closed_mode")
 
@@ -221,14 +235,20 @@ def get_switch_emt_template(
         name="switch_closed_parallel_g",
     )
     templ.block.event_dict[seed_from_pf_var] = Const(1.0 if seed_from_pf_active else 0.0, name="switch_seed_from_pf")
+    if zero_current_opening:
+        zero_current_threshold_var: Var = vf.add_var(f"switch_zero_current_threshold")
+        templ.block.event_dict[zero_current_threshold_var] = Const(
+            float(zero_current_threshold),
+            name="switch_zero_current_threshold",
+        )
+    else:
+        pass
 
     g_closed_eff: Expr = (
         seed_from_pf_var * g_device
         + (Const(1.0) - seed_from_pf_var) * g_manual
         + g_parallel
     )
-    g_eff: Expr = closed_mode * g_closed_eff + (Const(1.0) - closed_mode) * g_open
-
     in_vars: List[Var] = list()
     state_vars: List[Var] = list()
     diff_vars: List[Var] = list()
@@ -289,6 +309,77 @@ def get_switch_emt_template(
 
         in_vars.extend(list([v_from, v_to]))
         algebraic_vars.extend(list([i_from, i_to]))
+
+        # Simulink's discrete three-phase breaker retains each conducting phase
+        # after the open command until that phase current reaches its next zero.
+        # Detect both an exact/small sampled current and a sign change between
+        # accepted samples so a zero cannot be skipped by the fixed 10 us grid.
+        if zero_current_opening:
+            # The procedural latch resolves its output by symbolic name in the
+            # complete block tree. Include the device name so several breakers
+            # can use zero-current opening without producing ambiguous names.
+            phase_closed_mode_name: str = f"switch_phase_{phase_label}_closed_mode_{name}"
+            previous_current_name: str = f"switch_phase_{phase_label}_previous_current_{name}"
+            phase_closed_mode: Var = vf.add_var(phase_closed_mode_name)
+            previous_current: Var = vf.add_var(previous_current_name)
+            templ.block.mode_dict[phase_closed_mode] = Const(
+                1.0 if initial_closed else 0.0,
+                name=phase_closed_mode_name,
+            )
+            templ.block.mode_dict[previous_current] = Const(
+                0.0,
+                name=previous_current_name,
+            )
+            command_closed: Comparison = Comparison(
+                lhs=closed_mode,
+                op=CmpOp.GE,
+                rhs=Const(float(command_threshold)),
+            )
+            command_open: Comparison = Comparison(
+                lhs=closed_mode,
+                op=CmpOp.LT,
+                rhs=Const(float(command_threshold)),
+            )
+            sampled_zero: Comparison = Comparison(
+                lhs=symbolic_abs(i_from),
+                op=CmpOp.LE,
+                rhs=zero_current_threshold_var,
+            )
+            crossed_zero: Comparison = Comparison(
+                lhs=i_from * previous_current,
+                op=CmpOp.LE,
+                rhs=Const(0.0),
+            )
+            open_at_current_zero: Expr = bool_and(
+                command_open,
+                bool_or(sampled_zero, crossed_zero),
+            )
+            templ.block.procedural_logic.append(
+                flipflop(
+                    boolset=command_closed,
+                    boolreset=open_at_current_zero,
+                    output=phase_closed_mode,
+                    name=f"switch_phase_{phase_label}_zero_current_opening_{name}",
+                )
+            )
+            # This sampler follows the latch in the procedural list, so the
+            # latch compares the accepted current with the preceding sample.
+            templ.block.procedural_logic.append(
+                sampled_value(
+                    output=previous_current,
+                    source=i_from,
+                    name=f"switch_phase_{phase_label}_current_memory_{name}",
+                )
+            )
+            # A close command acts without delay. Only opening is deferred to
+            # the retained phase latch, matching the breaker command semantics.
+            phase_conduction_mode: Expr = bool_or(command_closed, phase_closed_mode)
+        else:
+            phase_conduction_mode = closed_mode
+        g_eff: Expr = (
+            phase_conduction_mode * g_closed_eff
+            + (Const(1.0) - phase_conduction_mode) * g_open
+        )
         if algebraic_branch:
             algebraic_eqs.append(i_from - g_eff * (v_from - v_to))
             algebraic_eqs.append(i_to + i_from)

@@ -16,6 +16,7 @@ from scipy.sparse import csc_matrix, lil_matrix
 
 from VeraGridEngine.Devices.assets import Assets
 from VeraGridEngine.Devices.Parents.editable_device import EditableDevice
+from VeraGridEngine.Devices.Parents.injection_parent import InjectionParent
 from VeraGridEngine.Devices.Parents.dynamic_parent import DynamicDevice
 from VeraGridEngine.Devices.Parents.dynamic_bus_parent import DynamicBusDevice
 from VeraGridEngine.Utils.GeographicalMethods.haversine_distance import haversine_distance, closest_point_on_segment
@@ -34,6 +35,27 @@ from VeraGridEngine.Utils.Symbolic.symbolic_io import compare_blocks
 if TYPE_CHECKING:
     from VeraGridEngine.Simulations.OPF.opf_ts_results import OptimalPowerFlowTimeSeriesResults
     from VeraGridEngine.Simulations.OPF.opf_results import OptimalPowerFlowResults
+
+
+class FacilityDispatchGroup:
+    """Fixed facility membership, paired with indices in compiled device arrays."""
+
+    __slots__ = ("batteries", "generators", "loads")
+
+    def __init__(self,
+                 batteries: Dict[dev.Battery, int],
+                 generators: Dict[dev.Generator, int],
+                 loads: Dict[InjectionParent, int]) -> None:
+        """Store device references and their original compilation indices.
+
+        :param batteries: Battery objects and battery-array indices.
+        :param generators: Generator objects and generator-array indices.
+        :param loads: Load-like objects and load-array indices.
+        :return: None.
+        """
+        self.batteries: Dict[dev.Battery, int] = batteries
+        self.generators: Dict[dev.Generator, int] = generators
+        self.loads: Dict[InjectionParent, int] = loads
 
 
 def get_system_user() -> str:
@@ -1974,6 +1996,48 @@ class MultiCircuit(Assets):
 
         # assign the new base
         self.Sbase = Sbase_new
+
+    def build_facility_dispatch_groups(self) -> Dict[dev.Facility, FacilityDispatchGroup]:
+        """Group assigned devices once using their original compilation indices.
+
+        :return: Groups keyed by facility, excluding unassigned devices.
+        """
+        # Retain Grid-mode batteries because their dispatch policy can change with time.
+        facility_groups: Dict[dev.Facility, FacilityDispatchGroup] = dict()
+        for k, battery in enumerate(self.get_batteries()):
+            if battery.facility is not None:
+                group: FacilityDispatchGroup | None = facility_groups.get(battery.facility, None)
+                if group is None:
+                    group = FacilityDispatchGroup(batteries=dict(), generators=dict(), loads=dict())
+                    facility_groups[battery.facility] = group
+                else:
+                    pass
+                group.batteries[battery] = k
+            else:
+                pass
+
+        for k, generator in enumerate(self.get_generators()):
+            if generator.facility is not None:
+                group = facility_groups.get(generator.facility, None)
+                if group is not None:
+                    group.generators[generator] = k
+                else:
+                    pass
+            else:
+                pass
+
+        # External grid imports are never a plant generation source or local demand.
+        for k, device in enumerate(self.get_load_like_devices_iter()):
+            if device.facility is not None and not isinstance(device, dev.ExternalGrid):
+                group = facility_groups.get(device.facility, None)
+                if group is not None:
+                    group.loads[device] = k
+                else:
+                    pass
+            else:
+                pass
+
+        return facility_groups
 
     def get_injection_devices_grouped_by_substation(self) -> Dict[dev.Substation,
     Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]]:

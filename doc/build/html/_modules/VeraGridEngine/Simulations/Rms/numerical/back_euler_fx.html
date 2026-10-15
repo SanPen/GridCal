@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Rms.numerical.back_euler_fx &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.Rms.numerical.back_euler_fx &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -268,6 +269,7 @@
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">converged</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">completed_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
 
         <span class="n">x0</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_x0</span><span class="p">()</span>
 
@@ -368,11 +370,17 @@
 
                     <span class="n">h_eff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">t_curr</span> <span class="o">-</span> <span class="n">t_local_prev</span>
                     <span class="k">if</span> <span class="n">h_eff</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
-                        <span class="c1"># TODO: Is this the right thing?</span>
-                        <span class="c1"># Better to handle the situation and log it</span>
-                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                            <span class="sa">f</span><span class="s2">&quot;Invalid local step size h_eff=</span><span class="si">{</span><span class="n">h_eff</span><span class="si">}</span><span class="s2"> while integrating RMS macro step </span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">.&quot;</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span>
+                            <span class="n">msg</span><span class="o">=</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid RMS local step size </span><span class="si">{</span><span class="n">h_eff</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> s at &quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;time </span><span class="si">{</span><span class="n">t_local_prev</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> s (macro step </span><span class="si">{</span><span class="n">step_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">). &quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;Completed results through &quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">completed_samples</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> s are retained; &quot;</span>
+                                 <span class="sa">f</span><span class="s2">&quot;the failed step is omitted.&quot;</span><span class="p">),</span>
+                            <span class="n">device</span><span class="o">=</span><span class="s2">&quot;BackEulerImplicitIntegration&quot;</span><span class="p">,</span>
                         <span class="p">)</span>
+                        <span class="n">substep_converged</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="k">break</span>
 
                     <span class="c1"># Continuous controls use the local target so a step at an</span>
                     <span class="c1"># accepted boundary drives the immediately following</span>
@@ -470,23 +478,22 @@
                                             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">var_name</span><span class="si">:</span><span class="s2">20s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">v</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="si">:</span><span class="s2">+.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                                 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using LSQR&quot;</span><span class="p">)</span>
                                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;residual is </span><span class="si">{</span><span class="n">residual</span><span class="si">}</span><span class="s2"> for timestep </span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="k">pass</span>
 
                             <span class="k">if</span> <span class="ow">not</span> <span class="n">solved</span><span class="p">:</span>
-                                <span class="n">nan_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">rhs</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
-                                <span class="n">nan_eqs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">nan_indices</span><span class="p">]</span>
-                                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Jf is </span><span class="si">{</span><span class="n">Jf</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                                <span class="c1"># TODO: Is this the right thing?</span>
-                                <span class="c1"># Better to handle the situation and log it</span>
-                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                                    <span class="sa">f</span><span class="s2">&quot;spsolve returned non-finite values (NaN or Inf).</span><span class="se">\n</span><span class="s2">&quot;</span>
-                                    <span class="sa">f</span><span class="s2">&quot;delta = </span><span class="si">{</span><span class="n">delta</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                                    <span class="sa">f</span><span class="s2">&quot;rhs = </span><span class="si">{</span><span class="n">rhs</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                                    <span class="sa">f</span><span class="s2">&quot;Jacobian shape = </span><span class="si">{</span><span class="n">Jf</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-                                    <span class="sa">f</span><span class="s2">&quot;NaNs found at indices </span><span class="si">{</span><span class="n">nan_indices</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2"> in equations:</span><span class="se">\n</span><span class="si">{</span><span class="n">nan_eqs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                                <span class="n">nonfinite_rhs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">rhs</span><span class="p">))</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span>
+                                    <span class="n">msg</span><span class="o">=</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RMS linear solve returned non-finite values at &quot;</span>
+                                         <span class="sa">f</span><span class="s2">&quot;time </span><span class="si">{</span><span class="n">t_curr</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> s (macro step </span><span class="si">{</span><span class="n">step_idx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">); &quot;</span>
+                                         <span class="sa">f</span><span class="s2">&quot;Jacobian shape=</span><span class="si">{</span><span class="n">Jf</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, &quot;</span>
+                                         <span class="sa">f</span><span class="s2">&quot;non-finite RHS indices=</span><span class="si">{</span><span class="n">nonfinite_rhs</span><span class="si">}</span><span class="s2">. &quot;</span>
+                                         <span class="sa">f</span><span class="s2">&quot;Completed results through &quot;</span>
+                                         <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">completed_samples</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> s are retained; &quot;</span>
+                                         <span class="sa">f</span><span class="s2">&quot;the failed step is omitted.&quot;</span><span class="p">),</span>
+                                    <span class="n">device</span><span class="o">=</span><span class="s2">&quot;BackEulerImplicitIntegration&quot;</span><span class="p">,</span>
                                 <span class="p">)</span>
-
-                            <span class="k">if</span> <span class="ow">not</span> <span class="n">solved</span><span class="p">:</span>
-                                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to solve linear system even with regularization.&quot;</span><span class="p">)</span>
+                                <span class="n">substep_converged</span> <span class="o">=</span> <span class="kc">False</span>
                                 <span class="k">break</span>
 
                             <span class="c1"># Damped Newton</span>
@@ -508,11 +515,17 @@
                                 <span class="p">)</span>
                                 <span class="k">if</span> <span class="n">state_event_retry_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                                     <span class="k">if</span> <span class="n">co_simulation_advanced</span><span class="p">:</span>
-                                        <span class="c1"># TODO: Is this the right thing?</span>
-                                        <span class="c1"># Better to handle the situation and log it</span>
-                                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                                            <span class="s2">&quot;RMS FMI ME state event cannot retry after Co-Simulation devices advanced&quot;</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span>
+                                            <span class="n">msg</span><span class="o">=</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RMS FMI ME state event at </span><span class="si">{</span><span class="n">t_curr</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> s &quot;</span>
+                                                 <span class="sa">f</span><span class="s2">&quot;cannot retry after Co-Simulation devices advanced. &quot;</span>
+                                                 <span class="sa">f</span><span class="s2">&quot;Completed results through &quot;</span>
+                                                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">completed_samples</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> s are retained; &quot;</span>
+                                                 <span class="sa">f</span><span class="s2">&quot;the failed step is omitted.&quot;</span><span class="p">),</span>
+                                            <span class="n">device</span><span class="o">=</span><span class="s2">&quot;BackEulerImplicitIntegration&quot;</span><span class="p">,</span>
                                         <span class="p">)</span>
+                                        <span class="n">substep_converged</span> <span class="o">=</span> <span class="kc">False</span>
+                                        <span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+                                        <span class="k">break</span>
                                     <span class="k">else</span><span class="p">:</span>
                                         <span class="n">substep_converged</span> <span class="o">=</span> <span class="kc">True</span>
                                 <span class="k">else</span><span class="p">:</span>
@@ -527,6 +540,10 @@
                                 <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">resolve_fmu_me_devices</span><span class="p">(</span><span class="n">accepted</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="k">pass</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">resolve_manufacturer_native_boundary</span><span class="p">(</span>
+                                <span class="n">t</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">t_curr</span><span class="p">),</span>
+                                <span class="n">x</span><span class="o">=</span><span class="n">x_new</span><span class="p">,</span>
+                            <span class="p">)</span>
                             <span class="n">dx_last</span> <span class="o">=</span> <span class="n">dx</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                             <span class="n">x_prev</span> <span class="o">=</span> <span class="n">x_new</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
                             <span class="n">t_local_prev</span> <span class="o">=</span> <span class="n">t_curr</span>
@@ -557,18 +574,16 @@
                 <span class="n">lag_update_end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
                 <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;lag_update_time&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">lag_update_end</span> <span class="o">-</span> <span class="n">lag_update_start</span>
                 <span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">completed_samples</span> <span class="o">=</span> <span class="n">step_idx</span> <span class="o">+</span> <span class="mi">2</span>
         <span class="k">finally</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">has_fmu_cs</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">close_fmu_cs_devices</span><span class="p">()</span>
             <span class="k">if</span> <span class="n">has_fmu_me</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">close_fmu_me_devices</span><span class="p">()</span>
 
-        <span class="c1"># total = sum(timings.values())</span>
-        <span class="c1"># print(&quot;\n--- Solver timing breakdown (no-Vec) ---&quot;)</span>
-        <span class="c1"># for k, v in timings.items():</span>
-        <span class="c1">#     print(f&quot;  {k:25s}: {v:8.4f} s  ({v/total*100:5.1f}%)&quot;)</span>
-        <span class="c1"># print(f&quot;  {&#39;TOTAL&#39;:25s}: {total:8.4f} s&quot;)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">well_initialized</span><span class="p">,</span> <span class="n">converged</span></div>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">[:</span><span class="n">completed_samples</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[:</span><span class="n">completed_samples</span><span class="p">,</span> <span class="p">:],</span>
+                <span class="n">well_initialized</span><span class="p">,</span> <span class="n">converged</span><span class="p">)</span></div>
 </div>
 
 </pre></div>

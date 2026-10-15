@@ -46,7 +46,8 @@ from VeraGrid.Gui.Diagrams.diagrams_model import DiagramsTreeModel
 from VeraGrid.Gui.messages import yes_no_question, error_msg, info_msg
 from VeraGrid.Gui.Main.SubClasses.Model.compiled_arrays import CompiledArraysMain
 from VeraGrid.Gui.Main.object_select_window import ObjectSelectWindow, ListSelectWindow
-from VeraGrid.Gui.Diagrams.MapWidget.Tiles.TileProviders.cartodb import CartoDbTiles
+from VeraGrid.Gui.Diagrams.MapWidget.Tiles.TileProviders.openfreemap import create_map_tile_sources
+from VeraGrid.Gui.Diagrams.MapWidget.Tiles.tiles import Tiles
 from VeraGrid.Gui.object_proxy_model import ObjectModelFilterProxy
 from VeraGrid.Gui.Diagrams.MapWidget.Substation.substation_graphic_item import SubstationGraphicItem
 from VeraGrid.Gui.ShortCircuitEditor.short_circuit_selector import ShortCircuitSelector
@@ -204,35 +205,13 @@ class DiagramsMain(CompiledArraysMain):
         self.ui.palette_comboBox.setModel(gf.ComboModel(enum_values=palettes_list))
 
         # map tile sources
-        self.tile_sources: List[CartoDbTiles] = [
-            CartoDbTiles(
-                name='Carto voyager',
-                tiles_dir=os.path.join(tiles_path(), 'carto_db_voyager'),
-                tile_servers=["https://basemaps.cartocdn.com/rastertiles/voyager/"],
-                start_workers=False
-            ),
-            CartoDbTiles(
-                name='Carto positron',
-                tiles_dir=os.path.join(tiles_path(), 'carto_db_positron'),
-                tile_servers=['https://basemaps.cartocdn.com/light_all/'],
-                start_workers=False
-            ),
-            CartoDbTiles(
-                name='Carto dark matter',
-                tiles_dir=os.path.join(tiles_path(), 'carto_db_dark_matter'),
-                tile_servers=["https://basemaps.cartocdn.com/dark_all/"],
-                start_workers=False
-            ),
-            CartoDbTiles(
-                name='Open Street Map',
-                tiles_dir=os.path.join(tiles_path(), 'osm'),
-                tile_servers=["https://tile.openstreetmap.org"],
-                max_zoom=21,
-                start_workers=False
-            ),
-        ]
+        self.tile_sources: List[Tiles] = create_map_tile_sources(cache_dir=tiles_path())
         self.tile_index_dict = {tile.tile_set_name: i for i, tile in enumerate(self.tile_sources)}
         self.tile_name_dict = {tile.tile_set_name: tile for tile in self.tile_sources}
+        # Restore the corresponding keyless palette for diagrams saved with CARTO.
+        self.tile_name_dict['Carto voyager'] = self.tile_sources[0]
+        self.tile_name_dict['Carto positron'] = self.tile_sources[1]
+        self.tile_name_dict['Carto dark matter'] = self.tile_sources[2]
         self.ui.tile_provider_comboBox.setModel(
             gf.ComboModel(text_items=[(tile.tile_set_name, tile) for tile in self.tile_sources])
         )
@@ -388,7 +367,7 @@ class DiagramsMain(CompiledArraysMain):
             else:
                 pass
 
-        tile_source: CartoDbTiles
+        tile_source: Tiles
         for tile_source in self.tile_sources:
             stopped = tile_source.shutdown()
             if stopped:

@@ -3078,6 +3078,141 @@ def test_ntc_worst_contingency_is_the_other_tie() -> None:
     assert found_b
 
 
+def build_parallel_pair_grid() -> Tuple[gce.MultiCircuit, IntVec, IntVec]:
+    """
+    Two areas joined by a tie, with two identical parallel lines P1, P2 and a weaker line C
+    feeding the receiving load. Losing P1 or P2 loads C exactly the same, like the two poles
+    of a bipole.
+
+    :return: grid, sending bus indices, receiving bus indices
+    """
+    grid: gce.MultiCircuit = gce.MultiCircuit()
+    a1: gce.Area = gce.Area("A1")
+    a2: gce.Area = gce.Area("A2")
+    grid.add_area(a1)
+    grid.add_area(a2)
+    b0: gce.Bus = gce.Bus("B0", Vnom=400, area=a1)
+    b0.is_slack = True
+    b1: gce.Bus = gce.Bus("B1", Vnom=400, area=a2)
+    b2: gce.Bus = gce.Bus("B2", Vnom=400, area=a2)
+    grid.add_bus(b0)
+    grid.add_bus(b1)
+    grid.add_bus(b2)
+
+    # the receiving generator can ramp down, so the transfer grows until C binds
+    grid.add_generator(b0, gce.Generator("G", P=20, Pmax=1000, Pmin=0))
+    grid.add_generator(b2, gce.Generator("G2", P=100, Pmax=200, Pmin=0))
+    grid.add_load(b2, gce.Load("L", P=120))
+    grid.add_line(gce.Line(b0, b1, name="tie", x=0.01, rate=1000))
+    line_p1: gce.Line = gce.Line(b1, b2, name="P1", x=0.01, rate=1000)
+    line_p2: gce.Line = gce.Line(b1, b2, name="P2", x=0.01, rate=1000)
+    grid.add_line(line_p1)
+    grid.add_line(line_p2)
+    grid.add_line(gce.Line(b1, b2, name="C", x=0.02, rate=20))
+
+    # one contingency group per parallel line: these are the twin outages
+    line: gce.Line
+    for line in (line_p1, line_p2):
+        cg: gce.ContingencyGroup = gce.ContingencyGroup(name=f"{line.name} out")
+        grid.add_contingency_group(cg)
+        grid.add_contingency(gce.Contingency(device=line, group=cg))
+
+    info: gce.InterAggregationInfo = grid.get_inter_aggregation_info(objects_from=list([a1]),
+                                                                     objects_to=list([a2]))
+    return grid, info.idx_bus_from, info.idx_bus_to
+
+
+def test_ntc_report_lists_every_tied_worst_contingency() -> None:
+    """
+    Both parallel outages load C equally, so the report shows a row for each of them
+    instead of only the first group in the grid order.
+    """
+    grid: gce.MultiCircuit
+    idx_from: IntVec
+    idx_to: IntVec
+    grid, idx_from, idx_to = build_parallel_pair_grid()
+    opts: gce.OptimalNetTransferCapacityOptions = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=idx_from,
+        receiving_bus_idx=idx_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        consider_contingencies=True,
+        use_branch_exchange_sensitivity=False,
+        opf_options=gce.OptimalPowerFlowOptions(contingency_groups_used=grid.contingency_groups),
+    )
+    drv: gce.OptimalNetTransferCapacityDriver = gce.OptimalNetTransferCapacityDriver(grid, opts)
+    drv.run()
+    res: gce.OptimalNetTransferCapacityResults = drv.results
+
+    # branch order is tie, P1, P2, C: C binds under either outage, the first group is primary
+    assert int(res.worst_contingency_idx[3]) == 0
+    assert float(res.worst_contingency_loading[3]) > 0.98
+
+    # the second parallel outage is stored as the tie of C
+    tied_on_c: List[int] = list()
+    tie: Tuple[int, int, int, float, float, float]
+    for tie in res.worst_contingency_ties:
+        if int(tie[1]) == 3:
+            tied_on_c.append(int(tie[2]))
+        else:
+            pass  # a tie of another branch
+    assert tied_on_c == [1]
+
+    # and the report gives each equally critical outage its own row on C
+    table: gce.ResultsTable = res.mdl(ResultTypes.ContingencyFlowsReport)
+    columns: List[str] = list(table.cols_c)
+    br_col: int = columns.index('Branch')
+    grp_col: int = columns.index('Contingency group')
+    n1_col: int = columns.index('Flow N-1 (MW)')
+    groups_on_c: List[str] = list()
+    flows_on_c: List[float] = list()
+    i_row: int
+    for i_row in range(table.r):
+        if table.data_c[i_row, br_col] == "C":
+            groups_on_c.append(str(table.data_c[i_row, grp_col]))
+            flows_on_c.append(float(table.data_c[i_row, n1_col]))
+        else:
+            pass  # a row of another branch
+    assert groups_on_c == ["P1 out", "P2 out"]
+    assert abs(flows_on_c[0] - flows_on_c[1]) < 1e-2
+
+
+def test_ntc_report_without_contingencies_shows_the_n_state() -> None:
+    """
+    Without contingencies the N-1 columns fall back to the N flow over the contingency
+    rating (no division by a zero rating) and the N loading column carries the base case.
+    """
+    grid: gce.MultiCircuit
+    idx_from: IntVec
+    idx_to: IntVec
+    grid, idx_from, idx_to = build_parallel_pair_grid()
+    opts: gce.OptimalNetTransferCapacityOptions = gce.OptimalNetTransferCapacityOptions(
+        sending_bus_idx=idx_from,
+        receiving_bus_idx=idx_to,
+        transfer_method=gce.AvailableTransferMode.InstalledPower,
+        consider_contingencies=False,
+        use_branch_exchange_sensitivity=False,
+    )
+    drv: gce.OptimalNetTransferCapacityDriver = gce.OptimalNetTransferCapacityDriver(grid, opts)
+    drv.run()
+    res: gce.OptimalNetTransferCapacityResults = drv.results
+
+    # the ratings reach the results even though no contingency row entered the LP
+    assert np.allclose(res.contingency_rates, np.array([1000.0, 1000.0, 1000.0, 20.0]))
+
+    table: gce.ResultsTable = res.mdl(ResultTypes.ContingencyFlowsReport)
+    columns: List[str] = list(table.cols_c)
+    br_col: int = columns.index('Branch')
+    grp_col: int = columns.index('Contingency group')
+    n_col: int = columns.index('Loading N (%)')
+    n1_col: int = columns.index('Loading N-1 (%)')
+    # only C binds in the N state, shown as a base-case row without a contingency group
+    assert table.r == 1
+    assert table.data_c[0, br_col] == "C"
+    assert table.data_c[0, grp_col] == ""
+    assert abs(float(table.data_c[0, n_col]) - 100.0) < 1e-3
+    assert abs(float(table.data_c[0, n1_col]) - 100.0) < 1e-3
+
+
 def test_ntc_ts_report_keeps_only_rows_above_loading_threshold() -> None:
     """
     The contingency report drops (hour, branch) pairs whose N-1 loading is below

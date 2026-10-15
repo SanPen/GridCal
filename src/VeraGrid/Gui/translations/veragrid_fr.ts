@@ -213,6 +213,201 @@ li.checked :: marqueur { content: &quot;\2612&quot;; }
     </message>
 </context>
 <context>
+    <name>AddSymbolDialog</name>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="12"/>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
+        <source>Add block property</source>
+        <translation>Ajouter une propriété de bloc</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="31"/>
+        <source>Define a new property for the selected block.</source>
+        <translation>Définir une nouvelle propriété pour le bloc sélectionné.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="48"/>
+        <source>Owner block</source>
+        <translation>Bloc propriétaire</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="58"/>
+        <source>Name</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="64"/>
+        <source>Enter a valid symbol name</source>
+        <translation>Entrer un nom de symbole valide</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="70"/>
+        <source>Variable type</source>
+        <translation>Type de variable</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="80"/>
+        <source>Choose how this symbol participates in the dynamic model.</source>
+        <translation>Choisir comment ce symbole participe au modèle dynamique.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="98"/>
+        <source>Options</source>
+        <translation>Options</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="111"/>
+        <source>Expose as output</source>
+        <translation>Exposer en sortie</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="116"/>
+        <source>Create derivative variable</source>
+        <translation>Créer une variable dérivée</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="130"/>
+        <source>Power-flow variable used to initialize this dynamic variable.</source>
+        <translation>Variable de flux de puissance utilisée pour initialiser cette variable dynamique.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="131"/>
+        <source>Power-flow initialization source</source>
+        <translation>Source d'initialisation du flux de puissance</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="154"/>
+        <source>Local initial value</source>
+        <translation>Valeur initiale locale</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="167"/>
+        <source>Device initial value</source>
+        <translation>Valeur initiale de l'appareil</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="186"/>
+        <source>Retained modes preserve discrete state between simulation steps.</source>
+        <translation>Les modes conservés préservent l'état discret entre les étapes de simulation.</translation>
+    </message>
+    <message>
+        <source>Add parameter</source>
+        <translation>Ajouter un paramètre</translation>
+    </message>
+    <message>
+        <source>Add retained mode</source>
+        <translation>Ajouter un mode conservé</translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation>Ajouter une variable</translation>
+    </message>
+    <message>
+        <source>Algebraic</source>
+        <translation>Algébrique</translation>
+    </message>
+    <message>
+        <source>Declare a configurable value owned by the selected dynamic block.</source>
+        <translation>Déclarer une valeur configurable appartenant au bloc dynamique sélectionné.</translation>
+    </message>
+    <message>
+        <source>Declare a variable owned by the selected dynamic block.</source>
+        <translation>Déclarer une variable appartenant au bloc dynamique sélectionné.</translation>
+    </message>
+    <message>
+        <source>Declare discrete state that persists between simulation steps.</source>
+        <translation>Déclarer un état discret qui persiste entre les étapes de simulation.</translation>
+    </message>
+    <message>
+        <source>Dynamic parameter</source>
+        <translation>Paramètre dynamique</translation>
+    </message>
+    <message>
+        <source>Enter a valid Python symbol name.</source>
+        <translation>Entrer un nom de symbole Python valide.</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>Entrée</translation>
+    </message>
+    <message>
+        <source>May change during the simulation and can optionally start from a grid-device value.</source>
+        <translation>Peut changer pendant la simulation et peut optionnellement démarrer à partir d'une valeur d'appareil de réseau.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Aucun</translation>
+    </message>
+    <message>
+        <source>Nothing was added: {message}</source>
+        <translation>Aucune chose n'a été ajoutée : {message}</translation>
+    </message>
+    <message>
+        <source>Parameter type</source>
+        <translation>Type de paramètre</translation>
+    </message>
+    <message>
+        <source>Preserves discrete state between simulation steps.</source>
+        <translation>Préserve l'état discret entre les étapes de simulation.</translation>
+    </message>
+    <message>
+        <source>Receives its value from an incoming block connection.</source>
+        <translation>Reçoit sa valeur d'une connexion de bloc entrante.</translation>
+    </message>
+    <message>
+        <source>Remains fixed during the simulation and can optionally start from a grid-device value.</source>
+        <translation>Reste fixe pendant la simulation et peut optionnellement démarrer à partir d'une valeur d'appareil de réseau.</translation>
+    </message>
+    <message>
+        <source>Represents a differential state integrated during the simulation.</source>
+        <translation>Représente un état différentiel intégré pendant la simulation.</translation>
+    </message>
+    <message>
+        <source>Represents a value solved by the algebraic equations.</source>
+        <translation>Représente une valeur résolue par les équations algébriques.</translation>
+    </message>
+    <message>
+        <source>Retained mode</source>
+        <translation>Mode conservé</translation>
+    </message>
+    <message>
+        <source>Search device parameters</source>
+        <translation>Rechercher les paramètres de l'appareil</translation>
+    </message>
+    <message>
+        <source>Search power-flow variables</source>
+        <translation>Rechercher les variables du flux de puissance</translation>
+    </message>
+    <message>
+        <source>Select a device initialization source from the list.</source>
+        <translation>Sélectionner une source d'initialisation d'appareil dans la liste.</translation>
+    </message>
+    <message>
+        <source>Select a power-flow initialization source from the list.</source>
+        <translation>Sélectionner une source d'initialisation du flux de puissance dans la liste.</translation>
+    </message>
+    <message>
+        <source>Select a valid owner block.</source>
+        <translation>Sélectionner un bloc propriétaire valide.</translation>
+    </message>
+    <message>
+        <source>Select a valid symbol type.</source>
+        <translation>Sélectionner un type de symbole valide.</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>État</translation>
+    </message>
+    <message>
+        <source>Static parameter</source>
+        <translation>Paramètre statique</translation>
+    </message>
+    <message>
+        <source>Use local numeric value</source>
+        <translation>Utiliser une valeur numérique locale</translation>
+    </message>
+</context>
+<context>
     <name>AdmittanceMatrixEditorWidget</name>
     <message>
         <location filename="../DeviceEditors/AdmittanceMatrixEditor/admittance_matrix_editor_gui.ui" line="19"/>
@@ -804,7 +999,7 @@ li.checked :: marqueur { content: &quot;\2612&quot;; }
     <name>BlockPropertyTreeModel</name>
     <message>
         <source>Missing PF mapping</source>
-        <translation>Mappage PF manquant</translation>
+        <translation type="vanished">Mappage PF manquant</translation>
     </message>
     <message>
         <source>Name</source>
@@ -820,7 +1015,7 @@ li.checked :: marqueur { content: &quot;\2612&quot;; }
     </message>
     <message>
         <source>Template issue: static parameters require api_obj_mapping. An independently editable parameter should be in event_dict. This refactor does not migrate templates automatically.</source>
-        <translation>Problème de modèle : les paramètres statiques nécessitent api_obj_mapping. Un paramètre éditable indépendamment devrait se trouver dans event_dict. Cette refonte ne migre pas automatiquement les modèles.</translation>
+        <translation type="vanished">Problème de modèle : les paramètres statiques nécessitent api_obj_mapping. Un paramètre éditable indépendamment devrait se trouver dans event_dict. Cette refonte ne migre pas automatiquement les modèles.</translation>
     </message>
     <message>
         <source>Type</source>
@@ -829,6 +1024,14 @@ li.checked :: marqueur { content: &quot;\2612&quot;; }
     <message>
         <source>Value / PF reference</source>
         <translation>Valeur / Référence PF</translation>
+    </message>
+    <message>
+        <source>Fixed local value. Select a device initialization mapping only when this value must come from the associated grid device.</source>
+        <translation>Valeur locale fixe. Sélectionner un mappage d'initialisation d'appareil uniquement lorsque cette valeur doit provenir de l'appareil de réseau associé.</translation>
+    </message>
+    <message>
+        <source>Invalid device initialization mapping: the target is not declared in this block's parameters or event_dict.</source>
+        <translation>Mappage d'initialisation d'appareil invalide : la cible n'est pas déclarée dans les paramètres ou event_dict de ce bloc.</translation>
     </message>
 </context>
 <context>
@@ -2136,7 +2339,7 @@ Are you sure?</source>
     </message>
     <message>
         <source>The element is still referenced by: {names}</source>
-        <translation>L'élément est toujours référencé par : {names}</translation>
+        <translation>L&apos;élément est toujours référencé par : {names}</translation>
     </message>
 </context>
 <context>
@@ -3248,6 +3451,58 @@ Référence : {status}</translation>
         <source>Valid</source>
         <translation>Valide</translation>
     </message>
+    <message>
+        <source>Equation counts</source>
+        <translation>Comptage des équations</translation>
+    </message>
+    <message>
+        <source>Repeated variable names</source>
+        <translation>Noms de variables répétés</translation>
+    </message>
+    <message>
+        <source>Static parameter mappings</source>
+        <translation>Mappages de paramètres statiques</translation>
+    </message>
+    <message>
+        <source>Unnamed block</source>
+        <translation>Bloc sans nom</translation>
+    </message>
+    <message>
+        <source>Variable initialization</source>
+        <translation>Initialisation des variables</translation>
+    </message>
+    <message>
+        <source>algebraic variables={variable_count}, algebraic equations={equation_count}</source>
+        <translation>variables algébriques={variable_count}, équations algébriques={equation_count}</translation>
+    </message>
+    <message>
+        <source>derivative variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>variables dérivées sans initialisation ou source de flux de puissance : {variable_names}</translation>
+    </message>
+    <message>
+        <source>event parameters with no value: {parameter_names}</source>
+        <translation>paramètres d'événement sans valeur : {parameter_names}</translation>
+    </message>
+    <message>
+        <source>mapping targets not declared as local parameters: {parameter_names}</source>
+        <translation>cibles de mappage non déclarées comme paramètres locaux : {parameter_names}</translation>
+    </message>
+    <message>
+        <source>parameters missing a static mapping: {parameter_names}</source>
+        <translation>paramètres sans mappage statique : {parameter_names}</translation>
+    </message>
+    <message>
+        <source>state variables={variable_count}, state equations={equation_count}</source>
+        <translation>variables d'état={variable_count}, équations d'état={equation_count}</translation>
+    </message>
+    <message>
+        <source>variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>variables sans initialisation ou source de flux de puissance : {variable_names}</translation>
+    </message>
+    <message>
+        <source>variables: {variable_names}</source>
+        <translation>variables : {variable_names}</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -3356,7 +3611,7 @@ Référence : {status}</translation>
     </message>
     <message>
         <source>Enter a valid Python symbol name.</source>
-        <translation>Entrer un nom de symbole Python valide.</translation>
+        <translation type="vanished">Entrer un nom de symbole Python valide.</translation>
     </message>
     <message>
         <source>Equation PDF created: {path}</source>
@@ -3459,7 +3714,7 @@ Référence : {status}</translation>
     </message>
     <message>
         <source>None</source>
-        <translation>Aucun</translation>
+        <translation type="vanished">Aucun</translation>
     </message>
     <message>
         <source>Nothing was applied: {message}</source>
@@ -3491,7 +3746,7 @@ Référence : {status}</translation>
     </message>
     <message>
         <source>Parameter whose value may change during the simulation.</source>
-        <translation>Paramètre dont la valeur peut changer pendant la simulation.</translation>
+        <translation type="vanished">Paramètre dont la valeur peut changer pendant la simulation.</translation>
     </message>
     <message>
         <source>Parameters</source>
@@ -3540,11 +3795,11 @@ Référence : {status}</translation>
     </message>
     <message>
         <source>Select a valid owner block.</source>
-        <translation>Sélectionner un bloc propriétaire valide.</translation>
+        <translation type="vanished">Sélectionner un bloc propriétaire valide.</translation>
     </message>
     <message>
         <source>Select a valid symbol type.</source>
-        <translation>Sélectionner un type de symbole valide.</translation>
+        <translation type="vanished">Sélectionner un type de symbole valide.</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="319"/>
@@ -3645,7 +3900,7 @@ Référence : {status}</translation>
     </message>
     <message>
         <source>Retained mode</source>
-        <translation>Mode conservé</translation>
+        <translation type="vanished">Mode conservé</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="82"/>
@@ -3700,7 +3955,7 @@ Référence : {status}</translation>
     </message>
     <message>
         <source>Nothing was added: {message}</source>
-        <translation>Rien n&apos;a été ajouté : {message}</translation>
+        <translation type="vanished">Rien n&apos;a été ajouté : {message}</translation>
     </message>
     <message>
         <source>Add to plot...</source>
@@ -4957,74 +5212,60 @@ sélectionnez le format de traitement attendu</translation>
 <context>
     <name>Form</name>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="14"/>
         <source>Add block property</source>
-        <translation>Ajouter une propriété de bloc</translation>
+        <translation type="vanished">Ajouter une propriété de bloc</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
         <source>Add symbol to selected block</source>
-        <translation>Ajouter un symbole au bloc sélectionné</translation>
+        <translation type="vanished">Ajouter un symbole au bloc sélectionné</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="71"/>
         <source>Output</source>
-        <translation>Sortie</translation>
+        <translation type="vanished">Sortie</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="78"/>
         <source>Create derivative variable</source>
-        <translation>Créer une variable dérivée</translation>
+        <translation type="vanished">Créer une variable dérivée</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="144"/>
         <source>New symbol name</source>
-        <translation>Nouveau nom de symbole</translation>
+        <translation type="vanished">Nouveau nom de symbole</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="151"/>
         <source>Symbol category</source>
-        <translation>Catégorie de symbole</translation>
+        <translation type="vanished">Catégorie de symbole</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="158"/>
         <source>Owner block</source>
-        <translation>Bloc propriétaire</translation>
+        <translation type="vanished">Bloc propriétaire</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="165"/>
         <source>Type</source>
-        <translation>Type</translation>
+        <translation type="vanished">Type</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="172"/>
         <source>Add symbol</source>
-        <translation>Ajouter un symbole</translation>
+        <translation type="vanished">Ajouter un symbole</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="195"/>
         <source>Static device mapping</source>
-        <translation>Mappage des dispositifs statiques</translation>
+        <translation type="vanished">Mappage des dispositifs statiques</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="202"/>
         <source>Power-flow variable used to initialize this dynamic variable.</source>
-        <translation>Variable de flux de puissance utilisée pour initialiser cette variable dynamique.</translation>
+        <translation type="vanished">Variable de flux de puissance utilisée pour initialiser cette variable dynamique.</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="205"/>
         <source>Power-flow variable</source>
-        <translation>Variable de flux de puissance</translation>
+        <translation type="vanished">Variable de flux de puissance</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="266"/>
         <source>Enter a name</source>
-        <translation>Entrer un nom</translation>
+        <translation type="vanished">Entrer un nom</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="273"/>
         <source>Initial numeric value</source>
-        <translation>Valeur numérique initiale</translation>
+        <translation type="vanished">Valeur numérique initiale</translation>
     </message>
 </context>
 <context>
@@ -7719,6 +7960,195 @@ Veuillez corriger les données et réessayer.</translation>
     <message>
         <source>Stability boundary</source>
         <translation>Frontière de stabilité</translation>
+    </message>
+</context>
+<context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>Les deux déclarations font partie du contrat de livraison du fabricant et sont requises avant la qualification.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Parcourir...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>Choisir un binaire de fabricant existant.</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>Compléter les déclarations du fabricant requises par l&apos;interface sélectionnée.</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>Fournisseur de destination</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>Chaque valeur séparée par des virgules est l&apos;ordinal de destination pour l&apos;ordinal source à cette position. Exemple : 1,0 mappe la source 0 à la destination 1 et la source 1 à la destination 0.</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>Exemple : 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>Exemple : 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>Exemple : 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>Importer le modèle natif du fabricant</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>Ordinals de destination des entrées</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>Inspecter et attacher la variante</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>Inspecter et importer</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>Inspection du binaire dans un travailleur isolé...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>Bibliothèques Linux (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>Binaire du fabricant</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>Interface du fabricant</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>Modèle natif du fabricant prêt</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>Variantes du modèle natif du fabricant</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>Aucun fournisseur n&apos;a encore été importé.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Aucun</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>Ordinals de destination des sorties</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>Ordinals de destination des paramètres</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>Variante de plateforme</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>Fournisseur : {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>Fournisseur : {provider}
+Plateforme attachée : {platform}
+Modèles créés : Aucun (modèles existants conservés).</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>Fournisseur : {provider}
+Plateforme : {platform}
+Modèles RMS créés : {rms}
+Modèles EMT créés : {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>Qualifié et attaché {platform} : {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>Qualifié et importé {name}. Créé {rms} modèle(s) RMS et {emt} modèle(s) EMT.</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>Relier un modèle existant</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>Relier le modèle sélectionné</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>Rebranché {consumer} sur {provider}.</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>Sélectionnez une source, une destination et un modèle.</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>Sélectionner la bibliothèque du fabricant</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>Sélectionnez le contrat du fabricant et sa bibliothèque de plateforme précompilée. VeraGrid valide et exécute le binaire dans un worker isolé.</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>Modèle</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>Le fabricant déclare que tout état de modèle mutable est la propriété de chaque Instance.</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>Le fabricant déclare que la bibliothèque n&apos;effectue aucun chargement natif tardif.</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>Bibliothèques Windows (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: manquant</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
+    </message>
+    <message>
+        <source>Choose the LLVM bin directory</source>
+        <translation>Choisir le répertoire bin LLVM</translation>
+    </message>
+    <message>
+        <source>Choose the MinGW/UCRT support directory</source>
+        <translation>Choisir le répertoire de support MinGW/UCRT</translation>
+    </message>
+    <message>
+        <source>LLVM selection was cancelled; the manufacturer model was not imported.</source>
+        <translation>La sélection LLVM a été annulée ; le modèle du fabricant n'a pas été importé.</translation>
     </message>
 </context>
 <context>
@@ -10603,6 +11033,10 @@ Modifiez le nombre de clusters dans les paramètres ML.</translation>
         <source>The short-circuit worker finished without results.</source>
         <translation>Le travailleur de court-circuit s&apos;est terminé sans résultats.</translation>
     </message>
+    <message>
+        <source>Power flow 3ph failed</source>
+        <translation>Échec du flux de puissance 3ph</translation>
+    </message>
 </context>
 <context>
     <name>SolarPvWizard</name>
@@ -11534,12 +11968,91 @@ Vous devez charger ou créer un réseau !</translation>
         <translation type="vanished">Problèmes trouvés dans cette section</translation>
     </message>
     <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="20"/>
         <source>Model Consistency Validation</source>
-        <translation type="vanished">Validation de la cohérence du modèle</translation>
+        <translation>Validation de la cohérence du modèle</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="31"/>
+        <source>Check the edited model&apos;s equation counts, variable names, parameter mappings, and variable initialization. This report is informational and does not block saving the model.</source>
+        <translation>Vérifiez le nombre d'équations, les noms de variables, les mappages de paramètres et l'initialisation des variables du modèle édité. Ce rapport est informatif et ne bloque pas l'enregistrement du modèle.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="53"/>
+        <source>Show:</source>
+        <translation>Afficher :</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="60"/>
+        <source>Filter validation results by check</source>
+        <translation>Filtrer les résultats de validation par vérification</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="85"/>
+        <source>No validation results match this filter.</source>
+        <translation>Aucun résultat de validation ne correspond à ce filtre.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="95"/>
+        <source>Show issues in the model</source>
+        <translation>Afficher les problèmes dans le modèle</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="96"/>
+        <source>Show Issues</source>
+        <translation>Afficher les problèmes</translation>
     </message>
     <message>
         <source>Run an informational validation of the edited model structure, mappings, initialization, and port connectivity. This check reports issues but does not block saving the model.</source>
         <translation type="vanished">Exécuter une validation informative de la structure du modèle éditée, des mappages, de l&apos;initialisation et de la connectivité des ports. Cette vérification signale des problèmes mais ne bloque pas l&apos;enregistrement du modèle.</translation>
+    </message>
+    <message>
+        <source>All checks</source>
+        <translation>Toutes les vérifications</translation>
+    </message>
+    <message>
+        <source>Block</source>
+        <translation>Bloquer</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Vérifier</translation>
+    </message>
+    <message>
+        <source>Details</source>
+        <translation>Détails</translation>
+    </message>
+    <message>
+        <source>Issue</source>
+        <translation>Problème</translation>
+    </message>
+    <message>
+        <source>Issues only</source>
+        <translation>Uniquement les problèmes</translation>
+    </message>
+    <message>
+        <source>No issues found</source>
+        <translation>Aucun problème trouvé</translation>
+    </message>
+    <message>
+        <source>No issues found.</source>
+        <translation>Aucun problème trouvé.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>D'accord</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Statut</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · No issues found</source>
+        <translation>{check_count} vérifications · Aucun problème trouvé</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · {issue_section_count} checks with issues · {finding_count} findings</source>
+        <translation>{check_count} vérifications · {issue_section_count} vérifications avec problèmes · {finding_count} problèmes</translation>
     </message>
 </context>
 <context>
@@ -17492,183 +18005,6 @@ Vous devez charger ou créer un réseau !</translation>
     <message>
         <source>Question</source>
         <translation>Question</translation>
-    </message>
-</context>
-<context>
-    <name>ManufacturerNativeImporterDialog</name>
-    <message>
-        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
-        <translation>Les deux déclarations font partie du contrat de livraison du fabricant et sont requises avant la qualification.</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>Parcourir...</translation>
-    </message>
-    <message>
-        <source>Choose an existing manufacturer binary.</source>
-        <translation>Choisir un binaire de fabricant existant.</translation>
-    </message>
-    <message>
-        <source>Complete the manufacturer declarations required by the selected interface.</source>
-        <translation>Compléter les déclarations du fabricant requises par l'interface sélectionnée.</translation>
-    </message>
-    <message>
-        <source>Destination provider</source>
-        <translation>Fournisseur de destination</translation>
-    </message>
-    <message>
-        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
-        <translation>Chaque valeur séparée par des virgules est l'ordinal de destination pour l'ordinal source à cette position. Exemple : 1,0 mappe la source 0 à la destination 1 et la source 1 à la destination 0.</translation>
-    </message>
-    <message>
-        <source>Example: 0,1</source>
-        <translation>Exemple : 0,1</translation>
-    </message>
-    <message>
-        <source>Example: 1,0</source>
-        <translation>Exemple : 1,0</translation>
-    </message>
-    <message>
-        <source>Example: 2,0,1</source>
-        <translation>Exemple : 2,0,1</translation>
-    </message>
-    <message>
-        <source>Import manufacturer native model</source>
-        <translation>Importer le modèle natif du fabricant</translation>
-    </message>
-    <message>
-        <source>Input destination ordinals</source>
-        <translation>Ordinals de destination des entrées</translation>
-    </message>
-    <message>
-        <source>Inspect and attach variant</source>
-        <translation>Inspecter et attacher la variante</translation>
-    </message>
-    <message>
-        <source>Inspect and import</source>
-        <translation>Inspecter et importer</translation>
-    </message>
-    <message>
-        <source>Inspecting the binary in an isolated worker...</source>
-        <translation>Inspection du binaire dans un travailleur isolé...</translation>
-    </message>
-    <message>
-        <source>Linux libraries (*.so)</source>
-        <translation>Bibliothèques Linux (*.so)</translation>
-    </message>
-    <message>
-        <source>Manufacturer binary</source>
-        <translation>Binaire du fabricant</translation>
-    </message>
-    <message>
-        <source>Manufacturer interface</source>
-        <translation>Interface du fabricant</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model ready</source>
-        <translation>Modèle natif du fabricant prêt</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model variants</source>
-        <translation>Variantes du modèle natif du fabricant</translation>
-    </message>
-    <message>
-        <source>No provider has been imported yet.</source>
-        <translation>Aucun fournisseur n'a encore été importé.</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Aucun</translation>
-    </message>
-    <message>
-        <source>Output destination ordinals</source>
-        <translation>Ordinals de destination des sorties</translation>
-    </message>
-    <message>
-        <source>Parameter destination ordinals</source>
-        <translation>Ordinals de destination des paramètres</translation>
-    </message>
-    <message>
-        <source>Platform variant</source>
-        <translation>Variante de plateforme</translation>
-    </message>
-    <message>
-        <source>Provider: {name}</source>
-        <translation>Fournisseur : {name}</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform attached: {platform}
-Templates created: None (existing templates retained).</source>
-        <translation>Fournisseur : {provider}
-Plateforme attachée : {platform}
-Modèles créés : Aucun (modèles existants conservés).</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform: {platform}
-RMS templates created: {rms}
-EMT templates created: {emt}</source>
-        <translation>Fournisseur : {provider}
-Plateforme : {platform}
-Modèles RMS créés : {rms}
-Modèles EMT créés : {emt}</translation>
-    </message>
-    <message>
-        <source>Qualified and attached {platform}: {digest}</source>
-        <translation>Qualifié et attaché {platform} : {digest}</translation>
-    </message>
-    <message>
-        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
-        <translation>Qualifié et importé {name}. Créé {rms} modèle(s) RMS et {emt} modèle(s) EMT.</translation>
-    </message>
-    <message>
-        <source>Rebind an existing template</source>
-        <translation>Relier un modèle existant</translation>
-    </message>
-    <message>
-        <source>Rebind selected template</source>
-        <translation>Relier le modèle sélectionné</translation>
-    </message>
-    <message>
-        <source>Rebound {consumer} to {provider}.</source>
-        <translation>Rebranché {consumer} sur {provider}.</translation>
-    </message>
-    <message>
-        <source>Select a source, destination and template.</source>
-        <translation>Sélectionnez une source, une destination et un modèle.</translation>
-    </message>
-    <message>
-        <source>Select manufacturer library</source>
-        <translation>Sélectionner la bibliothèque du fabricant</translation>
-    </message>
-    <message>
-        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
-        <translation>Sélectionnez le contrat du fabricant et sa bibliothèque de plateforme précompilée. VeraGrid valide et exécute le binaire dans un worker isolé.</translation>
-    </message>
-    <message>
-        <source>Template</source>
-        <translation>Modèle</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
-        <translation>Le fabricant déclare que tout état de modèle mutable est la propriété de chaque Instance.</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that the library performs no late native loading.</source>
-        <translation>Le fabricant déclare que la bibliothèque n'effectue aucun chargement natif tardif.</translation>
-    </message>
-    <message>
-        <source>Windows libraries (*.dll)</source>
-        <translation>Bibliothèques Windows (*.dll)</translation>
-    </message>
-    <message>
-        <source>{platform}: missing</source>
-        <translation>{platform}: manquant</translation>
-    </message>
-    <message>
-        <source>{platform}: {status}, SHA-256 {digest}</source>
-        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

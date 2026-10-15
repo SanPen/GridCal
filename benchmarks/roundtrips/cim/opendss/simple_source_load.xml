@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:cim="http://iec.ch/TC57/CIM100#">
+  <cim:BaseVoltage rdf:ID="00000000-0000-0000-0000-0000000000b1">
+    <cim:BaseVoltage.nominalVoltage>110</cim:BaseVoltage.nominalVoltage>
+  </cim:BaseVoltage>
+  <cim:TopologicalNode rdf:ID="00000000-0000-0000-0000-000000000101">
+    <cim:IdentifiedObject.name>SourceBus</cim:IdentifiedObject.name>
+    <cim:TopologicalNode.BaseVoltage rdf:resource="#00000000-0000-0000-0000-0000000000b1"/>
+  </cim:TopologicalNode>
+  <cim:TopologicalNode rdf:ID="00000000-0000-0000-0000-000000000102">
+    <cim:IdentifiedObject.name>LoadBus</cim:IdentifiedObject.name>
+    <cim:TopologicalNode.BaseVoltage rdf:resource="#00000000-0000-0000-0000-0000000000b1"/>
+  </cim:TopologicalNode>
+  <cim:ConnectivityNode rdf:ID="00000000-0000-0000-0000-000000000201">
+    <cim:ConnectivityNode.TopologicalNode rdf:resource="#00000000-0000-0000-0000-000000000101"/>
+  </cim:ConnectivityNode>
+  <cim:ConnectivityNode rdf:ID="00000000-0000-0000-0000-000000000202">
+    <cim:ConnectivityNode.TopologicalNode rdf:resource="#00000000-0000-0000-0000-000000000102"/>
+  </cim:ConnectivityNode>
+  <cim:EquivalentNetwork rdf:ID="00000000-0000-0000-0000-000000000301">
+    <cim:IdentifiedObject.name>Source</cim:IdentifiedObject.name>
+  </cim:EquivalentNetwork>
+  <cim:Terminal rdf:ID="00000000-0000-0000-0000-000000000401">
+    <cim:Terminal.ConductingEquipment rdf:resource="#00000000-0000-0000-0000-000000000301"/>
+    <cim:Terminal.ConnectivityNode rdf:resource="#00000000-0000-0000-0000-000000000201"/>
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:ACLineSegment rdf:ID="00000000-0000-0000-0000-000000000302">
+    <cim:IdentifiedObject.name>Line 1</cim:IdentifiedObject.name>
+    <cim:Conductor.length>1</cim:Conductor.length>
+    <cim:ACLineSegment.r>1</cim:ACLineSegment.r>
+    <cim:ACLineSegment.x>2</cim:ACLineSegment.x>
+    <cim:ACLineSegment.bch>0</cim:ACLineSegment.bch>
+    <cim:ACLineSegment.gch>0</cim:ACLineSegment.gch>
+    <cim:ConductingEquipment.BaseVoltage rdf:resource="#00000000-0000-0000-0000-0000000000b1"/>
+  </cim:ACLineSegment>
+  <cim:Terminal rdf:ID="00000000-0000-0000-0000-000000000402">
+    <cim:Terminal.ConductingEquipment rdf:resource="#00000000-0000-0000-0000-000000000302"/>
+    <cim:Terminal.ConnectivityNode rdf:resource="#00000000-0000-0000-0000-000000000201"/>
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:Terminal rdf:ID="00000000-0000-0000-0000-000000000403">
+    <cim:Terminal.ConductingEquipment rdf:resource="#00000000-0000-0000-0000-000000000302"/>
+    <cim:Terminal.ConnectivityNode rdf:resource="#00000000-0000-0000-0000-000000000202"/>
+    <cim:ACDCTerminal.sequenceNumber>2</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+  <cim:EnergyConsumer rdf:ID="00000000-0000-0000-0000-000000000303">
+    <cim:IdentifiedObject.name>Load 1</cim:IdentifiedObject.name>
+    <cim:ConductingEquipment.BaseVoltage rdf:resource="#00000000-0000-0000-0000-0000000000b1"/>
+    <cim:EnergyConsumer.p>10</cim:EnergyConsumer.p>
+    <cim:EnergyConsumer.q>5</cim:EnergyConsumer.q>
+  </cim:EnergyConsumer>
+  <cim:Terminal rdf:ID="00000000-0000-0000-0000-000000000404">
+    <cim:Terminal.ConductingEquipment rdf:resource="#00000000-0000-0000-0000-000000000303"/>
+    <cim:Terminal.ConnectivityNode rdf:resource="#00000000-0000-0000-0000-000000000202"/>
+    <cim:ACDCTerminal.sequenceNumber>1</cim:ACDCTerminal.sequenceNumber>
+  </cim:Terminal>
+</rdf:RDF>

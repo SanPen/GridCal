@@ -211,6 +211,201 @@ li.checked::marker { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;&lt
     </message>
 </context>
 <context>
+    <name>AddSymbolDialog</name>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="12"/>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
+        <source>Add block property</source>
+        <translation>Προσθήκη ιδιότητας μπλοκ</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="31"/>
+        <source>Define a new property for the selected block.</source>
+        <translation>Ορισμός μιας νέας ιδιότητας για το επιλεγμένο μπλοκ.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="48"/>
+        <source>Owner block</source>
+        <translation>Μπλοκ ιδιοκτήτης</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="58"/>
+        <source>Name</source>
+        <translation>Ονομα</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="64"/>
+        <source>Enter a valid symbol name</source>
+        <translation>Εισάγετε ένα έγκυρο όνομα συμβόλου</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="70"/>
+        <source>Variable type</source>
+        <translation>Τύπος μεταβλητής</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="80"/>
+        <source>Choose how this symbol participates in the dynamic model.</source>
+        <translation>Επιλέξτε πώς συμμετέχει αυτό το σύμβολο στο δυναμικό μοντέλο.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="98"/>
+        <source>Options</source>
+        <translation>Επιλογές</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="111"/>
+        <source>Expose as output</source>
+        <translation>Εξέθεσε ως έξοδο</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="116"/>
+        <source>Create derivative variable</source>
+        <translation>Δημιουργία μεταβλητής παραγώγου</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="130"/>
+        <source>Power-flow variable used to initialize this dynamic variable.</source>
+        <translation>Μεταβλητή ροής ισχύος που χρησιμοποιείται για την αρχικοποίηση αυτής της δυναμικής μεταβλητής.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="131"/>
+        <source>Power-flow initialization source</source>
+        <translation>Πηγή αρχικοποίησης ροής ισχύος</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="154"/>
+        <source>Local initial value</source>
+        <translation>Τοπική αρχική τιμή</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="167"/>
+        <source>Device initial value</source>
+        <translation>Αρχική τιμή συσκευής</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="186"/>
+        <source>Retained modes preserve discrete state between simulation steps.</source>
+        <translation>Οι διατηρούμενες λειτουργίες διατηρούν την διακριτή κατάσταση μεταξύ των βημάτων προσομοίωσης.</translation>
+    </message>
+    <message>
+        <source>Add parameter</source>
+        <translation>Προσθήκη παραμέτρου</translation>
+    </message>
+    <message>
+        <source>Add retained mode</source>
+        <translation>Προσθήκη διατηρούμενης λειτουργίας</translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation>Προσθήκη μεταβλητής</translation>
+    </message>
+    <message>
+        <source>Algebraic</source>
+        <translation>Αλγεβρικό</translation>
+    </message>
+    <message>
+        <source>Declare a configurable value owned by the selected dynamic block.</source>
+        <translation>Δηλώστε μια ρυθμιζόμενη τιμή που ανήκει στο επιλεγμένο δυναμικό μπλοκ.</translation>
+    </message>
+    <message>
+        <source>Declare a variable owned by the selected dynamic block.</source>
+        <translation>Δηλώστε μια μεταβλητή που ανήκει στο επιλεγμένο δυναμικό μπλοκ.</translation>
+    </message>
+    <message>
+        <source>Declare discrete state that persists between simulation steps.</source>
+        <translation>Δηλώστε μια διακριτή κατάσταση που διατηρείται μεταξύ των βημάτων προσομοίωσης.</translation>
+    </message>
+    <message>
+        <source>Dynamic parameter</source>
+        <translation>Δυναμική παράμετρος</translation>
+    </message>
+    <message>
+        <source>Enter a valid Python symbol name.</source>
+        <translation>Εισάγετε ένα έγκυρο όνομα συμβόλου Python.</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>Είσοδος</translation>
+    </message>
+    <message>
+        <source>May change during the simulation and can optionally start from a grid-device value.</source>
+        <translation>Μπορεί να αλλάξει κατά τη διάρκεια της προσομοίωσης και μπορεί να ξεκινήσει προαιρετικά από μια τιμή συσκευής του δικτύου.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Κανένα</translation>
+    </message>
+    <message>
+        <source>Nothing was added: {message}</source>
+        <translation>Δεν προστέθηκε τίποτα: {message}</translation>
+    </message>
+    <message>
+        <source>Parameter type</source>
+        <translation>Τύπος παραμέτρου</translation>
+    </message>
+    <message>
+        <source>Preserves discrete state between simulation steps.</source>
+        <translation>Διατηρεί την διακριτή κατάσταση μεταξύ των βημάτων προσομοίωσης.</translation>
+    </message>
+    <message>
+        <source>Receives its value from an incoming block connection.</source>
+        <translation>Λαμβάνει την τιμή του από μια εισερχόμενη σύνδεση μπλοκ.</translation>
+    </message>
+    <message>
+        <source>Remains fixed during the simulation and can optionally start from a grid-device value.</source>
+        <translation>Παραμένει σταθερό κατά τη διάρκεια της προσομοίωσης και μπορεί να ξεκινήσει προαιρετικά από μια τιμή συσκευής του δικτύου.</translation>
+    </message>
+    <message>
+        <source>Represents a differential state integrated during the simulation.</source>
+        <translation>Αντιπροσωπεύει μια διαφορική κατάσταση που ενσωματώνεται κατά τη διάρκεια της προσομοίωσης.</translation>
+    </message>
+    <message>
+        <source>Represents a value solved by the algebraic equations.</source>
+        <translation>Αντιπροσωπεύει μια τιμή που λύνεται από τις αλγεβρικές εξισώσεις.</translation>
+    </message>
+    <message>
+        <source>Retained mode</source>
+        <translation>Κατάσταση διατήρησης</translation>
+    </message>
+    <message>
+        <source>Search device parameters</source>
+        <translation>Αναζήτηση παραμέτρων συσκευής</translation>
+    </message>
+    <message>
+        <source>Search power-flow variables</source>
+        <translation>Αναζήτηση μεταβλητών ροής ισχύος</translation>
+    </message>
+    <message>
+        <source>Select a device initialization source from the list.</source>
+        <translation>Επιλέξτε μια πηγή αρχικοποίησης συσκευής από τη λίστα.</translation>
+    </message>
+    <message>
+        <source>Select a power-flow initialization source from the list.</source>
+        <translation>Επιλέξτε μια πηγή αρχικοποίησης ροής ισχύος από τη λίστα.</translation>
+    </message>
+    <message>
+        <source>Select a valid owner block.</source>
+        <translation>Επιλέξτε ένα έγκυρο μπλοκ ιδιοκτήτη.</translation>
+    </message>
+    <message>
+        <source>Select a valid symbol type.</source>
+        <translation>Επιλέξτε έναν έγκυρο τύπο συμβόλου.</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>Κατάσταση</translation>
+    </message>
+    <message>
+        <source>Static parameter</source>
+        <translation>Στατική παράμετρος</translation>
+    </message>
+    <message>
+        <source>Use local numeric value</source>
+        <translation>Χρήση τοπικής αριθμητικής τιμής</translation>
+    </message>
+</context>
+<context>
     <name>AdmittanceMatrixEditorWidget</name>
     <message>
         <location filename="../DeviceEditors/AdmittanceMatrixEditor/admittance_matrix_editor_gui.ui" line="19"/>
@@ -802,7 +997,7 @@ li.checked::marker { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;&lt
     <name>BlockPropertyTreeModel</name>
     <message>
         <source>Missing PF mapping</source>
-        <translation>Απώλεια χαρτογράφησης PF</translation>
+        <translation type="vanished">Απώλεια χαρτογράφησης PF</translation>
     </message>
     <message>
         <source>Name</source>
@@ -818,7 +1013,7 @@ li.checked::marker { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;&lt
     </message>
     <message>
         <source>Template issue: static parameters require api_obj_mapping. An independently editable parameter should be in event_dict. This refactor does not migrate templates automatically.</source>
-        <translation>Πρόβλημα με το πρότυπο: οι στατικές παράμετροι απαιτούν api_obj_mapping. Μια ανεξάρτητα επεξεργάσιμη παράμετρος πρέπει να βρίσκεται στο event_dict. Αυτή η αναδιάρθρωση δεν μετακινεί τα πρότυπα αυτόματα.</translation>
+        <translation type="vanished">Πρόβλημα με το πρότυπο: οι στατικές παράμετροι απαιτούν api_obj_mapping. Μια ανεξάρτητα επεξεργάσιμη παράμετρος πρέπει να βρίσκεται στο event_dict. Αυτή η αναδιάρθρωση δεν μετακινεί τα πρότυπα αυτόματα.</translation>
     </message>
     <message>
         <source>Type</source>
@@ -827,6 +1022,14 @@ li.checked::marker { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;&lt
     <message>
         <source>Value / PF reference</source>
         <translation>Αναφορά Τιμής / PF</translation>
+    </message>
+    <message>
+        <source>Fixed local value. Select a device initialization mapping only when this value must come from the associated grid device.</source>
+        <translation>Σταθερή τοπική τιμή. Επιλέξτε αντιστοίχιση αρχικοποίησης συσκευής μόνο όταν αυτή η τιμή πρέπει να προέρχεται από τη σχετική συσκευή του δικτύου.</translation>
+    </message>
+    <message>
+        <source>Invalid device initialization mapping: the target is not declared in this block's parameters or event_dict.</source>
+        <translation>Μη έγκυρη αντιστοίχιση αρχικοποίησης συσκευής: ο στόχος δεν έχει δηλωθεί στις παραμέτρους ή το event_dict αυτού του μπλοκ.</translation>
     </message>
 </context>
 <context>
@@ -3246,6 +3449,58 @@ Reference: {status}</source>
         <source>Valid</source>
         <translation>Βαίσιμο</translation>
     </message>
+    <message>
+        <source>Equation counts</source>
+        <translation>Αριθμός εξισώσεων</translation>
+    </message>
+    <message>
+        <source>Repeated variable names</source>
+        <translation>Επαναλαμβανόμενα ονόματα μεταβλητών</translation>
+    </message>
+    <message>
+        <source>Static parameter mappings</source>
+        <translation>Αντιστοιχίσεις στατικών παραμέτρων</translation>
+    </message>
+    <message>
+        <source>Unnamed block</source>
+        <translation>Μη ονομασμένο μπλοκ</translation>
+    </message>
+    <message>
+        <source>Variable initialization</source>
+        <translation>Αρχικοποίηση μεταβλητής</translation>
+    </message>
+    <message>
+        <source>algebraic variables={variable_count}, algebraic equations={equation_count}</source>
+        <translation>αλγεβρικές μεταβλητές={variable_count}, αλγεβρικές εξισώσεις={equation_count}</translation>
+    </message>
+    <message>
+        <source>derivative variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>μεταβλητές παραγώγου που λείπουν από αρχικοποίηση ή πηγή ροής ισχύος: {variable_names}</translation>
+    </message>
+    <message>
+        <source>event parameters with no value: {parameter_names}</source>
+        <translation>παραμέτρων γεγονότος χωρίς τιμή: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>mapping targets not declared as local parameters: {parameter_names}</source>
+        <translation>στόχοι αντιστοίχισης που δεν έχουν δηλωθεί ως τοπικές παράμετροι: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>parameters missing a static mapping: {parameter_names}</source>
+        <translation>παράμετροι που λείπουν από στατική αντιστοίχιση: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>state variables={variable_count}, state equations={equation_count}</source>
+        <translation>μεταβλητές κατάστασης={variable_count}, εξισώσεις κατάστασης={equation_count}</translation>
+    </message>
+    <message>
+        <source>variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>μεταβλητές που λείπουν από αρχικοποίηση ή πηγή ροής ισχύος: {variable_names}</translation>
+    </message>
+    <message>
+        <source>variables: {variable_names}</source>
+        <translation>μεταβλητές: {variable_names}</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -3354,7 +3609,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Enter a valid Python symbol name.</source>
-        <translation>Εισάγετε ένα έγκυρο όνομα συμβόλου Python.</translation>
+        <translation type="vanished">Εισάγετε ένα έγκυρο όνομα συμβόλου Python.</translation>
     </message>
     <message>
         <source>Equation PDF created: {path}</source>
@@ -3457,7 +3712,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>None</source>
-        <translation>Κανένα</translation>
+        <translation type="vanished">Κανένα</translation>
     </message>
     <message>
         <source>Nothing was applied: {message}</source>
@@ -3489,7 +3744,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Parameter whose value may change during the simulation.</source>
-        <translation>Παράμετρος η τιμή του οποίου μπορεί να αλλάξει κατά τη διάρκεια της προσομοίωσης.</translation>
+        <translation type="vanished">Παράμετρος η τιμή του οποίου μπορεί να αλλάξει κατά τη διάρκεια της προσομοίωσης.</translation>
     </message>
     <message>
         <source>Parameters</source>
@@ -3538,11 +3793,11 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Select a valid owner block.</source>
-        <translation>Επιλέξτε ένα έγκυρο μπλοκ ιδιοκτήτη.</translation>
+        <translation type="vanished">Επιλέξτε ένα έγκυρο μπλοκ ιδιοκτήτη.</translation>
     </message>
     <message>
         <source>Select a valid symbol type.</source>
-        <translation>Επιλέξτε έναν έγκυρο τύπο συμβόλου.</translation>
+        <translation type="vanished">Επιλέξτε έναν έγκυρο τύπο συμβόλου.</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="319"/>
@@ -3643,7 +3898,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Retained mode</source>
-        <translation>Κατάσταση διατήρησης</translation>
+        <translation type="vanished">Κατάσταση διατήρησης</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="82"/>
@@ -3698,7 +3953,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Nothing was added: {message}</source>
-        <translation>Δεν προστέθηκε τίποτα: {message}</translation>
+        <translation type="vanished">Δεν προστέθηκε τίποτα: {message}</translation>
     </message>
     <message>
         <source>Add to plot...</source>
@@ -4955,74 +5210,60 @@ select the expected processing format</source>
 <context>
     <name>Form</name>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="14"/>
         <source>Add block property</source>
-        <translation>Προσθήκη ιδιότητας μπλοκ</translation>
+        <translation type="vanished">Προσθήκη ιδιότητας μπλοκ</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
         <source>Add symbol to selected block</source>
-        <translation>Προσθήκη συμβόλου στο επιλεγμένο μπλοκ</translation>
+        <translation type="vanished">Προσθήκη συμβόλου στο επιλεγμένο μπλοκ</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="71"/>
         <source>Output</source>
-        <translation>Εξόδους</translation>
+        <translation type="vanished">Εξόδους</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="78"/>
         <source>Create derivative variable</source>
-        <translation>Δημιουργία μεταβλητής παραγώγου</translation>
+        <translation type="vanished">Δημιουργία μεταβλητής παραγώγου</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="144"/>
         <source>New symbol name</source>
-        <translation>Νέο όνομα συμβόλου</translation>
+        <translation type="vanished">Νέο όνομα συμβόλου</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="151"/>
         <source>Symbol category</source>
-        <translation>Κατηγορία συμβόλου</translation>
+        <translation type="vanished">Κατηγορία συμβόλου</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="158"/>
         <source>Owner block</source>
-        <translation>Μπλοκ ιδιοκτήτης</translation>
+        <translation type="vanished">Μπλοκ ιδιοκτήτης</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="165"/>
         <source>Type</source>
-        <translation>Τύπος</translation>
+        <translation type="vanished">Τύπος</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="172"/>
         <source>Add symbol</source>
-        <translation>Προσθήκη συμβόλου</translation>
+        <translation type="vanished">Προσθήκη συμβόλου</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="195"/>
         <source>Static device mapping</source>
-        <translation>Στατικό χαρτογράφημα συσκευών</translation>
+        <translation type="vanished">Στατικό χαρτογράφημα συσκευών</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="202"/>
         <source>Power-flow variable used to initialize this dynamic variable.</source>
-        <translation>Μεταβλητή ροής ισχύος που χρησιμοποιείται για την αρχικοποίηση αυτής της δυναμικής μεταβλητής.</translation>
+        <translation type="vanished">Μεταβλητή ροής ισχύος που χρησιμοποιείται για την αρχικοποίηση αυτής της δυναμικής μεταβλητής.</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="205"/>
         <source>Power-flow variable</source>
-        <translation>Μεταβλητή ροής ισχύος</translation>
+        <translation type="vanished">Μεταβλητή ροής ισχύος</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="266"/>
         <source>Enter a name</source>
-        <translation>Εισάγετε ένα όνομα</translation>
+        <translation type="vanished">Εισάγετε ένα όνομα</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="273"/>
         <source>Initial numeric value</source>
-        <translation>Αρχική αριθμητική τιμή</translation>
+        <translation type="vanished">Αρχική αριθμητική τιμή</translation>
     </message>
 </context>
 <context>
@@ -7717,6 +7958,195 @@ Please correct the data and try again.</source>
     <message>
         <source>Stability boundary</source>
         <translation>Όριο σταθερότητας</translation>
+    </message>
+</context>
+<context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>Και οι δύο δηλώσεις αποτελούν μέρος της σύμβασης παράδοσης του κατασκευαστή και απαιτούνται πριν την πιστοποίηση.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Ξεφυλλίζω...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>Επιλέξτε ένα υπάρχον δυαδικό αρχείο κατασκευαστή.</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>Ολοκληρώστε τις δηλώσεις κατασκευαστή που απαιτούνται από την επιλεγμένη διεπαφή.</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>Παρόχου προορισμού</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>Κάθε αριθμητική τιμή που χωρίζεται από κόμμα είναι ο αριθμητικός δείκτης προορισμού για τον αριθμητικό δείκτη πηγής σε αυτή τη θέση. Παράδειγμα: το 1,0 αντιστοιχίζει την πηγή 0 στον προορισμό 1 και την πηγή 1 στον προορισμό 0.</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>Παράδειγμα: 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>Παράδειγμα: 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>Παράδειγμα: 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>Εισαγωγή εγγενούς μοντέλου κατασκευαστή</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>Είσοδος αριθμητικών δεικτών προορισμού</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>Εξέταση και σύνδεση διακύμανσης</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>Εξέταση και εισαγωγή</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>Εξέταση του δυαδικού σε απομονωμένο εργατή...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>Βιβλιοθήκες Linux (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>Δυαδικό κατασκευαστή</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>Διεπαφή κατασκευαστή</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>Εγγενές μοντέλο κατασκευαστή έτοιμο</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>Διακυμάνσεις εγγενούς μοντέλου κατασκευαστή</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>Δεν έχει εισαχθεί ακόμη κανένας πάροχος.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Κανένα</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>Έξοδος αριθμητικών δεικτών προορισμού</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>Αριθμητικοί δείκτες προορισμού παραμέτρων</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>Διακύμανση πλατφόρμας</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>Πάροχος: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>Πάροχος: {provider}
+Συδεδεμένη πλατφόρμα: {platform}
+Δημιουργήθηκαν πρότυπα: Καμία (διατηρούνται τα υπάρχοντα πρότυπα).</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>Πάροχος: {provider}
+Πλατφόρμα: {platform}
+Δημιουργήθηκαν πρότυπα RMS: {rms}
+Δημιουργήθηκαν πρότυπα EMT: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>Προσδιορισμένη και συνδεδεμένη {platform}: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>Προσδιορισμένη και εισαχθεί {name}. Δημιουργήθηκαν {rms} πρότυπα RMS και {emt} πρότυπο(α) EMT.</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>Επανασύνδεση ενός υπάρχοντος προτύπου</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>Επανασύνδεση επιλεγμένου προτύπου</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>Επανασύνδεση του {consumer} στο {provider}.</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>Επιλέξτε μια πηγή, έναν προορισμό και ένα πρότυπο.</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>Επιλέξτε βιβλιοθήκη κατασκευαστή</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>Επιλέξτε τη σύμβαση του κατασκευαστή και τη предварительно μεταγλωττιστειμένη βιβλιοθήκη πλατφόρμας. Το VeraGrid επικυρώνει και εκτελεί το δυαδικό σε έναν απομονωμένο εργαζόμενο.</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>Περίγραμμα</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>Ο κατασκευαστής δηλώνει ότι κάθε μεταβλητή κατάσταση μοντέλου ανήκει σε κάθε Αντίγραφο (Instance).</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>Ο κατασκευαστής δηλώνει ότι η βιβλιοθήκη δεν εκτελεί καθυστερημένη εγγενή φόρτωση.</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>Βιβλιοθήκες Windows (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: λείπει</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
+    </message>
+    <message>
+        <source>Choose the LLVM bin directory</source>
+        <translation>Επιλέξτε το καταzeichnis bin του LLVM</translation>
+    </message>
+    <message>
+        <source>Choose the MinGW/UCRT support directory</source>
+        <translation>Επιλέξτε το καταzeichnis υποστήριξης MinGW/UCRT</translation>
+    </message>
+    <message>
+        <source>LLVM selection was cancelled; the manufacturer model was not imported.</source>
+        <translation>Η επιλογή LLVM ακυρώθηκε· το μοντέλο του κατασκευαστή δεν εισήχθη.</translation>
     </message>
 </context>
 <context>
@@ -10582,6 +11012,10 @@ Modify the number of clusters in the ML settings.</source>
         <source>The short-circuit worker finished without results.</source>
         <translation>Ο εργαζόμενος βραχυκυκλώματος ολοκλήρωσε χωρίς αποτελέσματα.</translation>
     </message>
+    <message>
+        <source>Power flow 3ph failed</source>
+        <translation>Υπέστη αποτυχία η ροή ισχύος 3 φάσεων</translation>
+    </message>
 </context>
 <context>
     <name>SolarPvWizard</name>
@@ -11513,12 +11947,91 @@ You need to load or create a grid!</source>
         <translation type="vanished">Προβλήματα που βρέθηκαν σε αυτήν την ενότητα</translation>
     </message>
     <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="20"/>
         <source>Model Consistency Validation</source>
-        <translation type="vanished">Επαλήθευση Συνέπειας Μοντέλου</translation>
+        <translation>Επαλήθευση Συνέπειας Μοντέλου</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="31"/>
+        <source>Check the edited model&apos;s equation counts, variable names, parameter mappings, and variable initialization. This report is informational and does not block saving the model.</source>
+        <translation>Ελέγξτε τους αριθμούς των εξισώσεων, τα ονόματα των μεταβλητών, τις απεικονίσεις των παραμέτρων και την αρχικοποίηση των μεταβλητών του επεξεργασμένου μοντέλου. Αυτή η έκθεση είναι ενημερωτική και δεν εμποδίζει την αποθήκευση του μοντέλου.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="53"/>
+        <source>Show:</source>
+        <translation>Εμφάνιση:</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="60"/>
+        <source>Filter validation results by check</source>
+        <translation>Φιλτράρετε τα αποτελέσματα επικύρωσης ανά έλεγχο</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="85"/>
+        <source>No validation results match this filter.</source>
+        <translation>Δεν υπάρχουν αποτελέσματα επικύρωσης που να ταιριάζουν με αυτό το φίλτρο.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="95"/>
+        <source>Show issues in the model</source>
+        <translation>Εμφάνιση προβλημάτων στο μοντέλο</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="96"/>
+        <source>Show Issues</source>
+        <translation>Εμφάνιση Προβλημάτων</translation>
     </message>
     <message>
         <source>Run an informational validation of the edited model structure, mappings, initialization, and port connectivity. This check reports issues but does not block saving the model.</source>
         <translation type="vanished">Εκτέλεση ενημερωτικής επαλήθευσης της επεξεργασμένης δομής του μοντέλου, των χαρτογραφημάτων, της 초기ποίησης και της συνδεσιμότητας θυρών. Αυτός ο έλεγχος αναφέρει προβλήματα αλλά δεν εμποδίζει την αποθήκευση του μοντέλου.</translation>
+    </message>
+    <message>
+        <source>All checks</source>
+        <translation>Όλοι οι έλεγχοι</translation>
+    </message>
+    <message>
+        <source>Block</source>
+        <translation>Αποκλεισμός</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Έλεγχος</translation>
+    </message>
+    <message>
+        <source>Details</source>
+        <translation>Λεπτομέρειες</translation>
+    </message>
+    <message>
+        <source>Issue</source>
+        <translation>Πρόβλημα</translation>
+    </message>
+    <message>
+        <source>Issues only</source>
+        <translation>Μόνο Προβλήματα</translation>
+    </message>
+    <message>
+        <source>No issues found</source>
+        <translation>Δεν βρέθηκαν προβλήματα</translation>
+    </message>
+    <message>
+        <source>No issues found.</source>
+        <translation>Δεν βρέθηκαν προβλήματα.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>ΕΝΤΑΞΕΙ</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Κατάσταση</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · No issues found</source>
+        <translation>{check_count} έλεγχοι · Δεν βρέθηκαν προβλήματα</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · {issue_section_count} checks with issues · {finding_count} findings</source>
+        <translation>{check_count} έλεγχοι · {issue_section_count} έλεγχοι με προβλήματα · {finding_count} ευρήματα</translation>
     </message>
 </context>
 <context>
@@ -17471,183 +17984,6 @@ You need to load or create a grid!</source>
     <message>
         <source>Question</source>
         <translation>Ερώτηση</translation>
-    </message>
-</context>
-<context>
-    <name>ManufacturerNativeImporterDialog</name>
-    <message>
-        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
-        <translation>Και οι δύο δηλώσεις αποτελούν μέρος της σύμβασης παράδοσης του κατασκευαστή και απαιτούνται πριν την πιστοποίηση.</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>Ξεφυλλίζω...</translation>
-    </message>
-    <message>
-        <source>Choose an existing manufacturer binary.</source>
-        <translation>Επιλέξτε ένα υπάρχον δυαδικό αρχείο κατασκευαστή.</translation>
-    </message>
-    <message>
-        <source>Complete the manufacturer declarations required by the selected interface.</source>
-        <translation>Ολοκληρώστε τις δηλώσεις κατασκευαστή που απαιτούνται από την επιλεγμένη διεπαφή.</translation>
-    </message>
-    <message>
-        <source>Destination provider</source>
-        <translation>Παρόχου προορισμού</translation>
-    </message>
-    <message>
-        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
-        <translation>Κάθε αριθμητική τιμή που χωρίζεται από κόμμα είναι ο αριθμητικός δείκτης προορισμού για τον αριθμητικό δείκτη πηγής σε αυτή τη θέση. Παράδειγμα: το 1,0 αντιστοιχίζει την πηγή 0 στον προορισμό 1 και την πηγή 1 στον προορισμό 0.</translation>
-    </message>
-    <message>
-        <source>Example: 0,1</source>
-        <translation>Παράδειγμα: 0,1</translation>
-    </message>
-    <message>
-        <source>Example: 1,0</source>
-        <translation>Παράδειγμα: 1,0</translation>
-    </message>
-    <message>
-        <source>Example: 2,0,1</source>
-        <translation>Παράδειγμα: 2,0,1</translation>
-    </message>
-    <message>
-        <source>Import manufacturer native model</source>
-        <translation>Εισαγωγή εγγενούς μοντέλου κατασκευαστή</translation>
-    </message>
-    <message>
-        <source>Input destination ordinals</source>
-        <translation>Είσοδος αριθμητικών δεικτών προορισμού</translation>
-    </message>
-    <message>
-        <source>Inspect and attach variant</source>
-        <translation>Εξέταση και σύνδεση διακύμανσης</translation>
-    </message>
-    <message>
-        <source>Inspect and import</source>
-        <translation>Εξέταση και εισαγωγή</translation>
-    </message>
-    <message>
-        <source>Inspecting the binary in an isolated worker...</source>
-        <translation>Εξέταση του δυαδικού σε απομονωμένο εργατή...</translation>
-    </message>
-    <message>
-        <source>Linux libraries (*.so)</source>
-        <translation>Βιβλιοθήκες Linux (*.so)</translation>
-    </message>
-    <message>
-        <source>Manufacturer binary</source>
-        <translation>Δυαδικό κατασκευαστή</translation>
-    </message>
-    <message>
-        <source>Manufacturer interface</source>
-        <translation>Διεπαφή κατασκευαστή</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model ready</source>
-        <translation>Εγγενές μοντέλο κατασκευαστή έτοιμο</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model variants</source>
-        <translation>Διακυμάνσεις εγγενούς μοντέλου κατασκευαστή</translation>
-    </message>
-    <message>
-        <source>No provider has been imported yet.</source>
-        <translation>Δεν έχει εισαχθεί ακόμη κανένας πάροχος.</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Κανένα</translation>
-    </message>
-    <message>
-        <source>Output destination ordinals</source>
-        <translation>Έξοδος αριθμητικών δεικτών προορισμού</translation>
-    </message>
-    <message>
-        <source>Parameter destination ordinals</source>
-        <translation>Αριθμητικοί δείκτες προορισμού παραμέτρων</translation>
-    </message>
-    <message>
-        <source>Platform variant</source>
-        <translation>Διακύμανση πλατφόρμας</translation>
-    </message>
-    <message>
-        <source>Provider: {name}</source>
-        <translation>Πάροχος: {name}</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform attached: {platform}
-Templates created: None (existing templates retained).</source>
-        <translation>Πάροχος: {provider}
-Συδεδεμένη πλατφόρμα: {platform}
-Δημιουργήθηκαν πρότυπα: Καμία (διατηρούνται τα υπάρχοντα πρότυπα).</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform: {platform}
-RMS templates created: {rms}
-EMT templates created: {emt}</source>
-        <translation>Πάροχος: {provider}
-Πλατφόρμα: {platform}
-Δημιουργήθηκαν πρότυπα RMS: {rms}
-Δημιουργήθηκαν πρότυπα EMT: {emt}</translation>
-    </message>
-    <message>
-        <source>Qualified and attached {platform}: {digest}</source>
-        <translation>Προσδιορισμένη και συνδεδεμένη {platform}: {digest}</translation>
-    </message>
-    <message>
-        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
-        <translation>Προσδιορισμένη και εισαχθεί {name}. Δημιουργήθηκαν {rms} πρότυπα RMS και {emt} πρότυπο(α) EMT.</translation>
-    </message>
-    <message>
-        <source>Rebind an existing template</source>
-        <translation>Επανασύνδεση ενός υπάρχοντος προτύπου</translation>
-    </message>
-    <message>
-        <source>Rebind selected template</source>
-        <translation>Επανασύνδεση επιλεγμένου προτύπου</translation>
-    </message>
-    <message>
-        <source>Rebound {consumer} to {provider}.</source>
-        <translation>Επανασύνδεση του {consumer} στο {provider}.</translation>
-    </message>
-    <message>
-        <source>Select a source, destination and template.</source>
-        <translation>Επιλέξτε μια πηγή, έναν προορισμό και ένα πρότυπο.</translation>
-    </message>
-    <message>
-        <source>Select manufacturer library</source>
-        <translation>Επιλέξτε βιβλιοθήκη κατασκευαστή</translation>
-    </message>
-    <message>
-        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
-        <translation>Επιλέξτε τη σύμβαση του κατασκευαστή και τη предварительно μεταγλωττιστειμένη βιβλιοθήκη πλατφόρμας. Το VeraGrid επικυρώνει και εκτελεί το δυαδικό σε έναν απομονωμένο εργαζόμενο.</translation>
-    </message>
-    <message>
-        <source>Template</source>
-        <translation>Περίγραμμα</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
-        <translation>Ο κατασκευαστής δηλώνει ότι κάθε μεταβλητή κατάσταση μοντέλου ανήκει σε κάθε Αντίγραφο (Instance).</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that the library performs no late native loading.</source>
-        <translation>Ο κατασκευαστής δηλώνει ότι η βιβλιοθήκη δεν εκτελεί καθυστερημένη εγγενή φόρτωση.</translation>
-    </message>
-    <message>
-        <source>Windows libraries (*.dll)</source>
-        <translation>Βιβλιοθήκες Windows (*.dll)</translation>
-    </message>
-    <message>
-        <source>{platform}: missing</source>
-        <translation>{platform}: λείπει</translation>
-    </message>
-    <message>
-        <source>{platform}: {status}, SHA-256 {digest}</source>
-        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

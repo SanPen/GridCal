@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🔥 Power flow &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>🔥 Power flow &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -99,6 +99,7 @@
 <li class="toctree-l1"><a class="reference internal" href="reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
@@ -300,7 +301,12 @@ a very competitive method to consider by default.</p></li>
 <li><p><strong>Use initial guess</strong>: In the buses there are two properties <code class="docutils literal notranslate"><span class="pre">Vm0</span></code>and <code class="docutils literal notranslate"><span class="pre">Va0</span></code> both serve to
 specify the initial voltage guess. If selected those values are used to initialize the power flow solution.</p></li>
 <li><p><strong>Ignore single island nodes</strong>: If selected, the islands of 1 one are considered in blackout and not calculated.</p></li>
-<li><p><strong>3-phase</strong>: If selected a three phase power flow is run. For now only supporting simple local voltage controls.</p></li>
+<li><p><strong>3-phase</strong>: If selected a three phase power flow is run. For now only supporting simple local voltage controls.
+Batteries participate using fixed positive-sequence P/Q or the same local U1 voltage
+control as generators, including enabled Q limits. Their connection determines the
+passive zero-sequence path, and their Z2 determines the negative-sequence response.
+Required sequence impedances must be finite and nonzero (Z0 only for Yg).
+See the <a class="reference internal" href="file_operations.html"><span class="std std-doc">DGS modelling notes</span></a> for import fields and power conventions.</p></li>
 <li><p><strong>Distributed slack</strong>: If selected, the slack power is distributed simply among the existing generators.</p></li>
 <li><p><strong>Control Q limits</strong>: This is the mode of reactive power control for the generators that are set in PV mode.
 This is a node-level control, so for this to work, there must not be more than one generator per bus. Otherwise a
@@ -755,14 +761,14 @@ For Holomorphic embedding this is not necessary.</p></li>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">vg</span>
 
-<span class="n">folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'..'</span><span class="p">,</span> <span class="s1">'Grids_and_profiles'</span><span class="p">,</span> <span class="s1">'grids'</span><span class="p">)</span>
-<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s1">'IEEE39_1W.veragrid'</span><span class="p">)</span>
+<span class="n">folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;Grids_and_profiles&#39;</span><span class="p">,</span> <span class="s1">&#39;grids&#39;</span><span class="p">)</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s1">&#39;IEEE39_1W.veragrid&#39;</span><span class="p">)</span>
 <span class="n">main_circuit</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 
 <span class="n">results</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">power_flow</span><span class="p">(</span><span class="n">main_circuit</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">main_circuit</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'Converged:'</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="s1">'error:'</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converged:&#39;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="s1">&#39;error:&#39;</span><span class="p">,</span> <span class="n">results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">get_bus_df</span><span class="p">())</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">get_branch_df</span><span class="p">())</span>
 </pre></div>
@@ -771,8 +777,8 @@ For Holomorphic embedding this is not necessary.</p></li>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">vg</span>
 
-<span class="n">folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'..'</span><span class="p">,</span> <span class="s1">'Grids_and_profiles'</span><span class="p">,</span> <span class="s1">'grids'</span><span class="p">)</span>
-<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s1">'IEEE14_from_raw.veragrid'</span><span class="p">)</span>
+<span class="n">folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;Grids_and_profiles&#39;</span><span class="p">,</span> <span class="s1">&#39;grids&#39;</span><span class="p">)</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s1">&#39;IEEE14_from_raw.veragrid&#39;</span><span class="p">)</span>
 <span class="n">main_circuit</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 
 <span class="n">options</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">PowerFlowOptions</span><span class="p">(</span><span class="n">vg</span><span class="o">.</span><span class="n">SolverType</span><span class="o">.</span><span class="n">NR</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
@@ -780,7 +786,7 @@ For Holomorphic embedding this is not necessary.</p></li>
 <span class="n">power_flow</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="n">main_circuit</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'Converged:'</span><span class="p">,</span> <span class="n">power_flow</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="s1">'error:'</span><span class="p">,</span> <span class="n">power_flow</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converged:&#39;</span><span class="p">,</span> <span class="n">power_flow</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span> <span class="s1">&#39;error:&#39;</span><span class="p">,</span> <span class="n">power_flow</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">power_flow</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get_bus_df</span><span class="p">())</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">power_flow</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get_branch_df</span><span class="p">())</span>
 </pre></div>
@@ -1008,8 +1014,8 @@ Branch results:
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">vg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.Derivatives.ac_jacobian</span><span class="w"> </span><span class="kn">import</span> <span class="n">AC_jacobian</span>
 
-<span class="n">folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">'..'</span><span class="p">,</span> <span class="s1">'Grids_and_profiles'</span><span class="p">,</span> <span class="s1">'grids'</span><span class="p">)</span>
-<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s1">'IEEE39_1W.veragrid'</span><span class="p">)</span>
+<span class="n">folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;Grids_and_profiles&#39;</span><span class="p">,</span> <span class="s1">&#39;grids&#39;</span><span class="p">)</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s1">&#39;IEEE39_1W.veragrid&#39;</span><span class="p">)</span>
 <span class="n">main_circuit</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 
 <span class="n">nc</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">compile_numerical_circuit_at</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">main_circuit</span><span class="p">)</span>
@@ -1874,7 +1880,7 @@ that comes with the files when the flat start fails.</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gce</span>
 
-<span class="n">folder</span> <span class="o">=</span> <span class="s2">"[some path...]/matpower8.0b1/data"</span>
+<span class="n">folder</span> <span class="o">=</span> <span class="s2">&quot;[some path...]/matpower8.0b1/data&quot;</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">run_grid</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
@@ -1902,50 +1908,50 @@ that comes with the files when the flat start fails.</p>
             <span class="n">flat_start</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="n">info</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">"name"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
-            <span class="s2">"n_buses"</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_bus_number</span><span class="p">(),</span>
-            <span class="s2">"n_branches"</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_branch_number</span><span class="p">(),</span>
-            <span class="s2">"P imbalance (%)"</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_imbalance</span><span class="p">()</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">,</span>
-            <span class="s2">"Flat start"</span><span class="p">:</span> <span class="n">flat_start</span><span class="p">,</span>
-            <span class="s2">"converged"</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span>
-            <span class="s2">"error (p.u.)"</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">error</span><span class="p">,</span>
-            <span class="s2">"iterations"</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">iterations</span><span class="p">,</span>
-            <span class="s2">"time (ms)"</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">elapsed</span> <span class="o">*</span> <span class="mf">1000.0</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;n_buses&quot;</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_bus_number</span><span class="p">(),</span>
+            <span class="s2">&quot;n_branches&quot;</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_branch_number</span><span class="p">(),</span>
+            <span class="s2">&quot;P imbalance (%)&quot;</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_imbalance</span><span class="p">()</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">,</span>
+            <span class="s2">&quot;Flat start&quot;</span><span class="p">:</span> <span class="n">flat_start</span><span class="p">,</span>
+            <span class="s2">&quot;converged&quot;</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">converged</span><span class="p">,</span>
+            <span class="s2">&quot;error (p.u.)&quot;</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">error</span><span class="p">,</span>
+            <span class="s2">&quot;iterations&quot;</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">iterations</span><span class="p">,</span>
+            <span class="s2">&quot;time (ms)&quot;</span><span class="p">:</span> <span class="n">res</span><span class="o">.</span><span class="n">elapsed</span> <span class="o">*</span> <span class="mf">1000.0</span><span class="p">,</span>
         <span class="p">}</span>
 
 
     <span class="k">else</span><span class="p">:</span>
         <span class="n">info</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">"name"</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
-            <span class="s2">"n_buses"</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_bus_number</span><span class="p">(),</span>
-            <span class="s2">"n_branches"</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_branch_number</span><span class="p">(),</span>
-            <span class="s2">"P imbalance (%)"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-            <span class="s2">"Flat start"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="s2">"converged"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-            <span class="s2">"error (p.u.)"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="s2">"iterations"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
-            <span class="s2">"time (ms)"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+            <span class="s2">&quot;n_buses&quot;</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_bus_number</span><span class="p">(),</span>
+            <span class="s2">&quot;n_branches&quot;</span><span class="p">:</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_branch_number</span><span class="p">(),</span>
+            <span class="s2">&quot;P imbalance (%)&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s2">&quot;Flat start&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;converged&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;error (p.u.)&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;iterations&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">&quot;time (ms)&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
         <span class="p">}</span>
 
     <span class="k">return</span> <span class="n">info</span>
 
 
 <span class="c1"># run this one to compile all JIT routines and have fair measurements</span>
-<span class="n">gce</span><span class="o">.</span><span class="n">power_flow</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">"case_ieee30.m"</span><span class="p">)))</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">power_flow</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="s2">&quot;case_ieee30.m&quot;</span><span class="p">)))</span>
 
 <span class="n">data</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 <span class="n">files_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">folder</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".m"</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.m&quot;</span><span class="p">):</span>
             <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
             <span class="n">files_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
 
 <span class="k">with</span> <span class="n">mp</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">())</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">run_grid</span><span class="p">,</span> <span class="n">files_list</span><span class="p">)</span>
 
-<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">'n_buses'</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="s2">"All matpower grids.xlsx"</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="s1">&#39;n_buses&#39;</span><span class="p">,</span> <span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">to_excel</span><span class="p">(</span><span class="s2">&quot;All matpower grids.xlsx&quot;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -2021,6 +2027,29 @@ by explicit star constant-power or constant-current loads remain in the nonlinea
 system; singular neutral blocks also remain explicit. This reduction introduces
 no grounding and does not constrain the common-mode voltage of floating ABC buses.
 It is separate from the physical earth-wire reduction of overhead tower templates.</p>
+<p>Floating common voltage modes are handled separately in the ABC formulation.
+The calculation checks the compiled branch terminal matrices, each shunt, the
+assembled nodal matrix, and the connections of nonlinear injections and controls.
+A candidate displacement moves all present NABC conductors at each bus together.
+Connected groups are checked for an independent null direction; a delta connection
+or a small singular value of the assembled matrix alone is not sufficient.</p>
+<p>For a confirmed free group, one redundant complex current-balance equation is
+replaced by <img class="math" src="../_images/math/76c7f08f2d28ce6585dee8b2472d8e32e0326fb6.svg" alt="U_0=(U_a+U_b+U_c)/3=0"/> at one representative bus. This selects a
+voltage reference without adding an earth admittance or changing any device data.
+All original current-balance and control equations remain in the convergence
+check, including the replaced equation. The existing numerical solvers and their
+numerical differentiation routine are reused.</p>
+<p>The detection uses local summation-roundoff bounds, independently of the power-flow
+tolerance. Static-generator zero-sequence earth paths are detected from the response
+of their stored ABC admittance to a common voltage displacement, without a separate
+indicator. A contribution lost to roundoff when assembling this matrix cannot be
+distinguished from zero. Explicit branch shunts and the existing connection checks
+are retained. Slack buses and earth-referenced injections prevent
+a group from receiving a free reference; unsupported or ambiguous groups retain
+their original equations. Detection is rebuilt with each formulation, so a newly
+compiled phase-to-earth fault can remove a previously free reference. This does
+not constitute a general short-circuit solver or remove other causes of poor
+conditioning, such as extremely small physical impedances.</p>
 <section id="the-newton-raphson-method">
 <h3>The Newton-Raphson Method<a class="headerlink" href="#the-newton-raphson-method" title="Link to this heading"></a></h3>
 <p>The Newton-Raphson method is used to solve the power flow problem, which consists of a zero-finding algorithm that
@@ -2163,40 +2192,40 @@ unbalanced power flow, obtaining the voltage results depicted bellow.</p>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Buses</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">bus_632</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'632'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">bus_632</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;632&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">bus_632</span><span class="o">.</span><span class="n">is_slack</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_632</span><span class="p">)</span>
 <span class="n">gen</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Generator</span><span class="p">(</span><span class="n">vset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_generator</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus_632</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">gen</span><span class="p">)</span>
 
-<span class="n">bus_633</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'633'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">bus_633</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;633&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_633</span><span class="p">)</span>
 
-<span class="n">bus_634</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'634'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">bus_634</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;634&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">0.48</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_634</span><span class="p">)</span>
 
-<span class="n">bus_645</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'645'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=-</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">bus_645</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;645&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=-</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_645</span><span class="p">)</span>
 
-<span class="n">bus_646</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'646'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=-</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">bus_646</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;646&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=-</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_646</span><span class="p">)</span>
 
-<span class="n">bus_652</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'652'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=-</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">bus_652</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;652&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=-</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_652</span><span class="p">)</span>
 
-<span class="n">bus_671</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'671'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">bus_671</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;671&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_671</span><span class="p">)</span>
 
-<span class="n">bus_675</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'675'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">bus_675</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;675&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_675</span><span class="p">)</span>
 
-<span class="n">bus_611</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'611'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=-</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">bus_611</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;611&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=-</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_611</span><span class="p">)</span>
 
-<span class="n">bus_680</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'680'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">bus_680</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;680&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">200</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_680</span><span class="p">)</span>
 
-<span class="n">bus_684</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'684'</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=-</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">bus_684</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;684&#39;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span> <span class="n">xpos</span><span class="o">=-</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">,</span> <span class="n">ypos</span><span class="o">=</span><span class="mi">100</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">bus_684</span><span class="p">)</span>
 
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
@@ -2388,7 +2417,7 @@ unbalanced power flow, obtaining the voltage results depicted bellow.</p>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Line Configurations</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">config_601</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Config. 601'</span><span class="p">,</span>
+<span class="n">config_601</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Config. 601&#39;</span><span class="p">,</span>
                                                     <span class="n">z_abc</span><span class="o">=</span><span class="n">z_601</span><span class="p">,</span>
                                                     <span class="n">ysh_abc</span><span class="o">=</span><span class="n">y_601</span><span class="p">,</span>
                                                     <span class="n">phases</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
@@ -2396,7 +2425,7 @@ unbalanced power flow, obtaining the voltage results depicted bellow.</p>
                                                     <span class="n">frequency</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_overhead_line</span><span class="p">(</span><span class="n">config_601</span><span class="p">)</span>
 
-<span class="n">config_602</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Config. 602'</span><span class="p">,</span>
+<span class="n">config_602</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Config. 602&#39;</span><span class="p">,</span>
                                                     <span class="n">z_abc</span><span class="o">=</span><span class="n">z_602</span><span class="p">,</span>
                                                     <span class="n">ysh_abc</span><span class="o">=</span><span class="n">y_602</span><span class="p">,</span>
                                                     <span class="n">phases</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
@@ -2405,7 +2434,7 @@ unbalanced power flow, obtaining the voltage results depicted bellow.</p>
 
 <span class="n">grid</span><span class="o">.</span><span class="n">add_overhead_line</span><span class="p">(</span><span class="n">config_602</span><span class="p">)</span>
 
-<span class="n">config_603</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Config. 603'</span><span class="p">,</span>
+<span class="n">config_603</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Config. 603&#39;</span><span class="p">,</span>
                                                     <span class="n">z_abc</span><span class="o">=</span><span class="n">z_603</span><span class="p">,</span>
                                                     <span class="n">ysh_abc</span><span class="o">=</span><span class="n">y_603</span><span class="p">,</span>
                                                     <span class="n">phases</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
@@ -2414,7 +2443,7 @@ unbalanced power flow, obtaining the voltage results depicted bellow.</p>
 
 <span class="n">grid</span><span class="o">.</span><span class="n">add_overhead_line</span><span class="p">(</span><span class="n">config_603</span><span class="p">)</span>
 
-<span class="n">config_604</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Config. 604'</span><span class="p">,</span>
+<span class="n">config_604</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Config. 604&#39;</span><span class="p">,</span>
                                                     <span class="n">z_abc</span><span class="o">=</span><span class="n">z_604</span><span class="p">,</span>
                                                     <span class="n">ysh_abc</span><span class="o">=</span><span class="n">y_604</span><span class="p">,</span>
                                                     <span class="n">phases</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
@@ -2423,7 +2452,7 @@ unbalanced power flow, obtaining the voltage results depicted bellow.</p>
 
 <span class="n">grid</span><span class="o">.</span><span class="n">add_overhead_line</span><span class="p">(</span><span class="n">config_604</span><span class="p">)</span>
 
-<span class="n">config_605</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Config. 605'</span><span class="p">,</span>
+<span class="n">config_605</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Config. 605&#39;</span><span class="p">,</span>
                                                     <span class="n">z_abc</span><span class="o">=</span><span class="n">z_605</span><span class="p">,</span>
                                                     <span class="n">ysh_abc</span><span class="o">=</span><span class="n">y_605</span><span class="p">,</span>
                                                     <span class="n">phases</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">]),</span>
@@ -2432,7 +2461,7 @@ unbalanced power flow, obtaining the voltage results depicted bellow.</p>
 
 <span class="n">grid</span><span class="o">.</span><span class="n">add_overhead_line</span><span class="p">(</span><span class="n">config_605</span><span class="p">)</span>
 
-<span class="n">config_606</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Config. 606'</span><span class="p">,</span>
+<span class="n">config_606</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Config. 606&#39;</span><span class="p">,</span>
                                                     <span class="n">z_abc</span><span class="o">=</span><span class="n">z_606</span><span class="p">,</span>
                                                     <span class="n">ysh_abc</span><span class="o">=</span><span class="n">y_606</span><span class="p">,</span>
                                                     <span class="n">phases</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span>
@@ -2441,7 +2470,7 @@ unbalanced power flow, obtaining the voltage results depicted bellow.</p>
 
 <span class="n">grid</span><span class="o">.</span><span class="n">add_overhead_line</span><span class="p">(</span><span class="n">config_606</span><span class="p">)</span>
 
-<span class="n">config_607</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'Config. 607'</span><span class="p">,</span>
+<span class="n">config_607</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">create_known_abc_overhead_template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;Config. 607&#39;</span><span class="p">,</span>
                                                     <span class="n">z_abc</span><span class="o">=</span><span class="n">z_607</span><span class="p">,</span>
                                                     <span class="n">ysh_abc</span><span class="o">=</span><span class="n">y_607</span><span class="p">,</span>
                                                     <span class="n">phases</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span>
@@ -2471,7 +2500,7 @@ unbalanced power flow, obtaining the voltage results depicted bellow.</p>
 <span class="n">line_632_633</span><span class="o">.</span><span class="n">apply_template</span><span class="p">(</span><span class="n">config_602</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">Sbase</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">fBase</span><span class="p">,</span> <span class="n">logger</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">line_632_633</span><span class="p">)</span>
 
-<span class="n">XFM_1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Transformer2W</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'XFM-1'</span><span class="p">,</span>
+<span class="n">XFM_1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Transformer2W</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;XFM-1&#39;</span><span class="p">,</span>
                           <span class="n">bus_from</span><span class="o">=</span><span class="n">bus_633</span><span class="p">,</span>
                           <span class="n">bus_to</span><span class="o">=</span><span class="n">bus_634</span><span class="p">,</span>
                           <span class="n">HV</span><span class="o">=</span><span class="mf">4.16</span><span class="p">,</span>
@@ -2533,7 +2562,7 @@ unbalanced power flow, obtaining the voltage results depicted bellow.</p>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
 <span class="c1"># Save the grid</span>
 <span class="c1"># ----------------------------------------------------------------------------------------------------------------------</span>
-<span class="n">gce</span><span class="o">.</span><span class="n">save_file</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="s2">"IEEE 13 Node Test Feeder.veragrid"</span><span class="p">)</span>
+<span class="n">gce</span><span class="o">.</span><span class="n">save_file</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="s2">&quot;IEEE 13 Node Test Feeder.veragrid&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <section id="phase-a">

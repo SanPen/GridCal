@@ -106,6 +106,10 @@ from VeraGridEngine.Templates.BasicBlockCatalog import (
     get_editor_ready_basic_block_catalog_descriptors,
     load_basic_block_catalog_template,
 )
+from VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates import (
+    build_lookup_array_spline_runtime_template,
+    build_lookup_matrix_linear_runtime_template,
+)
 from VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks import generic
 from VeraGridEngine.Templates.ProceduralLogicCatalog import (
     ProceduralBlockTemplateDescriptor,
@@ -2001,18 +2005,18 @@ def test_rlc_combo_library_block_has_a_default_constructor() -> None:
     assert isinstance(block, Block)
     assert len(block.in_vars) > 0
     assert len(block.out_vars) > 0
-    assert len(block.state_vars) == len(block.state_eqs) == 3
+    assert len(block.state_vars) == len(block.state_eqs) == 6
     assert len(block.algebraic_vars) == len(block.algebraic_eqs) == 7
-    assert [variable.name for variable in block.state_vars] == ["iL_A", "iL_B", "iL_C"]
-    assert [variable.name for variable in block.algebraic_vars if variable.name.startswith("vCap")] == [
-        "vCapA",
-        "vCapB",
-        "vCapC",
+    assert [variable.name for variable in block.state_vars] == [
+        "iL_A", "vCapA", "iL_B", "vCapB", "iL_C", "vCapC",
+    ]
+    assert [variable.name for variable in block.algebraic_vars if variable.name.startswith("iC_")] == [
+        "iC_A", "iC_B", "iC_C",
     ]
 
 
 def test_rlc_combo_rendered_pdf_uses_matching_state_derivatives(tmp_path: Path) -> None:
-    """RLC export must pair inductor RHS entries by identity and create a PDF."""
+    """RLC export must pair inductor and capacitor RHS entries and create a PDF."""
     application: QtWidgets.QApplication = get_qt_application()
     _unused_application: QtWidgets.QApplication = application
     var_factory: VarFactory = VarFactory()
@@ -2040,8 +2044,11 @@ def test_rlc_combo_rendered_pdf_uses_matching_state_derivatives(tmp_path: Path) 
             pass
     assert [entry.get_latex().split(" = ", maxsplit=1)[0] for entry in state_entries] == [
         r"d_{iL\_A}",
+        "dvCapA",
         r"d_{iL\_B}",
+        "dvCapB",
         r"d_{iL\_C}",
+        "dvCapC",
     ]
 
     destination: Path = tmp_path / "rlc_combo_rendered.pdf"
@@ -2675,6 +2682,7 @@ def test_library_template_api_mappings_are_owned_locally(
             var_factory=VarFactory(),
         )
         assert built_template is not None
+        assert built_template.name == template_spec.label
 
         owner_block: Block
         for owner_block in built_template.block.get_all_blocks():
@@ -3592,7 +3600,10 @@ def test_lookup_and_jmarti_builders_expose_conditional_special_settings() -> Non
     application: QtWidgets.QApplication = get_qt_application()
     _unused_application: QtWidgets.QApplication = application
     block_type: BlockType
-    for block_type in (BlockType.LOOKUP_ARRAY_LINEAR, BlockType.EMT_JMARTI_LINE):
+    for block_type in (
+        BlockType.LOOKUP_ARRAY_LINEAR,
+        BlockType.EMT_JMARTI_LINE,
+    ):
         var_factory: VarFactory = VarFactory()
         builder: TemplateDefinition | None = create_default_template_builder(
             var_factory,
@@ -3625,6 +3636,88 @@ def test_lookup_and_jmarti_builders_expose_conditional_special_settings() -> Non
         else:
             assert dialogue._special_structural_model.rowCount() > 0
         dialogue.close()
+
+
+def test_dynamic_lookup_builder_recovers_point_count_and_boundary_rule() -> None:
+    """Recover dynamic lookup structure from its persisted symbolic block.
+
+    :return: None.
+    """
+    source_builder: TemplateDefinition | None = create_default_template_builder(
+        var_factory=VarFactory(),
+        block_type=BlockType.LOOKUP_ARRAY_LINEAR_VARIABLE,
+        item_name="dynamic_lookup",
+    )
+    assert source_builder is not None
+    source_builder.params_dict["point_count"].value = 4
+    source_builder.params_dict["clip"].value = False
+    source_template: EmtModelTemplate = source_builder.eval()
+
+    restored_builder: TemplateDefinition | None = create_default_template_builder(
+        var_factory=VarFactory(),
+        block_type=BlockType.LOOKUP_ARRAY_LINEAR_VARIABLE,
+        item_name="dynamic_lookup",
+    )
+    assert restored_builder is not None
+    initialize_template_builder_from_block(
+        builder=restored_builder,
+        block=source_template.block,
+        block_type=BlockType.LOOKUP_ARRAY_LINEAR_VARIABLE,
+    )
+
+    assert len(source_template.block.in_vars) == 9
+    assert restored_builder.params_dict["point_count"].value == 4
+    assert restored_builder.params_dict["clip"].value is False
+
+
+def test_lookup_array_spline_and_matrix_linear_have_distinct_block_types() -> None:
+    """Prevent the legacy lookup enum collision from returning.
+
+    :return: None.
+    """
+    assert BlockType.LOOKUP_ARRAY_OBJECT_SPLINE != BlockType.LOOKUP_MATRIX_LINEAR
+    assert BlockType.LOOKUP_ARRAY_OBJECT_SPLINE.value == "LOOKUP_ARRAY_OBJECT_SPLINE"
+
+
+def test_lookup_spline_clips_above_last_point() -> None:
+    """Clamp a spline lookup to its final sample above the tabulated range.
+
+    :return: None.
+    """
+    template: EmtModelTemplate = build_lookup_array_spline_runtime_template(
+        vf=VarFactory(),
+        x_points=(0.0, 1.0, 2.0),
+        y_points=(0.0, 10.0, 20.0),
+        name="spline_upper_clip",
+    )
+    block: Block = template.block
+    value_by_uid: dict[int, float] = dict()
+    value_by_uid[block.in_vars[0].uid] = 3.0
+    value_by_uid[block.out_vars[0].uid] = 20.0
+    parameter_variable: Var
+    parameter_expression: Expr
+    for parameter_variable, parameter_expression in block.event_dict.items():
+        assert isinstance(parameter_expression, Const)
+        assert isinstance(parameter_expression.value, (int, float))
+        value_by_uid[parameter_variable.uid] = float(parameter_expression.value)
+
+    residual: float = float(block.algebraic_eqs[0].eval_uid(value_by_uid))
+    assert residual == pytest.approx(0.0)
+
+
+def test_lookup_matrix_rejects_unordered_axes() -> None:
+    """Reject ambiguous two-dimensional lookup axes before equation creation.
+
+    :return: None.
+    """
+    with pytest.raises(ValueError, match="x-axis values must be strictly increasing"):
+        build_lookup_matrix_linear_runtime_template(
+            vf=VarFactory(),
+            x_points=(0.0, 0.0),
+            y_points=(0.0, 1.0),
+            z_matrix=((0.0, 1.0), (2.0, 3.0)),
+            name="invalid_matrix",
+        )
 
 
 def test_fault_builder_recovers_all_settings_after_block_roundtrip() -> None:

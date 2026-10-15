@@ -2605,7 +2605,9 @@ class Block:
         :param procedural_logic: Runtime procedural-logic objects attached to the block.
         :param connection_intents: Semantic dynamic connections retained across interface reconstruction.
         :param external_mapping: Variables initialized from power-flow result references.
-        :param api_obj_mapping: Parameter initial values mapped to properties of the associated grid device.
+        :param api_obj_mapping: Device-property sources for parameter initial values. A resolved mapping overrides
+            the local declaration during initialization without changing whether ``parameters`` or ``event_dict``
+            owns the target's runtime role.
         :param is_decomposable: Whether the editor and compiler may expose the block's internal structure.
         :param name: Human-readable block name.
         :param uid: Stable block identifier, or ``None`` to allocate a new identifier.
@@ -3537,10 +3539,32 @@ class Block:
         :rtype:
         """
 
-        for lst in [self.state_vars, self.algebraic_vars, self.diff_vars]:
+        # Ports and solved-variable collections form one symbolic interface.
+        # Replacing only the solved owner leaves inputs/outputs pointing to a
+        # stale UID even though equations already consume the replacement.
+        for lst in [
+            self.in_vars,
+            self.out_vars,
+            self.state_vars,
+            self.algebraic_vars,
+            self.diff_vars,
+        ]:
             for i, var in enumerate(lst):
                 if var.uid == old.uid:
                     lst[i] = new
+                else:
+                    pass
+
+        if isinstance(new, Var):
+            mapped_name: str
+            mapped_var: Var
+            for mapped_name, mapped_var in self.var_mapping.items():
+                if mapped_var.uid == old.uid:
+                    self.var_mapping[mapped_name] = new
+                else:
+                    pass
+        else:
+            pass
 
     def update_equations(self, old: Var | Expr, new: Var | Expr) -> None:
         """
@@ -3658,12 +3682,28 @@ class Block:
         i: int
         var: Var
 
-        for lst in [self.state_vars, self.algebraic_vars, self.diff_vars]:
+        for lst in [
+            self.in_vars,
+            self.out_vars,
+            self.state_vars,
+            self.algebraic_vars,
+            self.diff_vars,
+        ]:
             for i, var in enumerate(lst):
                 if var.uid in uid_mapping:
                     lst[i] = uid_mapping[var.uid]
                 else:
                     pass
+
+        mapped_name: str
+        mapped_var: Var
+        mapped_replacement: Var | None
+        for mapped_name, mapped_var in self.var_mapping.items():
+            mapped_replacement = uid_mapping.get(mapped_var.uid, None)
+            if mapped_replacement is None:
+                pass
+            else:
+                self.var_mapping[mapped_name] = mapped_replacement
 
     def update_equations_bulk(self, var_mapping: Dict[Var, Var]) -> None:
         """
@@ -3870,7 +3910,7 @@ def find_connections(mdl1: Block, mdl2: Block) -> tuple[List[tuple[Var, Var]], L
         for inpt in mdl2.in_vars
         if
         # outp.shared_ref == inpt.shared_ref and outp.shared_ref is not None and inpt.shared_ref is not None and outp.uid == inpt.uid
-        outp.shared_ref == inpt.shared_ref and outp.shared_ref is not None and inpt.shared_ref is not None
+        outp.shared_ref == inpt.shared_ref and outp.shared_ref is not None and inpt.shared_ref is not None or outp.uid == inpt.uid
     ]
 
     power_flow_pairs = [
@@ -3879,7 +3919,7 @@ def find_connections(mdl1: Block, mdl2: Block) -> tuple[List[tuple[Var, Var]], L
         for inpt in mdl2.in_vars
         if
         # outp.ref == inpt.ref and outp.ref is not None and inpt.ref is not None and outp.uid == inpt.uid
-        outp.ref == inpt.ref and outp.ref is not None and inpt.ref is not None
+        outp.ref == inpt.ref and outp.ref is not None and inpt.ref is not None or outp.uid == inpt.uid
     ]
 
     return pairs, power_flow_pairs

@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-from typing import Callable, Dict, List, Tuple, Union, Optional
+from typing import Callable, Dict, Iterator, List, Tuple, Union, Optional
 import numpy as np
 import numba as nb
 import math
@@ -18,13 +18,128 @@ import scipy.sparse.linalg as spla
 
 from collections import defaultdict, deque
 
-from VeraGridEngine.enumerations import EmtInitializationMethod, EmtInitializationStatus
+from VeraGridEngine.enumerations import (
+    EmtInitializationMethod,
+    EmtInitializationStatus,
+    SelfImplicitSolveStatus,
+)
 from VeraGridEngine.Utils.Symbolic.compiled_functions import SymbolicJacobian, SymbolicVector
 from VeraGridEngine.Utils.Symbolic.jit_compiler import RMSCompiler
 from VeraGridEngine.Utils.Symbolic.symbolic import expression2numba, get_expression_vars
 from VeraGridEngine.Utils.Symbolic.block import Block, normalize_event_parameter_initialization
-from VeraGridEngine.Utils.Symbolic.symbolic import BinOp, Comparison, Var, Const, Expr, find_vars_order
-from VeraGridEngine.Utils.procedural_logic import SampledValueLogic
+from VeraGridEngine.Utils.Symbolic.symbolic import (
+    BinOp,
+    Comparison,
+    Var,
+    Const,
+    Expr,
+    find_vars_order,
+    hard_sat,
+    heaviside,
+    min as symbolic_minimum,
+    max as symbolic_maximum,
+)
+from VeraGridEngine.Utils.procedural_logic import (
+    AnalogFlipFlopLogic,
+    FixedSampleLogic,
+    FlipFlopLogic,
+    GradientLimiterLogic,
+    HardSaturationLogic,
+    MovingAverageLogic,
+    SampledValueLogic,
+    TimeDelayLogic,
+)
+
+
+class SelfImplicitSolveResult:
+    """Store the outcome of one scalar self-implicit initialization solve."""
+
+    __slots__ = (
+        "value",
+        "converged",
+        "iterations",
+        "residual",
+        "status",
+    )
+
+    def __init__(
+            self,
+            value: float,
+            converged: bool,
+            iterations: int,
+            residual: float,
+            status: SelfImplicitSolveStatus,
+    ) -> None:
+        """Build a scalar self-implicit solve result.
+
+        :param value: Final candidate value. A failed solve does not commit this
+            candidate to the target array.
+        :param converged: Whether the residual satisfied the requested tolerance.
+        :param iterations: Number of secant iterations performed.
+        :param residual: Absolute fixed-point residual of the final candidate.
+        :param status: Exact reason why the solve stopped.
+        :return: None.
+        """
+        self.value: float = value
+        self.converged: bool = converged
+        self.iterations: int = iterations
+        self.residual: float = residual
+        self.status: SelfImplicitSolveStatus = status
+
+
+class ExplicitInitializationResult:
+    """Store the transactional outcome of common explicit initialization."""
+
+    __slots__ = (
+        "init_guess",
+        "diff_init_guess",
+        "converged",
+        "failed_variable",
+        "self_implicit_result",
+        "message",
+    )
+
+    def __init__(
+            self,
+            init_guess: Dict[int, float | int | complex | None],
+            diff_init_guess: Dict[int, float | int | complex | None],
+            converged: bool,
+            failed_variable: Var | None,
+            self_implicit_result: SelfImplicitSolveResult | None,
+            message: str,
+    ) -> None:
+        """Build the result returned by the common explicit initializer.
+
+        :param init_guess: Committed algebraic and state initialization values.
+        :param diff_init_guess: Committed differential initialization values.
+        :param converged: Whether every required explicit equation was resolved.
+        :param failed_variable: Self-implicit variable that failed, if present.
+        :param self_implicit_result: Scalar failure diagnostics, if present.
+        :param message: Human-readable outcome description.
+        :return: None.
+        """
+        self.init_guess: Dict[int, float | int | complex | None] = init_guess
+        self.diff_init_guess: Dict[int, float | int | complex | None] = diff_init_guess
+        self.converged: bool = converged
+        self.failed_variable: Var | None = failed_variable
+        self.self_implicit_result: SelfImplicitSolveResult | None = self_implicit_result
+        self.message: str = message
+
+    def __iter__(self) -> Iterator[Dict[int, float | int | complex | None]]:
+        """Expose the historical two-dictionary result without changing legacy callers.
+
+        A failed result raises before yielding either dictionary, ensuring that
+        tuple-unpacking callers cannot silently continue with unresolved values.
+
+        :return: Iterator over the state/algebraic and differential guess dictionaries.
+        :rtype: Iterator[Dict[int, float | int | complex | None]]
+        :raises RuntimeError: If explicit initialization did not converge.
+        """
+        if self.converged:
+            yield self.init_guess
+            yield self.diff_init_guess
+        else:
+            raise RuntimeError(self.message)
 
 
 def build_uid_bindings(
@@ -439,63 +554,185 @@ def build_init_dict(mdl, init_vars, init_event):
         build_init_dict(blk, init_vars, init_event)
 
 
-def apply_sampled_procedural_initializers(
+def _coerce_procedural_initial_expression(
+        expression: Expr | Comparison | float | int | bool,
+) -> Expr:
+    """Convert one procedural startup source into a symbolic expression.
+
+    :param expression: Procedural expression or scalar startup value.
+    :return: Symbolic expression accepted by the explicit dependency graph.
+    """
+    if isinstance(expression, Comparison):
+        result: Expr = expression.to_expression()
+    elif isinstance(expression, Expr):
+        result = expression
+    else:
+        result = Const(float(expression))
+    return result
+
+
+def _coerce_procedural_boolean_initial_expression(
+        expression: Expr | Comparison | float | int | bool,
+) -> Expr:
+    """Convert one procedural condition into its zero-or-one startup value.
+
+    Procedural runtime conditions use a strict ``> 0.5`` threshold. Explicit
+    initialization must apply the same rule when a model supplies a numeric
+    expression rather than a symbolic comparison.
+
+    :param expression: Procedural condition or scalar startup value.
+    :return: Symbolic zero-or-one expression matching runtime evaluation.
+    """
+    if isinstance(expression, Comparison):
+        result: Expr = expression.to_expression()
+    else:
+        numeric_expression: Expr = _coerce_procedural_initial_expression(expression)
+        result = heaviside(numeric_expression - Const(0.5))
+    return result
+
+
+def _find_procedural_initial_output(
+        init_event: Dict[Var, Union[Expr, Const]],
+        output_var_name: str,
+        output_var_uid: int | None,
+) -> Var | None:
+    """Resolve one procedural output against declared runtime parameters.
+
+    Stable UID is authoritative for current files. Name lookup remains as the
+    legacy fallback and succeeds only when the name is unambiguous.
+
+    :param init_event: Declared runtime initialization equations.
+    :param output_var_name: Persisted output name used by legacy entries.
+    :param output_var_uid: Stable output UID when present in the entry.
+    :return: Matching runtime variable, or ``None`` when it cannot be resolved safely.
+    """
+    output_var: Var | None = None
+    candidate_var: Var
+
+    if output_var_uid is None:
+        for candidate_var in init_event:
+            if candidate_var.name == output_var_name:
+                if output_var is None:
+                    output_var = candidate_var
+                else:
+                    output_var = None
+                    break
+            else:
+                pass
+    else:
+        for candidate_var in init_event:
+            if candidate_var.uid == output_var_uid:
+                output_var = candidate_var
+                break
+            else:
+                pass
+
+    return output_var
+
+
+def apply_procedural_initializers(
         mdl: Block,
         init_event: Dict[Var, Union[Expr, Const]],
 ) -> None:
-    """Use sampled procedural expressions as their startup mode values.
+    """Promote deterministic procedural startup values into the init graph.
 
-    Generated ``select(...)`` and sampled-value blocks keep their outputs in
-    ``mode_dict`` because runtime updates occur outside the Newton residual.
-    Their placeholder mode defaults must not choose the branch used by
-    ``inc(...)``. At startup, the declared sampled source is the authoritative
-    value and participates in the same dependency graph as every other
-    explicit initialization equation.
+    Pure sampling, delay-history, gradient, saturation and startup-deterministic
+    latch entries all have a well-defined first value. Their outputs remain in
+    ``mode_dict`` at runtime, but their first value must participate in the same
+    dependency graph as ordinary initialization equations. Timed relay and
+    switching entries are deliberately excluded because their retained fallback
+    is part of their startup contract and is reconciled by the boundary updater.
 
     :param mdl: Symbolic block whose procedural entries are inspected.
     :param init_event: Runtime initialization equations updated in place.
     :return: None.
     """
-    event_var_by_uid: Dict[int, Var] = dict(
-        (event_var.uid, event_var) for event_var in init_event
-    )
     procedural_entry: object
 
     for procedural_entry in mdl.procedural_logic:
+        source_expression: Expr | None
         if isinstance(procedural_entry, SampledValueLogic):
-            output_var: Optional[Var] = None
-            if procedural_entry.output_var_uid is None:
-                candidate_var: Var
-                for candidate_var in init_event:
-                    if candidate_var.name == procedural_entry.output_var_name:
-                        if output_var is None:
-                            output_var = candidate_var
-                        else:
-                            output_var = None
-                            break
-                    else:
-                        pass
-            else:
-                output_var = event_var_by_uid.get(
-                    procedural_entry.output_var_uid,
-                    None,
-                )
+            output_var_name: str = procedural_entry.output_var_name
+            output_var_uid: int | None = procedural_entry.output_var_uid
+            source_expression = _coerce_procedural_initial_expression(
+                expression=procedural_entry.source_expr,
+            )
+        elif isinstance(procedural_entry, FixedSampleLogic):
+            output_var_name = procedural_entry.output_var_name
+            output_var_uid = None
+            source_expression = _coerce_procedural_boolean_initial_expression(
+                expression=procedural_entry.condition_expr,
+            )
+        elif isinstance(procedural_entry, HardSaturationLogic):
+            output_var_name = procedural_entry.output_var_name
+            output_var_uid = None
+            saturation_input: Expr = _coerce_procedural_initial_expression(
+                procedural_entry.u_expr,
+            )
+            first_limit: Expr = _coerce_procedural_initial_expression(
+                procedural_entry.u_min_expr,
+            )
+            second_limit: Expr = _coerce_procedural_initial_expression(
+                procedural_entry.u_max_expr,
+            )
+            lower_limit: Expr = symbolic_minimum(first_limit, second_limit)
+            upper_limit: Expr = symbolic_maximum(first_limit, second_limit)
+            source_expression = hard_sat(
+                saturation_input,
+                lower_limit,
+                upper_limit,
+            )
+        elif isinstance(procedural_entry, TimeDelayLogic):
+            output_var_name = procedural_entry.output_var_name
+            output_var_uid = None
+            source_expression = _coerce_procedural_initial_expression(
+                expression=procedural_entry.source_expr,
+            )
+        elif isinstance(procedural_entry, MovingAverageLogic):
+            output_var_name = procedural_entry.output_var_name
+            output_var_uid = None
+            source_expression = _coerce_procedural_initial_expression(
+                expression=procedural_entry.source_expr,
+            )
+        elif isinstance(procedural_entry, GradientLimiterLogic):
+            output_var_name = procedural_entry.output_var_name
+            output_var_uid = None
+            source_expression = _coerce_procedural_initial_expression(
+                expression=procedural_entry.source_expr,
+            )
+        elif isinstance(procedural_entry, FlipFlopLogic):
+            output_var_name = procedural_entry.output_var_name
+            output_var_uid = None
+            source_expression = _coerce_procedural_boolean_initial_expression(
+                expression=procedural_entry.set_expr,
+            )
+        elif isinstance(procedural_entry, AnalogFlipFlopLogic):
+            output_var_name = procedural_entry.output_var_name
+            output_var_uid = None
+            source_expression = _coerce_procedural_initial_expression(
+                expression=procedural_entry.input_expr,
+            )
+        else:
+            output_var_name = ""
+            output_var_uid = None
+            source_expression = None
 
+        if output_var_name == "" or source_expression is None:
+            pass
+        else:
+            output_var: Var | None = _find_procedural_initial_output(
+                init_event=init_event,
+                output_var_name=output_var_name,
+                output_var_uid=output_var_uid,
+            )
             if output_var is None:
                 pass
             else:
-                source_expression: Expr
-                if isinstance(procedural_entry.source_expr, Comparison):
-                    source_expression = procedural_entry.source_expr.to_expression()
-                else:
-                    source_expression = procedural_entry.source_expr
                 init_event[output_var] = source_expression
-        else:
-            pass
 
     child_block: Block
     for child_block in mdl.children:
-        apply_sampled_procedural_initializers(
+        apply_procedural_initializers(
             mdl=child_block,
             init_event=init_event,
         )
@@ -564,6 +801,64 @@ def collect_direct_algebraic_initializers(
         )
 
 
+def initialization_dependency_reaches_uid(
+        start_var: Var,
+        target_uid: int,
+        init_vars: Dict[Var, Union[Expr, Const]],
+        visited_uids: set[int],
+) -> bool:
+    """Check whether one initialization dependency reaches a target variable.
+
+    Direct algebraic assignments are inferred from DAE residuals rather than
+    explicitly declared as initialization equations. Before admitting one of
+    those inferred assignments, its dependency chain must remain acyclic with
+    the authoritative explicit initialization equations.
+
+    :param start_var: Dependency from which to traverse initialization equations.
+    :param target_uid: Candidate variable whose re-entry would close a cycle.
+    :param init_vars: Candidate initialization equations indexed by target variable.
+    :param visited_uids: Variable identities already inspected during this traversal.
+    :return: Whether the dependency chain reaches ``target_uid``.
+    """
+    if start_var.uid == target_uid:
+        return True
+    else:
+        pass
+
+    if start_var.uid in visited_uids:
+        return False
+    else:
+        visited_uids.add(start_var.uid)
+
+    start_equation: Union[Expr, Const] | None = None
+    equation_var: Var
+    equation: Union[Expr, Const]
+    for equation_var, equation in init_vars.items():
+        if start_equation is None and equation_var.uid == start_var.uid:
+            start_equation = equation
+        else:
+            pass
+
+    if start_equation is None:
+        return False
+    else:
+        pass
+
+    dependency_var: Var
+    for dependency_var in get_expression_vars(start_equation):
+        if initialization_dependency_reaches_uid(
+                start_var=dependency_var,
+                target_uid=target_uid,
+                init_vars=init_vars,
+                visited_uids=visited_uids,
+        ):
+            return True
+        else:
+            pass
+
+    return False
+
+
 def add_direct_algebraic_init_dependencies(
         init_vars: Dict[Var, Union[Expr, Const]],
         direct_initializers: Dict[Var, Expr],
@@ -597,8 +892,34 @@ def add_direct_algebraic_init_dependencies(
                         if direct_eq is None:
                             pass
                         else:
-                            init_vars[dependency_var] = direct_eq
-                            dependency_added = True
+                            # A legacy EMT terminal output can be both the seed
+                            # of an explicit state initializer and a direct DAE
+                            # result of that same state. Pulling the inferred DAE
+                            # assignment into the explicit graph would turn two
+                            # equivalent relations into an artificial cycle.
+                            candidate_init_vars: Dict[Var, Union[Expr, Const]] = dict(init_vars)
+                            candidate_init_vars[dependency_var] = direct_eq
+                            creates_cycle: bool = False
+                            direct_dependency_var: Var
+                            for direct_dependency_var in get_expression_vars(direct_eq):
+                                if initialization_dependency_reaches_uid(
+                                        start_var=direct_dependency_var,
+                                        target_uid=dependency_var.uid,
+                                        init_vars=candidate_init_vars,
+                                        visited_uids=set(),
+                                ):
+                                    creates_cycle = True
+                                else:
+                                    pass
+
+                            if creates_cycle:
+                                # Keep the existing work-vector/PF seed as the
+                                # boundary value. Explicit declarations remain
+                                # authoritative over inferred DAE assignments.
+                                pass
+                            else:
+                                init_vars[dependency_var] = direct_eq
+                                dependency_added = True
 
 def build_explicit_init_graph(
         mdl: Block,
@@ -624,7 +945,7 @@ def build_explicit_init_graph(
     else:
         preserved_uids = set(preserved_var_uids)
     build_init_dict(mdl, init_vars, init_event)
-    apply_sampled_procedural_initializers(
+    apply_procedural_initializers(
         mdl=mdl,
         init_event=init_event,
     )
@@ -643,16 +964,6 @@ def build_explicit_init_graph(
         mdl=mdl,
         direct_initializers=direct_initializers,
     )
-    direct_var: Var
-    direct_eq: Expr
-    for direct_var, direct_eq in direct_initializers.items():
-        if direct_var in init_vars:
-            pass
-        else:
-            if direct_var.uid in preserved_uids:
-                pass
-            else:
-                init_vars[direct_var] = direct_eq
     add_direct_algebraic_init_dependencies(
         init_vars=init_vars,
         direct_initializers=direct_initializers,
@@ -806,7 +1117,7 @@ def solve_self_implicit(
         params_array: np.ndarray,
         tol: float = 1e-8,
         max_iter: int = 50,
-) -> float:
+) -> SelfImplicitSolveResult:
     """
     Solve a scalar self-implicit initialization equation with the shared signature.
 
@@ -828,37 +1139,135 @@ def solve_self_implicit(
     :type tol: float
     :param max_iter: Maximum secant iterations.
     :type max_iter: int
-    :return: Solved scalar value.
-    :rtype: float
+    :return: Scalar solution candidate and exact convergence diagnostics. Failed
+        candidates are never committed to ``target_array``.
+    :rtype: SelfImplicitSolveResult
     """
-    initial_guess: float = float(target_array[target_idx])
-    if not np.isfinite(initial_guess):
-        initial_guess = 1.0
+    original_value: float = float(target_array[target_idx])
+    if np.isfinite(original_value):
+        pass
     else:
-        initial_guess = initial_guess
+        return SelfImplicitSolveResult(
+            value=original_value,
+            converged=False,
+            iterations=0,
+            residual=float("inf"),
+            status=SelfImplicitSolveStatus.INVALID_INITIAL_GUESS,
+        )
 
-    x0: float = initial_guess if abs(initial_guess) > 1e-12 else 1.0
-    x1: float = x0 + 0.1 if abs(x0) > 1e-12 else 1.1
+    # Preserve an exact zero seed. Dead-network and black-start models use zero
+    # as a physical operating point, so it must be evaluated before introducing
+    # the second secant point.
+    x0: float = original_value
+    x1: float = x0 + 0.1
+    final_candidate: float = x0
+    final_residual: float = float("inf")
+    iteration_index: int = 0
 
-    for _ in range(max_iter):
+    try:
         target_array[target_idx] = x0
-        f0: float = evaluate_single_equation_fn(eq_fn, x, dx, event_params_array, params_array) - x0
-
-        target_array[target_idx] = x1
-        f1: float = evaluate_single_equation_fn(eq_fn, x, dx, event_params_array, params_array) - x1
-
-        if abs(f1) < tol:
-            return x1
+        f0: float = evaluate_single_equation_fn(
+            eq_fn,
+            x,
+            dx,
+            event_params_array,
+            params_array,
+        ) - x0
+        if np.isfinite(f0):
+            final_residual = float(abs(f0))
         else:
-            denominator: float = f1 - f0
-            if abs(denominator) < 1e-12:
-                break
-            else:
-                x2: float = x1 - f1 * (x1 - x0) / denominator
-                x0 = x1
-                x1 = x2
+            target_array[target_idx] = original_value
+            return SelfImplicitSolveResult(
+                value=x0,
+                converged=False,
+                iterations=0,
+                residual=float("inf"),
+                status=SelfImplicitSolveStatus.NON_FINITE_RESIDUAL,
+            )
 
-    return x1
+        if final_residual <= tol:
+            target_array[target_idx] = x0
+            return SelfImplicitSolveResult(
+                value=x0,
+                converged=True,
+                iterations=0,
+                residual=final_residual,
+                status=SelfImplicitSolveStatus.CONVERGED,
+            )
+        else:
+            pass
+
+        for iteration_index in range(1, max_iter + 1):
+            target_array[target_idx] = x1
+            f1: float = evaluate_single_equation_fn(
+                eq_fn,
+                x,
+                dx,
+                event_params_array,
+                params_array,
+            ) - x1
+            final_candidate = x1
+            if np.isfinite(f1):
+                final_residual = float(abs(f1))
+            else:
+                target_array[target_idx] = original_value
+                return SelfImplicitSolveResult(
+                    value=final_candidate,
+                    converged=False,
+                    iterations=iteration_index,
+                    residual=float("inf"),
+                    status=SelfImplicitSolveStatus.NON_FINITE_RESIDUAL,
+                )
+
+            if final_residual <= tol:
+                target_array[target_idx] = final_candidate
+                return SelfImplicitSolveResult(
+                    value=final_candidate,
+                    converged=True,
+                    iterations=iteration_index,
+                    residual=final_residual,
+                    status=SelfImplicitSolveStatus.CONVERGED,
+                )
+            else:
+                denominator: float = f1 - f0
+                if abs(denominator) < 1e-12:
+                    target_array[target_idx] = original_value
+                    return SelfImplicitSolveResult(
+                        value=final_candidate,
+                        converged=False,
+                        iterations=iteration_index,
+                        residual=final_residual,
+                        status=SelfImplicitSolveStatus.SINGULAR_SECANT,
+                    )
+                else:
+                    x2: float = x1 - f1 * (x1 - x0) / denominator
+                    if np.isfinite(x2):
+                        x0 = x1
+                        f0 = f1
+                        x1 = x2
+                    else:
+                        target_array[target_idx] = original_value
+                        return SelfImplicitSolveResult(
+                            value=x2,
+                            converged=False,
+                            iterations=iteration_index,
+                            residual=final_residual,
+                            status=SelfImplicitSolveStatus.NON_FINITE_ITERATE,
+                        )
+    except Exception:
+        # Equation compilation/evaluation errors remain exceptional, but the
+        # numerical workspace must still be restored before propagating them.
+        target_array[target_idx] = original_value
+        raise
+
+    target_array[target_idx] = original_value
+    return SelfImplicitSolveResult(
+        value=final_candidate,
+        converged=False,
+        iterations=iteration_index,
+        residual=final_residual,
+        status=SelfImplicitSolveStatus.MAX_ITERATIONS,
+    )
 
 
 def build_explicit_external_uid_values(
@@ -934,16 +1343,16 @@ def init_explicit_common(
         external_uid_values: Optional[Dict[int, float]] = None,
         event_params_array_seed: np.ndarray | None = None,
         verbose: bool = False,
-) -> Tuple[Dict[int, float | int | complex | None], Dict[int, float | int | complex | None]]:
+) -> ExplicitInitializationResult:
     """
     Run the universal explicit initialization core shared by RMS and EMT flows.
 
-    :param sys_diff_vars:
-    :type sys_diff_vars:
-    :param sys_vars:
-    :type sys_vars:
     :param mdl: Symbolic model block.
     :type mdl: Block
+    :param sys_vars: System state and algebraic variables keyed by UID.
+    :type sys_vars: Dict[int, Var]
+    :param sys_diff_vars: System differential variables keyed by UID.
+    :type sys_diff_vars: Dict[int, Var]
     :param variable_parameters: Runtime or event parameters.
     :type variable_parameters: List[Var]
     :param event_parameters_eqs: Runtime parameter equations storage.
@@ -952,7 +1361,8 @@ def init_explicit_common(
     :type constant_parameters: List[Var]
     :param init_guess: Initialization guesses for algebraic or state variables.
     :type init_guess: Dict[int, float]
-    :param event_param_init_dict: Event parameter initialization dictionary.
+    :param event_param_init_dict: Resolved runtime-parameter values keyed by UID.
+    :type event_param_init_dict: Dict[int, float | int | complex | None]
     :param diff_init_guess: Initialization guesses for differential variables.
     :type diff_init_guess: Dict[int, float]
     :param uid2idx_vars: Variable index map.
@@ -968,12 +1378,24 @@ def init_explicit_common(
     :param compile_single_equation: Backend-specific single-equation compiler wrapper.
     :type compile_single_equation: Union[SymbolicVectorSingleEquationCompiler, RmsSingleEquationCompiler]
     :param external_uid_values: Explicit values for variables owned outside the symbolic block.
+    :type external_uid_values: Optional[Dict[int, float]]
+    :param event_params_array_seed: Optional complete runtime-parameter seed vector.
+    :type event_params_array_seed: np.ndarray | None
     :param verbose: Print initialization progress.
     :type verbose: bool
-    :return: Updated algebraic or state and differential guesses.
-    :rtype: Tuple[Dict[int, float], Dict[int, float]]
+    :return: Transactional explicit-initialization result. The caller-owned
+        dictionaries and runtime-equation list are updated only on success.
+    :rtype: ExplicitInitializationResult
     """
     _ = constant_parameters
+
+    # Resolve the complete block on local stores. A failed self-implicit
+    # equation must not leave earlier variables or runtime parameters partially
+    # committed to the problem.
+    working_init_guess: Dict[int, float | int | complex | None] = dict(init_guess)
+    working_diff_init_guess: Dict[int, float | int | complex | None] = dict(diff_init_guess)
+    working_event_param_init_dict: Dict[int, float | int | complex | None] = dict(event_param_init_dict)
+    working_event_parameters_eqs: List[Union[Expr, Const]] = list(event_parameters_eqs)
 
     # initialize array for model variables
     x: np.ndarray = np.ones(len(sys_vars))
@@ -987,6 +1409,8 @@ def init_explicit_common(
                 "Explicit initialization runtime seed has shape "
                 f"{event_params_array.shape}; expected {(len(variable_parameters),)}"
             )
+        else:
+            pass
 
     # RMS problem assembly retains Const wrappers so symbolic ownership is not
     # lost before compilation. Explicit evaluation consumes only concrete
@@ -1009,30 +1433,44 @@ def init_explicit_common(
     # Seed the working vectors with the guesses already assembled before the
     # explicit stage. The problem relies on those PF-driven values and on previously
     # resolved block values when evaluating downstream explicit equations.
-    for uid, val in init_guess.items():
+    uid: int
+    val: float | int | complex | None
+    for uid, val in working_init_guess.items():
         if uid in uid2idx_vars:
             x[uid2idx_vars[uid]] = val
+        else:
+            pass
 
-    for uid, val in diff_init_guess.items():
+    for uid, val in working_diff_init_guess.items():
         if uid in uid2idx_diff:
             dx[uid2idx_diff[uid]] = val
+        else:
+            pass
 
-    for uid, val in event_param_init_dict.items():
+    for uid, val in working_event_param_init_dict.items():
         if uid in uid2idx_event_params and val is not None:
             event_params_array[uid2idx_event_params[uid]] = val
+        else:
+            pass
 
 
+    dic_total: Dict[Var, Union[Expr, Const]]
+    dependencies: Dict[Var, List[Var]]
+    topo_order: List[Var]
+    init_event: Dict[Var, Union[Expr, Const]]
     dic_total, dependencies, topo_order, init_event = build_explicit_init_graph(
         mdl=mdl,
-        preserved_var_uids=set(init_guess.keys()),
+        preserved_var_uids=set(working_init_guess.keys()),
     )
 
+    result: float | int | complex | None
+    var: Var
     for var in topo_order:
         eq: Union[Expr, Const] = dic_total[var]
 
         if var in init_event:
-            if var.uid in event_param_init_dict and event_param_init_dict[var.uid] is not None:
-                result = event_param_init_dict[var.uid]
+            if var.uid in working_event_param_init_dict and working_event_param_init_dict[var.uid] is not None:
+                result = working_event_param_init_dict[var.uid]
             else:
                 result = evaluate_explicit_init_equation(
                     eq=eq,
@@ -1044,24 +1482,26 @@ def init_explicit_common(
                     uid2idx_vars=uid2idx_vars,
                     uid2idx_params=uid2idx_params,
                     uid2idx_diff=uid2idx_diff,
-                    init_guess=init_guess,
-                    diff_init_guess=diff_init_guess,
+                    init_guess=working_init_guess,
+                    diff_init_guess=working_diff_init_guess,
                     external_uid_values=external_uid_values,
                 )
             event_params_array[uid2idx_event_params[var.uid]] = result
             store_resolved_event_parameter(
                 event_param=var,
-                event_params_init_dict=event_param_init_dict,
-                event_parameters_eqs=event_parameters_eqs,
+                event_params_init_dict=working_event_param_init_dict,
+                event_parameters_eqs=working_event_parameters_eqs,
                 event_eq_idx=uid2idx_event_params[var.uid],
                 result=result,
             )
 
             if verbose:
                 print(f"event_param:{var.name} initialized with: {result}")
+            else:
+                pass
 
         else:
-            if not var in dependencies[var]:
+            if var not in dependencies[var]:
                 result = evaluate_explicit_init_equation(
                     eq=eq,
                     event_params_array=event_params_array,
@@ -1072,17 +1512,17 @@ def init_explicit_common(
                     uid2idx_vars=uid2idx_vars,
                     uid2idx_params=uid2idx_params,
                     uid2idx_diff=uid2idx_diff,
-                    init_guess=init_guess,
-                    diff_init_guess=diff_init_guess,
+                    init_guess=working_init_guess,
+                    diff_init_guess=working_diff_init_guess,
                     external_uid_values=external_uid_values,
                 )
 
                 if var.uid in uid2idx_vars:
                     x[uid2idx_vars[var.uid]] = result
-                    init_guess[var.uid] = result
+                    working_init_guess[var.uid] = result
                 elif var.uid in uid2idx_diff:
                     dx[uid2idx_diff[var.uid]] = result
-                    diff_init_guess[var.uid] = result
+                    working_diff_init_guess[var.uid] = result
                 else:
                     raise RuntimeError(f"Unable to classify explicit variable {var.name}")
 
@@ -1093,7 +1533,7 @@ def init_explicit_common(
 
                 if var.uid in uid2idx_vars:
                     target_idx: int = uid2idx_vars[var.uid]
-                    result = solve_self_implicit(
+                    self_implicit_result: SelfImplicitSolveResult = solve_self_implicit(
                         eq_fn=eq_fn,
                         x=x,
                         dx=dx,
@@ -1102,11 +1542,28 @@ def init_explicit_common(
                         event_params_array=event_params_array,
                         params_array=numeric_params_array,
                     )
-                    x[target_idx] = result
-                    init_guess[var.uid] = result
+                    if self_implicit_result.converged:
+                        result = self_implicit_result.value
+                        x[target_idx] = result
+                        working_init_guess[var.uid] = result
+                    else:
+                        failure_message: str = (
+                            f"Self-implicit initialization did not converge for '{var.name}': "
+                            f"status={self_implicit_result.status}, "
+                            f"iterations={self_implicit_result.iterations}, "
+                            f"residual={self_implicit_result.residual:.6g}."
+                        )
+                        return ExplicitInitializationResult(
+                            init_guess=dict(init_guess),
+                            diff_init_guess=dict(diff_init_guess),
+                            converged=False,
+                            failed_variable=var,
+                            self_implicit_result=self_implicit_result,
+                            message=failure_message,
+                        )
                 elif var.uid in uid2idx_diff:
                     target_idx = uid2idx_diff[var.uid]
-                    result = solve_self_implicit(
+                    self_implicit_result = solve_self_implicit(
                         eq_fn=eq_fn,
                         x=x,
                         dx=dx,
@@ -1115,13 +1572,51 @@ def init_explicit_common(
                         event_params_array=event_params_array,
                         params_array=numeric_params_array,
                     )
-                    dx[target_idx] = result
-                    diff_init_guess[var.uid] = result
+                    if self_implicit_result.converged:
+                        result = self_implicit_result.value
+                        dx[target_idx] = result
+                        working_diff_init_guess[var.uid] = result
+                    else:
+                        failure_message = (
+                            f"Self-implicit initialization did not converge for '{var.name}': "
+                            f"status={self_implicit_result.status}, "
+                            f"iterations={self_implicit_result.iterations}, "
+                            f"residual={self_implicit_result.residual:.6g}."
+                        )
+                        return ExplicitInitializationResult(
+                            init_guess=dict(init_guess),
+                            diff_init_guess=dict(diff_init_guess),
+                            converged=False,
+                            failed_variable=var,
+                            self_implicit_result=self_implicit_result,
+                            message=failure_message,
+                        )
                 else:
                     raise RuntimeError(f"Unable to classify self-implicit variable {var.name}")
 
             if verbose:
                 print(f"explicit_init:{var.name} = {result}")
+            else:
+                pass
 
 
-    return init_guess, diff_init_guess
+    # Commit all problem-facing stores together only after every explicit
+    # equation has completed successfully.
+    init_guess.clear()
+    init_guess.update(working_init_guess)
+    diff_init_guess.clear()
+    diff_init_guess.update(working_diff_init_guess)
+    event_param_init_dict.clear()
+    event_param_init_dict.update(working_event_param_init_dict)
+    event_equation_index: int
+    for event_equation_index in range(len(event_parameters_eqs)):
+        event_parameters_eqs[event_equation_index] = working_event_parameters_eqs[event_equation_index]
+
+    return ExplicitInitializationResult(
+        init_guess=init_guess,
+        diff_init_guess=diff_init_guess,
+        converged=True,
+        failed_variable=None,
+        self_implicit_result=None,
+        message="Explicit initialization completed successfully.",
+    )

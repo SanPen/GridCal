@@ -28,6 +28,7 @@ class BasicBlockCatalogStaticRecord:
         "_unsupported_lines",
         "_module_name",
         "_module_filename",
+        "_description",
     )
 
     def __init__(self,
@@ -43,7 +44,8 @@ class BasicBlockCatalogStaticRecord:
                  params: Sequence[str],
                  unsupported_lines: Sequence[str],
                  module_name: str,
-                 module_filename: str) -> None:
+                 module_filename: str,
+                 description: str = "") -> None:
         """
         Store one immutable static catalog record.
 
@@ -60,6 +62,7 @@ class BasicBlockCatalogStaticRecord:
         :param unsupported_lines: Pending markers for non editor-ready templates.
         :param module_name: Standalone module stem.
         :param module_filename: Standalone module filename.
+        :param description: Human-facing explanation of the block behavior.
         :returns: None.
         """
         self._template_key = template_key
@@ -75,6 +78,7 @@ class BasicBlockCatalogStaticRecord:
         self._unsupported_lines = tuple(unsupported_lines)
         self._module_name = module_name
         self._module_filename = module_filename
+        self._description = description
 
     @property
     def template_key(self) -> str:
@@ -193,6 +197,16 @@ class BasicBlockCatalogStaticRecord:
         """
         return self._module_filename
 
+    @property
+    def description(self) -> str:
+        """
+        Return the human-facing behavior description.
+
+        :returns: Block behavior description, or an empty string when unspecified.
+        """
+        return self._description
+
+
 def build_basic_block_catalog_pending_template_reason() -> str:
     """
     Return the canonical pending reason for non-executable templates.
@@ -264,6 +278,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_4__mx_n',
             module_filename='typ_4__mx_n.py',
+            description='Affine transformation: yo = m * yi + n, where m scales the input and n adds an offset.',
         )
     )
 
@@ -1069,7 +1084,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='49',
             blkdef_name='-C',
             sample_display_name='-C',
-            display_label='-C',
+            display_label='Constant -C',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1078,6 +1093,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_49__c',
             module_filename='typ_49__c.py',
+            description='Outputs the negative configurable constant: yo = -C.',
         )
     )
 
@@ -1087,7 +1103,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='50',
             blkdef_name='0',
             sample_display_name='0',
-            display_label='0',
+            display_label='Constant 0',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1096,6 +1112,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_50__0',
             module_filename='typ_50__0.py',
+            description='Outputs the constant value zero.',
         )
     )
 
@@ -1105,7 +1122,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='51',
             blkdef_name='1',
             sample_display_name='1',
-            display_label='1',
+            display_label='Constant 1',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1114,6 +1131,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_51__1',
             module_filename='typ_51__1.py',
+            description='Outputs the constant value one.',
         )
     )
 
@@ -1123,7 +1141,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='52',
             blkdef_name='1/SQRT2',
             sample_display_name='1/SQRT2',
-            display_label='1/SQRT2',
+            display_label='1/sqrt(2)',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1141,7 +1159,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='53',
             blkdef_name='2PI',
             sample_display_name='2PI',
-            display_label='2PI [form A]',
+            display_label='2pi (form A)',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1159,7 +1177,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='54',
             blkdef_name='Bias',
             sample_display_name='Bias',
-            display_label='Bias',
+            display_label='Initial bias',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=(),
             outputs=('yo',),
@@ -1168,6 +1186,10 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_54__bias',
             module_filename='typ_54__bias.py',
+            description=(
+                'Bias initialization source: yo = bias. It has no signal input or configurable runtime parameter; '
+                'bias is initialized from the output value.'
+            ),
         )
     )
 
@@ -1177,7 +1199,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='55',
             blkdef_name='C',
             sample_display_name='C',
-            display_label='C [param: C; form A]',
+            display_label='Constant C',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1186,6 +1208,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_55__c',
             module_filename='typ_55__c.py',
+            description='Outputs the configurable constant C: yo = C.',
         )
     )
 
@@ -1195,7 +1218,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='56',
             blkdef_name='C1/C2',
             sample_display_name='C1/C2',
-            display_label='C1/C2',
+            display_label='Constant C1 / C2',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1204,6 +1227,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_56__c1_c2',
             module_filename='typ_56__c1_c2.py',
+            description='Outputs the ratio of two configurable constants: yo = C1 / C2.',
         )
     )
 
@@ -1213,7 +1237,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='57',
             blkdef_name='E',
             sample_display_name='E',
-            display_label='E',
+            display_label='e',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1231,7 +1255,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='58',
             blkdef_name='PI',
             sample_display_name='PI',
-            display_label='PI',
+            display_label='Constant pi',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1240,6 +1264,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_58__pi',
             module_filename='typ_58__pi.py',
+            description='Outputs the mathematical constant pi.',
         )
     )
 
@@ -1249,7 +1274,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='59',
             blkdef_name='PI/2',
             sample_display_name='PI/2',
-            display_label='PI/2',
+            display_label='pi/2',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1267,7 +1292,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='60',
             blkdef_name='SQRT(2/3)',
             sample_display_name='SQRT(2/3)',
-            display_label='SQRT(2/3)',
+            display_label='sqrt(2/3)',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1285,7 +1310,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='61',
             blkdef_name='SQRT(3/2)',
             sample_display_name='SQRT(3/2)',
-            display_label='SQRT(3/2)',
+            display_label='sqrt(3/2)',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1303,7 +1328,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='62',
             blkdef_name='SQRT(C1/C2)',
             sample_display_name='SQRT(C1/C2)',
-            display_label='SQRT(C1/C2)',
+            display_label='Constant sqrt(C1 / C2)',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1312,6 +1337,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_62__sqrt_c1_c2',
             module_filename='typ_62__sqrt_c1_c2.py',
+            description='Outputs the square root of a configurable constant ratio: yo = sqrt(C1 / C2).',
         )
     )
 
@@ -1321,7 +1347,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='63',
             blkdef_name='SQRT2',
             sample_display_name='SQRT2',
-            display_label='SQRT2',
+            display_label='Constant sqrt(2)',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1330,6 +1356,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_63__sqrt2',
             module_filename='typ_63__sqrt2.py',
+            description='Outputs the mathematical constant sqrt(2).',
         )
     )
 
@@ -1339,7 +1366,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='64',
             blkdef_name='SQRT3',
             sample_display_name='SQRT3',
-            display_label='SQRT3',
+            display_label='Constant sqrt(3)',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -1348,6 +1375,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_64__sqrt3',
             module_filename='typ_64__sqrt3.py',
+            description='Outputs the mathematical constant sqrt(3).',
         )
     )
 
@@ -1375,7 +1403,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='66',
             blkdef_name='balanced',
             sample_display_name='balanced',
-            display_label='balanced',
+            display_label='Balanced sequence',
             category_path=('Native', 'Transforms', 'RMS and Sequence'),
             inputs=(),
             outputs=('yo',),
@@ -1393,7 +1421,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='67',
             blkdef_name='delay',
             sample_display_name='delay',
-            display_label='delay',
+            display_label='Time delay',
             category_path=('Native', 'Continuous', 'Delays and Memory'),
             inputs=('yi',),
             outputs=('yo',),
@@ -1447,7 +1475,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='70',
             blkdef_name='invlapprox',
             sample_display_name='invlapprox',
-            display_label='invlapprox',
+            display_label='Inverse linear approximation',
             category_path=('Native', 'Lookup and Tables', 'Arrays and Matrices'),
             inputs=('yi',),
             outputs=('yo',),
@@ -1465,7 +1493,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='71',
             blkdef_name='lapprox',
             sample_display_name='lapprox',
-            display_label='lapprox',
+            display_label='Linear approximation',
             category_path=('Native', 'Lookup and Tables', 'Arrays and Matrices'),
             inputs=('yi',),
             outputs=('yo',),
@@ -1483,7 +1511,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='72',
             blkdef_name='lapprox2',
             sample_display_name='lapprox2',
-            display_label='lapprox2',
+            display_label='2D linear approximation',
             category_path=('Native', 'Lookup and Tables', 'Arrays and Matrices'),
             inputs=('row', 'col'),
             outputs=('yo',),
@@ -1501,7 +1529,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='73',
             blkdef_name='lapproxext',
             sample_display_name='lapproxext',
-            display_label='lapproxext',
+            display_label='Linear approximation with extrapolation',
             category_path=('Native', 'Lookup and Tables', 'Arrays and Matrices'),
             inputs=('yi',),
             outputs=('yo',),
@@ -1519,7 +1547,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='74',
             blkdef_name='lastvalue',
             sample_display_name='lastvalue',
-            display_label='Last value [form A]',
+            display_label='Previous value (form A)',
             category_path=('Native', 'Continuous', 'Delays and Memory'),
             inputs=('yi',),
             outputs=('yo',),
@@ -1537,7 +1565,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='75',
             blkdef_name='lim',
             sample_display_name='lim',
-            display_label='lim',
+            display_label='Limit (signal bounds)',
             category_path=('Native', 'Limits and Nonlinearities', 'Limiters'),
             inputs=('yi', 'y_min', 'y_max'),
             outputs=('yo',),
@@ -1555,7 +1583,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='76',
             blkdef_name='lim_const',
             sample_display_name='lim_const',
-            display_label='lim const',
+            display_label='Limit (constant bounds)',
             category_path=('Native', 'Limits and Nonlinearities', 'Limiters'),
             inputs=('yi',),
             outputs=('yo',),
@@ -1627,7 +1655,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='80',
             blkdef_name='rms',
             sample_display_name='rms',
-            display_label='rms',
+            display_label='RMS',
             category_path=('Native', 'Transforms', 'RMS and Sequence'),
             inputs=(),
             outputs=('yo',),
@@ -1645,7 +1673,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='81',
             blkdef_name='sapprox',
             sample_display_name='sapprox',
-            display_label='sapprox',
+            display_label='Spline approximation',
             category_path=('Native', 'Lookup and Tables', 'Arrays and Matrices'),
             inputs=('yi',),
             outputs=('yo',),
@@ -1663,7 +1691,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='82',
             blkdef_name='sapprox2',
             sample_display_name='sapprox2',
-            display_label='sapprox2',
+            display_label='2D spline approximation',
             category_path=('Native', 'Lookup and Tables', 'Arrays and Matrices'),
             inputs=('row', 'col'),
             outputs=('yo',),
@@ -1753,7 +1781,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='87',
             blkdef_name='time',
             sample_display_name='time',
-            display_label='time',
+            display_label='Simulation time (form A)',
             category_path=('Native', 'Waveforms and Time', 'Time Sources and Timers'),
             inputs=(),
             outputs=('yo',),
@@ -1762,6 +1790,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_87__time',
             module_filename='typ_87__time.py',
+            description='Legacy simulation-time source: yo equals the current global solver time.',
         )
     )
 
@@ -2113,7 +2142,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='107',
             blkdef_name='lastvalue _incbackward',
             sample_display_name='lastvalue _incbackward',
-            display_label='lastvalue (backward increment)',
+            display_label='Previous value (backward increment)',
             category_path=('Native', 'Continuous', 'Delays and Memory'),
             inputs=('yi',),
             outputs=('yo',),
@@ -2131,7 +2160,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='108',
             blkdef_name='lastvalue _incforward',
             sample_display_name='lastvalue _incforward',
-            display_label='lastvalue (forward increment)',
+            display_label='Previous value (forward increment)',
             category_path=('Native', 'Continuous', 'Delays and Memory'),
             inputs=('yi',),
             outputs=('yo',),
@@ -2149,7 +2178,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='109',
             blkdef_name='lastvalue',
             sample_display_name='lastvalue',
-            display_label='Last value [form B]',
+            display_label='Previous value (form B)',
             category_path=('Native', 'Continuous', 'Delays and Memory'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3211,7 +3240,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='168',
             blkdef_name='Multiply (-1)',
             sample_display_name='Multiply (-1)',
-            display_label='Multiply (-1)',
+            display_label='-1',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3220,6 +3249,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_168__multiply_1',
             module_filename='typ_168__multiply_1.py',
+            description='Fixed gain -1: yo = -yi.',
         )
     )
 
@@ -3229,7 +3259,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='169',
             blkdef_name='Multiply (-K)',
             sample_display_name='Multiply (-K)',
-            display_label='Multiply (-K)',
+            display_label='-K',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3238,6 +3268,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_169__multiply_k',
             module_filename='typ_169__multiply_k.py',
+            description='Negative configurable gain: yo = -K * yi.',
         )
     )
 
@@ -3247,7 +3278,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='170',
             blkdef_name='Multiply (1-K)',
             sample_display_name='Multiply (1-K)',
-            display_label='Multiply (1-K)',
+            display_label='1 - K',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3256,6 +3287,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_170__multiply_1_k',
             module_filename='typ_170__multiply_1_k.py',
+            description='Parameterized gain: yo = (1 - K) * yi.',
         )
     )
 
@@ -3265,7 +3297,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='171',
             blkdef_name='Multiply (1-K1-K2)',
             sample_display_name='Multiply (1-K1-K2)',
-            display_label='Multiply (1-K1-K2)',
+            display_label='1 - K1 - K2',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3274,6 +3306,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_171__multiply_1_k1_k2',
             module_filename='typ_171__multiply_1_k1_k2.py',
+            description='Parameterized gain: yo = (1 - K1 - K2) * yi.',
         )
     )
 
@@ -3283,7 +3316,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='172',
             blkdef_name='Multiply 1',
             sample_display_name='Multiply 1',
-            display_label='Multiply 1',
+            display_label='Identity (legacy)',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3292,6 +3325,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_172__multiply_1',
             module_filename='typ_172__multiply_1.py',
+            description='Identity relation: yo = yi.',
         )
     )
 
@@ -3301,7 +3335,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='173',
             blkdef_name='Multiply 1/K [p',
             sample_display_name='Multiply 1/K [p',
-            display_label='Multiply 1/K (parameter)',
+            display_label='Saturated reciprocal gain',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3310,6 +3344,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_173__multiply_1_k_p',
             module_filename='typ_173__multiply_1_k_p.py',
+            description='Saturated reciprocal gain: yo = clamp(yi / K, y_min, y_max); yo = 0 when K = 0.',
         )
     )
 
@@ -3319,7 +3354,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='174',
             blkdef_name='Multiply 1/K',
             sample_display_name='Multiply 1/K',
-            display_label='Multiply 1/K',
+            display_label='1 / K',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3328,6 +3363,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_174__multiply_1_k',
             module_filename='typ_174__multiply_1_k.py',
+            description='Reciprocal gain: yo = yi / K; yo = 0 when K = 0.',
         )
     )
 
@@ -3337,7 +3373,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='175',
             blkdef_name='Multiply 1/K1K2 [p',
             sample_display_name='Multiply 1/K1K2 [p',
-            display_label='Multiply 1/K1K2 (parameter)',
+            display_label='Saturated reciprocal product gain',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3346,6 +3382,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_175__multiply_1_k1k2_p',
             module_filename='typ_175__multiply_1_k1k2_p.py',
+            description='Saturated reciprocal product gain: yo = clamp(yi / (K1 * K2), y_min, y_max).',
         )
     )
 
@@ -3355,7 +3392,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='176',
             blkdef_name='Multiply 1/SQRT2',
             sample_display_name='Multiply 1/SQRT2',
-            display_label='Multiply 1/SQRT2',
+            display_label='1 / sqrt(2)',
             category_path=('Native', 'Continuous', 'Transfer Functions and Filters'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3364,6 +3401,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_176__multiply_1_sqrt2',
             module_filename='typ_176__multiply_1_sqrt2.py',
+            description='Fixed gain 1 / sqrt(2): yo = yi / sqrt(2).',
         )
     )
 
@@ -3373,7 +3411,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='177',
             blkdef_name='Multiply 1/SQRT3',
             sample_display_name='Multiply 1/SQRT3',
-            display_label='Multiply 1/SQRT3',
+            display_label='1 / sqrt(3)',
             category_path=('Native', 'Continuous', 'Transfer Functions and Filters'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3382,6 +3420,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_177__multiply_1_sqrt3',
             module_filename='typ_177__multiply_1_sqrt3.py',
+            description='Fixed gain 1 / sqrt(3): yo = yi / sqrt(3).',
         )
     )
 
@@ -3391,7 +3430,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='178',
             blkdef_name='Multiply K [p',
             sample_display_name='Multiply K [p',
-            display_label='Multiply K (parameter)',
+            display_label='Saturated gain',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3400,6 +3439,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_178__multiply_k_p',
             module_filename='typ_178__multiply_k_p.py',
+            description='Saturated gain: yo = clamp(K * yi, y_min, y_max).',
         )
     )
 
@@ -3409,7 +3449,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='179',
             blkdef_name='Multiply K',
             sample_display_name='Multiply K',
-            display_label='Multiply K',
+            display_label='K',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3418,6 +3458,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_179__multiply_k',
             module_filename='typ_179__multiply_k.py',
+            description='Configurable gain: yo = K * yi.',
         )
     )
 
@@ -3427,7 +3468,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='180',
             blkdef_name='Multiply K1 K2 / K3',
             sample_display_name='Multiply K1 K2 / K3',
-            display_label='Multiply K1 K2 / K3',
+            display_label='K1 * K2 / K3',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3436,6 +3477,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_180__multiply_k1_k2_k3',
             module_filename='typ_180__multiply_k1_k2_k3.py',
+            description='Parameterized gain: yo = (K1 * K2 / K3) * yi.',
         )
     )
 
@@ -3445,7 +3487,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='181',
             blkdef_name='Multiply K1 K2 K3',
             sample_display_name='Multiply K1 K2 K3',
-            display_label='Multiply K1 K2 K3',
+            display_label='K1 * K2 * K3',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3454,6 +3496,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_181__multiply_k1_k2_k3',
             module_filename='typ_181__multiply_k1_k2_k3.py',
+            description='Parameterized gain: yo = (K1 * K2 * K3) * yi.',
         )
     )
 
@@ -3463,7 +3506,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='182',
             blkdef_name='Multiply K1 K2',
             sample_display_name='Multiply K1 K2',
-            display_label='Multiply K1 K2',
+            display_label='K1 * K2',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3472,6 +3515,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_182__multiply_k1_k2',
             module_filename='typ_182__multiply_k1_k2.py',
+            description='Parameterized gain: yo = (K1 * K2) * yi.',
         )
     )
 
@@ -3481,7 +3525,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='183',
             blkdef_name='Multiply K1/K2',
             sample_display_name='Multiply K1/K2',
-            display_label='Multiply K1/K2',
+            display_label='K1 / K2',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3490,6 +3534,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_183__multiply_k1_k2',
             module_filename='typ_183__multiply_k1_k2.py',
+            description='Parameterized gain: yo = (K1 / K2) * yi.',
         )
     )
 
@@ -3499,7 +3544,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='184',
             blkdef_name='Multiply PI',
             sample_display_name='Multiply PI',
-            display_label='Multiply PI',
+            display_label='pi',
             category_path=('Native', 'Control and Measurement', 'Controllers'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3508,6 +3553,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_184__multiply_pi',
             module_filename='typ_184__multiply_pi.py',
+            description='Fixed gain pi: yo = pi * yi.',
         )
     )
 
@@ -3517,7 +3563,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='185',
             blkdef_name='Multiply SQRT(2/3)',
             sample_display_name='Multiply SQRT(2/3)',
-            display_label='Multiply SQRT(2/3)',
+            display_label='sqrt(2 / 3)',
             category_path=('Native', 'Continuous', 'Transfer Functions and Filters'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3526,6 +3572,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_185__multiply_sqrt_2_3',
             module_filename='typ_185__multiply_sqrt_2_3.py',
+            description='Fixed gain sqrt(2 / 3): yo = sqrt(2 / 3) * yi.',
         )
     )
 
@@ -3535,7 +3582,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='186',
             blkdef_name='Multiply SQRT(3/2)',
             sample_display_name='Multiply SQRT(3/2)',
-            display_label='Multiply SQRT(3/2)',
+            display_label='sqrt(3 / 2)',
             category_path=('Native', 'Continuous', 'Transfer Functions and Filters'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3544,6 +3591,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_186__multiply_sqrt_3_2',
             module_filename='typ_186__multiply_sqrt_3_2.py',
+            description='Fixed gain sqrt(3 / 2): yo = sqrt(3 / 2) * yi.',
         )
     )
 
@@ -3553,7 +3601,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='187',
             blkdef_name='Multiply SQRT(K1/K2)',
             sample_display_name='Multiply SQRT(K1/K2)',
-            display_label='Multiply SQRT(K1/K2)',
+            display_label='sqrt(K1 / K2)',
             category_path=('Native', 'Continuous', 'Transfer Functions and Filters'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3562,6 +3610,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_187__multiply_sqrt_k1_k2',
             module_filename='typ_187__multiply_sqrt_k1_k2.py',
+            description='Parameterized gain: yo = sqrt(K1 / K2) * yi.',
         )
     )
 
@@ -3571,7 +3620,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='188',
             blkdef_name='Multiply SQRT2',
             sample_display_name='Multiply SQRT2',
-            display_label='Multiply SQRT2',
+            display_label='sqrt(2)',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3580,6 +3629,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_188__multiply_sqrt2',
             module_filename='typ_188__multiply_sqrt2.py',
+            description='Fixed gain sqrt(2): yo = sqrt(2) * yi.',
         )
     )
 
@@ -3589,7 +3639,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='189',
             blkdef_name='Multiply SQRT3',
             sample_display_name='Multiply SQRT3',
-            display_label='Multiply SQRT3',
+            display_label='sqrt(3)',
             category_path=('Native', 'Math and Functions', 'Scaling and Products'),
             inputs=('yi',),
             outputs=('yo',),
@@ -3598,6 +3648,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_189__multiply_sqrt3',
             module_filename='typ_189__multiply_sqrt3.py',
+            description='Fixed gain sqrt(3): yo = sqrt(3) * yi.',
         )
     )
 
@@ -6271,7 +6322,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='338',
             blkdef_name='EQUAL',
             sample_display_name='EQUAL',
-            display_label='EQUAL',
+            display_label='Equal',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi1', 'yi2'),
             outputs=('yo',),
@@ -6559,7 +6610,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='354',
             blkdef_name='ABS',
             sample_display_name='ABS',
-            display_label='ABS',
+            display_label='abs',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -6577,7 +6628,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='355',
             blkdef_name='CEIL',
             sample_display_name='CEIL',
-            display_label='CEIL',
+            display_label='ceil',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -6595,7 +6646,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='356',
             blkdef_name='EXP',
             sample_display_name='EXP',
-            display_label='EXP',
+            display_label='exp',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -6613,7 +6664,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='357',
             blkdef_name='FLOOR',
             sample_display_name='FLOOR',
-            display_label='FLOOR',
+            display_label='floor',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -6631,7 +6682,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='358',
             blkdef_name='FRAC',
             sample_display_name='FRAC',
-            display_label='FRAC',
+            display_label='frac',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -6649,7 +6700,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='359',
             blkdef_name='LN',
             sample_display_name='LN',
-            display_label='LN',
+            display_label='ln',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -6667,7 +6718,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='360',
             blkdef_name='LOG',
             sample_display_name='LOG',
-            display_label='LOG',
+            display_label='log',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -6694,6 +6745,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_361__max2',
             module_filename='typ_361__max2.py',
+            description='Outputs the largest of two input signals: yo = max(yi1, yi2).',
         )
     )
 
@@ -6712,6 +6764,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_362__max3',
             module_filename='typ_362__max3.py',
+            description='Outputs the largest of three input signals: yo = max(yi1, yi2, yi3).',
         )
     )
 
@@ -6730,6 +6783,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_363__max4',
             module_filename='typ_363__max4.py',
+            description='Outputs the largest of four input signals: yo = max(yi1, yi2, yi3, yi4).',
         )
     )
 
@@ -6748,6 +6802,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_364__min2',
             module_filename='typ_364__min2.py',
+            description='Outputs the smallest of two input signals: yo = min(yi1, yi2).',
         )
     )
 
@@ -6766,6 +6821,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_365__min3',
             module_filename='typ_365__min3.py',
+            description='Outputs the smallest of three input signals: yo = min(yi1, yi2, yi3).',
         )
     )
 
@@ -6784,6 +6840,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_366__min4',
             module_filename='typ_366__min4.py',
+            description='Outputs the smallest of four input signals: yo = min(yi1, yi2, yi3, yi4).',
         )
     )
 
@@ -6793,7 +6850,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='367',
             blkdef_name='MODULO',
             sample_display_name='MODULO',
-            display_label='MODULO',
+            display_label='modulo',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -6820,6 +6877,11 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_368__reciprocal_fb',
             module_filename='typ_368__reciprocal_fb.py',
+            description=(
+                'Returns a protected reciprocal for feedback loops: '
+                'yo = polarity(u) / max(abs(u), 1e-6), where polarity is '
+                '+1 for u >= 0 and -1 otherwise.'
+            ),
         )
     )
 
@@ -6838,6 +6900,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_369__reciprocal',
             module_filename='typ_369__reciprocal.py',
+            description='Returns the exact reciprocal yo = 1 / u; the result is undefined when u = 0.',
         )
     )
 
@@ -6847,7 +6910,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='370',
             blkdef_name='ROUND',
             sample_display_name='ROUND',
-            display_label='ROUND',
+            display_label='round',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -6865,7 +6928,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='371',
             blkdef_name='SIGN',
             sample_display_name='SIGN',
-            display_label='SIGN',
+            display_label='sign',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -6883,7 +6946,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='372',
             blkdef_name='SQRT',
             sample_display_name='SQRT',
-            display_label='SQRT',
+            display_label='sqrt',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -6937,7 +7000,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='375',
             blkdef_name='ADD COMPLEX',
             sample_display_name='ADD COMPLEX',
-            display_label='ADD COMPLEX',
+            display_label='Complex addition',
             category_path=('Native', 'Complex', 'Operations'),
             inputs=('re1', 'im1', 're2', 'im2'),
             outputs=('re', 'im'),
@@ -6955,7 +7018,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='376',
             blkdef_name='CONJ COMPLEX',
             sample_display_name='CONJ COMPLEX',
-            display_label='CONJ COMPLEX',
+            display_label='Complex conjugate',
             category_path=('Native', 'Complex', 'Operations'),
             inputs=('re1', 'im1'),
             outputs=('re', 'im'),
@@ -6973,7 +7036,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='377',
             blkdef_name='DIV COMPLEX',
             sample_display_name='DIV COMPLEX',
-            display_label='DIV COMPLEX',
+            display_label='Complex division',
             category_path=('Native', 'Complex', 'Operations'),
             inputs=('re1', 'im1', 're2', 'im2'),
             outputs=('re', 'im'),
@@ -6991,7 +7054,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='378',
             blkdef_name='MAG COMPLEX',
             sample_display_name='MAG COMPLEX',
-            display_label='MAG COMPLEX',
+            display_label='Complex magnitude',
             category_path=('Native', 'Complex', 'Operations'),
             inputs=('re', 'im'),
             outputs=('mag',),
@@ -7009,7 +7072,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='379',
             blkdef_name='MUL COMPLEX',
             sample_display_name='MUL COMPLEX',
-            display_label='MUL COMPLEX',
+            display_label='Complex multiplication',
             category_path=('Native', 'Complex', 'Operations'),
             inputs=('re1', 'im1', 're2', 'im2'),
             outputs=('re', 'im'),
@@ -7027,7 +7090,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='380',
             blkdef_name='SUB COMPLEX',
             sample_display_name='SUB COMPLEX',
-            display_label='SUB COMPLEX',
+            display_label='Complex subtraction',
             category_path=('Native', 'Complex', 'Operations'),
             inputs=('re1', 'im1', 're2', 'im2'),
             outputs=('re', 'im'),
@@ -7045,7 +7108,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='381',
             blkdef_name='TO POLAR COMPLEX',
             sample_display_name='TO POLAR COMPLEX',
-            display_label='TO POLAR COMPLEX',
+            display_label='Cartesian to polar',
             category_path=('Native', 'Complex', 'Operations'),
             inputs=('re', 'im'),
             outputs=('mag', 'phi'),
@@ -7063,7 +7126,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='382',
             blkdef_name='TO RECTANGULAR COMPLEX',
             sample_display_name='TO RECTANGULAR COMPLEX',
-            display_label='TO RECTANGULAR COMPLEX',
+            display_label='Polar to Cartesian',
             category_path=('Native', 'Complex', 'Operations'),
             inputs=('mag', 'phi'),
             outputs=('re', 'im'),
@@ -7081,7 +7144,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='383',
             blkdef_name='ACOS',
             sample_display_name='ACOS',
-            display_label='ACOS',
+            display_label='acos',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7099,7 +7162,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='384',
             blkdef_name='ASIN',
             sample_display_name='ASIN',
-            display_label='ASIN',
+            display_label='asin',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7117,7 +7180,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='385',
             blkdef_name='ATAN',
             sample_display_name='ATAN',
-            display_label='ATAN',
+            display_label='atan',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7135,7 +7198,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='386',
             blkdef_name='ATAN2',
             sample_display_name='ATAN2',
-            display_label='ATAN2',
+            display_label='atan2',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('re', 'im'),
             outputs=('yo',),
@@ -7153,7 +7216,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='387',
             blkdef_name='ATAN2D',
             sample_display_name='ATAN2D',
-            display_label='ATAN2D',
+            display_label='atan2d',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('re', 'im'),
             outputs=('yo',),
@@ -7171,7 +7234,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='388',
             blkdef_name='ATAND',
             sample_display_name='ATAND',
-            display_label='ATAND',
+            display_label='atand',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7189,7 +7252,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='389',
             blkdef_name='COS',
             sample_display_name='COS',
-            display_label='COS',
+            display_label='cos',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7207,7 +7270,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='390',
             blkdef_name='COSD',
             sample_display_name='COSD',
-            display_label='COSD',
+            display_label='cosd',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7225,7 +7288,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='391',
             blkdef_name='COSH',
             sample_display_name='COSH',
-            display_label='COSH',
+            display_label='cosh',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7243,7 +7306,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='392',
             blkdef_name='COSHD',
             sample_display_name='COSHD',
-            display_label='COSHD',
+            display_label='coshd',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7261,7 +7324,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='393',
             blkdef_name='SIN',
             sample_display_name='SIN',
-            display_label='SIN',
+            display_label='sin',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7279,7 +7342,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='394',
             blkdef_name='SIND',
             sample_display_name='SIND',
-            display_label='SIND',
+            display_label='sind',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7297,7 +7360,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='395',
             blkdef_name='SINH',
             sample_display_name='SINH',
-            display_label='SINH',
+            display_label='sinh',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7315,7 +7378,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='396',
             blkdef_name='SINHD',
             sample_display_name='SINHD',
-            display_label='SINHD',
+            display_label='sinhd',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7333,7 +7396,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='397',
             blkdef_name='TAN',
             sample_display_name='TAN',
-            display_label='TAN',
+            display_label='tan',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7351,7 +7414,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='398',
             blkdef_name='TAND',
             sample_display_name='TAND',
-            display_label='TAND',
+            display_label='tand',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7369,7 +7432,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='399',
             blkdef_name='TANH',
             sample_display_name='TANH',
-            display_label='TANH',
+            display_label='tanh',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7387,7 +7450,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='400',
             blkdef_name='TANHD',
             sample_display_name='TANHD',
-            display_label='TANHD',
+            display_label='tanhd',
             category_path=('Native', 'Math and Functions', 'Elementary Functions'),
             inputs=('yi',),
             outputs=('yo',),
@@ -7459,7 +7522,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='404',
             blkdef_name='Gear Box',
             sample_display_name='Gear Box',
-            display_label='Gear Box',
+            display_label='Gearbox',
             category_path=('Native', 'Mechanical', 'Drive Train'),
             inputs=('speed',),
             outputs=('omega',),
@@ -7549,7 +7612,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='411',
             blkdef_name='2PI',
             sample_display_name='2PI',
-            display_label='2PI [form B]',
+            display_label='2pi (form B)',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -7603,7 +7666,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='417',
             blkdef_name='2PI',
             sample_display_name='2PI',
-            display_label='2PI [form C]',
+            display_label='2pi (form C)',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -7657,7 +7720,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='423',
             blkdef_name='2PI',
             sample_display_name='2PI',
-            display_label='2PI [form D]',
+            display_label='2pi (form D)',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -7711,7 +7774,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='429',
             blkdef_name='2PI',
             sample_display_name='2PI',
-            display_label='2PI [form E]',
+            display_label='2pi (form E)',
             category_path=('Native', 'Math and Functions', 'Constants and Scaling'),
             inputs=(),
             outputs=('yo',),
@@ -8530,6 +8593,10 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_475__clock_t_0_par',
             module_filename='typ_475__clock_t_0_par.py',
+            description=(
+                'Generates a binary periodic clock using the configurable cFreq parameter; '
+                'the clock remains inactive until the global simulation time is greater than zero.'
+            ),
         )
     )
 
@@ -8548,6 +8615,10 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_476__clock_t_0_sig',
             module_filename='typ_476__clock_t_0_sig.py',
+            description=(
+                'Generates a binary periodic clock using the extfrq input signal; '
+                'the clock remains inactive until the global simulation time is greater than zero.'
+            ),
         )
     )
 
@@ -8566,6 +8637,10 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_477__clock_t_t0_par',
             module_filename='typ_477__clock_t_t0_par.py',
+            description=(
+                'Generates a binary periodic clock using the configurable cFreq parameter; '
+                'the clock starts after the simulation advances beyond its initialization time t0.'
+            ),
         )
     )
 
@@ -8584,6 +8659,10 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_478__clock_t_t0_sig',
             module_filename='typ_478__clock_t_t0_sig.py',
+            description=(
+                'Generates a binary periodic clock using the extfrq input signal; '
+                'the clock starts after the simulation advances beyond its initialization time t0.'
+            ),
         )
     )
 
@@ -8602,6 +8681,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_479__clock_par',
             module_filename='typ_479__clock_par.py',
+            description='Generates a binary periodic clock using the configurable cFreq parameter.',
         )
     )
 
@@ -8620,6 +8700,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_480__clock_sig',
             module_filename='typ_480__clock_sig.py',
+            description='Generates a binary periodic clock whose frequency is supplied by the extfrq input signal.',
         )
     )
 
@@ -8647,7 +8728,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='482',
             blkdef_name='Sawtooth Wave Generator _ip',
             sample_display_name='Sawtooth Wave Generator _ip',
-            display_label='Sawtooth Wave Generator (pulse)',
+            display_label='Sawtooth wave generator (pulse)',
             category_path=('Native', 'Waveforms and Time', 'Signal Generators'),
             inputs=(),
             outputs=('yo',),
@@ -8665,7 +8746,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='483',
             blkdef_name='Sawtooth Wave Generator',
             sample_display_name='Sawtooth Wave Generator',
-            display_label='Sawtooth Wave Generator',
+            display_label='Sawtooth wave generator',
             category_path=('Native', 'Waveforms and Time', 'Signal Generators'),
             inputs=(),
             outputs=('yo',),
@@ -8683,7 +8764,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='484',
             blkdef_name='Sine Wave Generator (t>t0)',
             sample_display_name='Sine Wave Generator (t>t0)',
-            display_label='Sine Wave Generator (t>t0)',
+            display_label='Sine wave generator (t>t0)',
             category_path=('Native', 'Waveforms and Time', 'Signal Generators'),
             inputs=(),
             outputs=('yo',),
@@ -8701,7 +8782,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='485',
             blkdef_name='Sine Wave Generator',
             sample_display_name='Sine Wave Generator',
-            display_label='Sine Wave Generator',
+            display_label='Sine wave generator',
             category_path=('Native', 'Waveforms and Time', 'Signal Generators'),
             inputs=(),
             outputs=('yo',),
@@ -8719,7 +8800,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='486',
             blkdef_name='Square Wave Generator',
             sample_display_name='Square Wave Generator',
-            display_label='Square Wave Generator',
+            display_label='Square wave generator',
             category_path=('Native', 'Waveforms and Time', 'Signal Generators'),
             inputs=(),
             outputs=('yo',),
@@ -8737,7 +8818,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='487',
             blkdef_name='Square Wave Generator_ip',
             sample_display_name='Square Wave Generator_ip',
-            display_label='Square Wave Generator ip',
+            display_label='Square wave generator (pulse input)',
             category_path=('Native', 'Waveforms and Time', 'Signal Generators'),
             inputs=(),
             outputs=('yo',),
@@ -8755,7 +8836,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='488',
             blkdef_name='Time',
             sample_display_name='Time',
-            display_label='Time',
+            display_label='Simulation time',
             category_path=('Native', 'Waveforms and Time', 'Time Sources and Timers'),
             inputs=(),
             outputs=('t',),
@@ -8764,6 +8845,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             unsupported_lines=(),
             module_name='typ_488__time',
             module_filename='typ_488__time.py',
+            description='Outputs the current global solver simulation time.',
         )
     )
 
@@ -8773,7 +8855,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='489',
             blkdef_name='Triangle Wave Generator',
             sample_display_name='Triangle Wave Generator',
-            display_label='Triangle Wave Generator',
+            display_label='Triangle wave generator',
             category_path=('Native', 'Waveforms and Time', 'Signal Generators'),
             inputs=(),
             outputs=('yo',),
@@ -8791,7 +8873,7 @@ def get_basic_block_catalog_static_records() -> Sequence[BasicBlockCatalogStatic
             typ_id='490',
             blkdef_name='Triangle Wave Generator_ip',
             sample_display_name='Triangle Wave Generator_ip',
-            display_label='Triangle Wave Generator ip',
+            display_label='Triangle wave generator (pulse input)',
             category_path=('Native', 'Waveforms and Time', 'Signal Generators'),
             inputs=(),
             outputs=('yo',),

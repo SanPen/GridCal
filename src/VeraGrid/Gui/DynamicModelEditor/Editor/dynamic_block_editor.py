@@ -11,13 +11,16 @@ from PySide6.QtWidgets import (QGraphicsItem, QDialog, QVBoxLayout, QDialogButto
 from PySide6.QtGui import (QDropEvent, QDragEnterEvent, QDragMoveEvent)
 from PySide6.QtCore import Qt, QPointF, Signal
 
+from VeraGridEngine import BlockType
 from VeraGridEngine.Devices.Parents.branch_parent import BranchParent
 from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Utils.Symbolic.bus_rms_template import initialize_bus_rms
 
 from VeraGridEngine.Devices.Parents.injection_parent import InjectionParent
 from VeraGridEngine.Utils.Symbolic.rms_measurements_functions import (measurement_vars_dict,
+                                                                      find_measurements_for_inputs_group,
                                                                       build_rms_voltage_meter_outputs_from_polar,
+                                                                      build_rms_pll_measurements,
                                                                       build_rms_voltage_meter_outputs_from_dc,
                                                                       build_rms_current_meter_outputs_from_pq,
                                                                       build_rms_current_meter_outputs_from_dc)
@@ -40,9 +43,12 @@ from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.Devices.Dynamic.fmu_template import FmuTemplate
 from VeraGridEngine.Devices.Dynamic.manufacturer_native_model import ManufacturerNativeModel
 from VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks import signal_pair
-from VeraGridEngine.Templates.BasicBlockCatalog import BasicBlockTemplateDescriptor
-
-from VeraGridEngine.Templates.BasicBlockCatalog import load_basic_block_catalog_template
+from VeraGridEngine.Templates.BasicBlockCatalog import (
+    BasicBlockTemplateDescriptor,
+    ExactMathematicalBlockDescriptor,
+    build_exact_mathematical_block_template,
+    load_basic_block_catalog_template,
+)
 from VeraGridEngine.Templates.ProceduralLogicCatalog import (
     ProceduralBlockTemplateDescriptor,
     build_procedural_block_catalog_template,
@@ -222,6 +228,7 @@ class SignalPairOutputClipboardEntry:
 CanvasClipboardEntry: TypeAlias = BlockClipboardEntry | SignalPairOutputClipboardEntry
 DynamicLibraryPayload: TypeAlias = (
     BlockType
+    | ExactMathematicalBlockDescriptor
     | BasicBlockTemplateDescriptor
     | ProceduralBlockTemplateDescriptor
     | InternationalStandardTemplateDescriptor
@@ -2662,6 +2669,28 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             dialog_reference = VarPowerFlowReferenceType.P
         elif reference == VarPowerFlowReferenceType.Qf or reference == VarPowerFlowReferenceType.Qt:
             dialog_reference = VarPowerFlowReferenceType.Q
+        elif reference == VarPowerFlowReferenceType.Uf or reference == VarPowerFlowReferenceType.Ut:
+            dialog_reference = VarPowerFlowReferenceType.U
+        elif reference == VarPowerFlowReferenceType.URf or reference == VarPowerFlowReferenceType.URt:
+            dialog_reference = VarPowerFlowReferenceType.UR
+        elif reference == VarPowerFlowReferenceType.UIf or reference == VarPowerFlowReferenceType.UIt:
+            dialog_reference = VarPowerFlowReferenceType.UI
+        elif reference == VarPowerFlowReferenceType.URf_A or reference == VarPowerFlowReferenceType.URt_A:
+            dialog_reference = VarPowerFlowReferenceType.UR_A
+        elif reference == VarPowerFlowReferenceType.URf_B or reference == VarPowerFlowReferenceType.URt_B:
+            dialog_reference = VarPowerFlowReferenceType.UR_B
+        elif reference == VarPowerFlowReferenceType.URf_C or reference == VarPowerFlowReferenceType.URt_C:
+            dialog_reference = VarPowerFlowReferenceType.UR_C
+        elif reference == VarPowerFlowReferenceType.UIf_A or reference == VarPowerFlowReferenceType.UIt_A:
+            dialog_reference = VarPowerFlowReferenceType.UI_A
+        elif reference == VarPowerFlowReferenceType.UIf_B or reference == VarPowerFlowReferenceType.UIt_B:
+            dialog_reference = VarPowerFlowReferenceType.UI_B
+        elif reference == VarPowerFlowReferenceType.UIf_C or reference == VarPowerFlowReferenceType.UIt_C:
+            dialog_reference = VarPowerFlowReferenceType.UI_C
+        elif reference == VarPowerFlowReferenceType.COSPHIf or reference == VarPowerFlowReferenceType.COSPHIt:
+            dialog_reference = VarPowerFlowReferenceType.COSPHI
+        elif reference == VarPowerFlowReferenceType.SINPHIf or reference == VarPowerFlowReferenceType.SINPHIt:
+            dialog_reference = VarPowerFlowReferenceType.SINPHI
         else:
             dialog_reference = reference
         return dialog_reference
@@ -3578,16 +3607,16 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         """
         Restore the default expansion state for the library tree.
 
-        The first two levels remain visible for the established Library
-        branches. Procedural logic and International standards are exceptions:
-        their named groups provide enough context while collapsed and otherwise
-        expose every model at once, making the tree unnecessarily long.
+        The top-level Library branches remain open so their categories are
+        visible, while those categories start collapsed. Procedural logic and
+        International standards retain their explicit folding rules in case
+        their surrounding branch is expanded programmatically.
 
         :return: None.
         """
 
         self.ui.libraryTreeView.collapseAll()
-        self.ui.libraryTreeView.expandToDepth(1)
+        self.ui.libraryTreeView.expandToDepth(0)
 
         # International standards now live below Devices and individual
         # control families. Fold every occurrence recursively while leaving
@@ -3710,6 +3739,7 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                     payload_data,
                     (
                         BlockType,
+                        ExactMathematicalBlockDescriptor,
                         BasicBlockTemplateDescriptor,
                         ProceduralBlockTemplateDescriptor,
                         InternationalStandardTemplateDescriptor,
@@ -3751,11 +3781,20 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             drag_token = bytes(mime_data.data(self.mime_type)).decode("utf-8")
             payload = self.library.library_model.get_drag_payload(drag_token)
 
-            if isinstance(payload,
-                          (BlockType, BasicBlockTemplateDescriptor, ProceduralBlockTemplateDescriptor,
-                           InternationalStandardTemplateDescriptor,
-                           LibraryDeviceTemplateSpec,
-                           RmsModelTemplate, EmtModelTemplate, FmuTemplate)):
+            if isinstance(
+                    payload,
+                    (
+                        BlockType,
+                        ExactMathematicalBlockDescriptor,
+                        BasicBlockTemplateDescriptor,
+                        ProceduralBlockTemplateDescriptor,
+                        InternationalStandardTemplateDescriptor,
+                        LibraryDeviceTemplateSpec,
+                        RmsModelTemplate,
+                        EmtModelTemplate,
+                        FmuTemplate,
+                    ),
+            ):
                 return payload
             else:
                 return None
@@ -3982,8 +4021,19 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         if template_builder is None:
             return None
         else:
-            template: EmtModelTemplate | RmsModelTemplate = template_builder.eval()
-            block_model: Block = template.block
+            template: Block | EmtModelTemplate | RmsModelTemplate = template_builder.eval()
+            if isinstance(template, Block):
+                block_model: Block = template
+                block_model.name = item_name
+            else:
+                block_model = template.block
+                if blocktype == BlockType.MIN or blocktype == BlockType.MAX:
+                    # MIN/MAX historically returned their Block directly. Keep
+                    # their generated instance names stable after aligning the
+                    # builder return type with the template contract.
+                    block_model.name = item_name
+                else:
+                    pass
 
         block_item: graph.GenericBlockItem = graph.GenericBlockItem(
             editor=self,
@@ -4795,9 +4845,58 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         var: Var
         if block_type == BlockType.INPUT_CONN:
             if self.main_block.in_vars:
-                for var in self.main_block.in_vars:
-                    block_model.out_vars.append(var)
-                input_output_blocks.append(block_model)
+                # here we have to distinguish between injections and branches
+                if self.api_object.device_type in [DeviceType.BranchDevice,
+                                            DeviceType.LineDevice,
+                                            DeviceType.Transformer2WDevice,
+                                            DeviceType.Transformer3WDevice,
+                                            DeviceType.HVDCLineDevice,
+                                            DeviceType.SwitchDevice,
+                                            DeviceType.SeriesReactanceDevice,
+                                            DeviceType.UpfcDevice]:
+
+                    # find inputs for from bus
+                    # here we have to select the kind of measurements block do add
+                    measurements_types: List[BlockType] = find_measurements_for_inputs_group(self.api_object.bus_from,
+                                                                                             self.main_block.in_vars)
+                    for measurements_type in measurements_types:
+                        block_model = self.create_one_measurements_block(measurements_type, self.api_object.bus_from)
+
+                        # for var in self.main_block.in_vars:
+                        #     block_model.out_vars.append(var)
+                        input_output_blocks.append(block_model)
+
+                    # find inputs for to bus
+                    # here we have to select the kind of measurements block do add
+                    measurements_types: List[BlockType] = find_measurements_for_inputs_group(self.api_object.bus_to,
+                                                                                            self.main_block.in_vars)
+
+                    for measurements_type in measurements_types:
+                        block_model = self.create_one_measurements_block(measurements_type, self.api_object.bus_to)
+                        # for var in self.main_block.in_vars:
+                        #     block_model.out_vars.append(var)
+                        input_output_blocks.append(block_model)
+
+                elif self.api_object.device_type == DeviceType.VscDevice:
+
+                    # here we have to select the kind of measurements block do add
+                    measurements_types: List[BlockType] = find_measurements_for_inputs_group(self.api_object.bus_from, self.main_block.in_vars)
+
+                    for measurements_type in measurements_types:
+                        block_model = self.create_one_measurements_block(measurements_type, self.api_object.bus_from)
+                    # for var in self.main_block.in_vars:
+                    #     block_model.out_vars.append(var)
+                        input_output_blocks.append(block_model)
+
+                else:
+                    # here we have to select the kind of measurements block do add
+                    measurements_types: List[BlockType] = find_measurements_for_inputs_group(self.api_object.bus, self.main_block.in_vars)
+
+                    for measurements_type in measurements_types:
+                        block_model = self.create_one_measurements_block(measurements_type, self.api_object.bus)
+                    # for var in self.main_block.in_vars:
+                    #     block_model.out_vars.append(var)
+                        input_output_blocks.append(block_model)
             else:
                 pass
 
@@ -4974,6 +5073,8 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         if block_type == BlockType.MEASUREMENTS_VOLTAGE_FROM_POLAR:
             block, vars_list = build_rms_voltage_meter_outputs_from_polar(self.var_factory, bus_vars[0], bus_vars[1],
                                                                           nominal_frequency, nominal_frequency)
+        if block_type == BlockType.MEASUREMENTS_PLL:
+            block, vars_list = build_rms_pll_measurements(self.var_factory, bus_vars[1])
 
         elif block_type == BlockType.MEASUREMENTS_VOLTAGE_FROM_DC:
             block, vars_list = build_rms_voltage_meter_outputs_from_dc(self.var_factory, bus_vars[0],
@@ -5034,6 +5135,58 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                 block.out_vars.append(var)
             else:
                 pass
+
+        block.name = block_type.name
+        return block
+
+    def create_one_measurements_block(self, block_type: BlockType, bus: ALL_DEV_TYPES):
+        """
+        create measurements block from type
+        :param block_type:
+        :type block_type:
+        :return:
+        :rtype:
+        """
+        block: Block = Block()
+        vars_list: List[Var] = list()
+        nominal_frequency = Const(self.circuit.fBase)
+        if block_type == BlockType.INPUT_CONN:
+            vars_list = self.main_block.in_vars
+            block.algebraic_vars = vars_list
+            block.out_vars = vars_list
+
+        if block_type == BlockType.MEASUREMENTS_VOLTAGE_FROM_POLAR:
+            block, vars_list = build_rms_voltage_meter_outputs_from_polar(self.var_factory, self.main_block.in_vars[0], self.main_block.in_vars[1],
+                                                                          nominal_frequency, nominal_frequency)
+            block.out_vars = vars_list
+
+        elif block_type == BlockType.MEASUREMENTS_VOLTAGE_FROM_DC:
+            block, vars_list = build_rms_voltage_meter_outputs_from_dc(self.var_factory, self.main_block.in_vars[0],
+                                                                       nominal_frequency)
+            block.out_vars = vars_list
+
+        elif block_type == BlockType.MEASUREMENTS_CURRENT_FROM_PQ:
+            pq_vars = self.get_p_q_vars(bus)
+            block, vars_list = build_rms_current_meter_outputs_from_pq(self.var_factory, self.main_block.in_vars[0], self.main_block.in_vars[1],
+                                                                       pq_vars[0], pq_vars[1])
+            block.out_vars = vars_list
+
+        elif block_type == BlockType.MEASUREMENTS_CURRENT_FROM_DC:
+            pq_vars = self.get_p_q_vars(bus)
+            block, vars_list = build_rms_current_meter_outputs_from_dc(self.var_factory, self.main_block.in_vars[0],
+                                                                       pq_vars[0])
+            block.out_vars = vars_list
+
+        elif block_type == BlockType.MEASUREMENTS_VOLTAGE_ANGLE:
+
+            vars_list = self.main_block.in_vars
+            block.out_vars = vars_list
+
+        elif block_type == BlockType.MEASUREMENTS_P_Q:
+            pq_vars = self.get_p_q_vars(bus)
+            vars_list = pq_vars
+            block.algebraic_vars = vars_list
+            block.out_vars = vars_list
 
         block.name = block_type.name
         return block
@@ -5571,6 +5724,13 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
 
         elif isinstance(payload, BlockType):
             return self.create_block_item_from_blocktype(block_type=payload, x_pos=x_pos, y_pos=y_pos)
+
+        elif isinstance(payload, ExactMathematicalBlockDescriptor):
+            exact_template: EmtModelTemplate = build_exact_mathematical_block_template(
+                descriptor=payload,
+                var_factory=self.var_factory,
+            )
+            return self.create_template_block_item(template=exact_template, x_pos=x_pos, y_pos=y_pos)
 
         elif isinstance(payload, BasicBlockTemplateDescriptor):
             template: EmtModelTemplate = load_basic_block_catalog_template(payload, self.var_factory)
@@ -9416,6 +9576,36 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         reference: VarPowerFlowReferenceType
         root_var: Var
         mapping_key: VarPowerFlowReferenceType
+        has_unpersisted_template_terminal_child: bool = False
+        child_block: Block
+        child_input: Var
+        if isinstance(self.api_object, BranchParent) and not self.main_block.diagram.node_data:
+            for child_block in self.main_block.children:
+                for child_input in child_block.in_vars:
+                    if child_input.ref in (
+                            VarPowerFlowReferenceType.vf_N,
+                            VarPowerFlowReferenceType.vf_A,
+                            VarPowerFlowReferenceType.vf_B,
+                            VarPowerFlowReferenceType.vf_C,
+                            VarPowerFlowReferenceType.Vf_dc,
+                            VarPowerFlowReferenceType.vt_N,
+                            VarPowerFlowReferenceType.vt_A,
+                            VarPowerFlowReferenceType.vt_B,
+                            VarPowerFlowReferenceType.vt_C,
+                            VarPowerFlowReferenceType.Vt_dc,
+                    ):
+                        has_unpersisted_template_terminal_child = True
+                    else:
+                        pass
+        else:
+            pass
+        is_template_backed_branch: bool = (
+                isinstance(self.api_object, BranchParent)
+                and (
+                        self.api_object.emt_template is not None
+                        or has_unpersisted_template_terminal_child
+                )
+        )
 
         expected_inputs_by_ref, expected_outputs_by_ref = build_expected_root_emt_interface_for_device(self.api_object)
 
@@ -9460,7 +9650,36 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             else:
                 pass
 
-        self.main_block.in_vars = [expected_inputs_by_ref[reference] for reference in expected_inputs_by_ref.keys()]
+        rebuilt_input_by_ref: dict[VarPowerFlowReferenceType, Var] = dict()
+        if is_template_backed_branch:
+            rebuilt_inputs: list[Var] = list()
+            for reference, authoritative_bus_input in expected_inputs_by_ref.items():
+                existing_input: Var | None = current_input_by_ref.get(reference, None)
+                if existing_input is None:
+                    rebuilt_input: Var = self.var_factory.add_var(
+                        name=reference.name,
+                        reference=reference,
+                    )
+                    changed = True
+                else:
+                    rebuilt_input = existing_input
+
+                # A template-backed branch owns distinct vf/vt endpoints. The
+                # bus v_* variable remains the physical source for each one.
+                self.var_factory.add_connections(
+                    vars_to_subs=list((rebuilt_input,)),
+                    incoming_vars=list((authoritative_bus_input,)),
+                )
+                rebuilt_inputs.append(rebuilt_input)
+                rebuilt_input_by_ref[reference] = rebuilt_input
+            self.main_block.in_vars = rebuilt_inputs
+        else:
+            self.main_block.in_vars = [
+                expected_inputs_by_ref[reference]
+                for reference in expected_inputs_by_ref.keys()
+            ]
+            for reference, authoritative_input in expected_inputs_by_ref.items():
+                rebuilt_input_by_ref[reference] = authoritative_input
 
         rebuilt_outputs: list[Var] = list()
         for reference in expected_outputs_by_ref.keys():
@@ -9481,8 +9700,8 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             else:
                 pass
 
-        for reference, authoritative_input in expected_inputs_by_ref.items():
-            self.main_block.external_mapping[reference] = authoritative_input
+        for reference, rebuilt_input in rebuilt_input_by_ref.items():
+            self.main_block.external_mapping[reference] = rebuilt_input
 
         for root_var in self.main_block.out_vars:
             if root_var.ref is not None:
@@ -9490,12 +9709,12 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
             else:
                 pass
 
-        for reference, authoritative_input in expected_inputs_by_ref.items():
+        for reference, rebuilt_input in rebuilt_input_by_ref.items():
             wrapper_block = interface_input_wrappers.get(reference, None)
             if wrapper_block is not None:
-                wrapper_block.out_vars = list((authoritative_input,))
+                wrapper_block.out_vars = list((rebuilt_input,))
                 wrapper_block.in_vars = list()
-                wrapper_block.set_name(authoritative_input.name)
+                wrapper_block.set_name(rebuilt_input.name)
             else:
                 pass
 
@@ -9601,6 +9820,36 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
         created_initial_authoritative_interface: bool = False
         root_var: Var
         reference: VarPowerFlowReferenceType
+        has_unpersisted_template_terminal_child: bool = False
+        child_block: Block
+        child_input: Var
+        if isinstance(self.api_object, BranchParent) and not self.main_block.diagram.node_data:
+            for child_block in self.main_block.children:
+                for child_input in child_block.in_vars:
+                    if child_input.ref in (
+                            VarPowerFlowReferenceType.vf_N,
+                            VarPowerFlowReferenceType.vf_A,
+                            VarPowerFlowReferenceType.vf_B,
+                            VarPowerFlowReferenceType.vf_C,
+                            VarPowerFlowReferenceType.Vf_dc,
+                            VarPowerFlowReferenceType.vt_N,
+                            VarPowerFlowReferenceType.vt_A,
+                            VarPowerFlowReferenceType.vt_B,
+                            VarPowerFlowReferenceType.vt_C,
+                            VarPowerFlowReferenceType.Vt_dc,
+                    ):
+                        has_unpersisted_template_terminal_child = True
+                    else:
+                        pass
+        else:
+            pass
+        is_template_backed_branch: bool = (
+                isinstance(self.api_object, BranchParent)
+                and (
+                        self.api_object.emt_template is not None
+                        or has_unpersisted_template_terminal_child
+                )
+        )
 
         if not self.is_root_editor or self.mode != DynamicSimulationMode.EMT:
             return False
@@ -9683,35 +9932,65 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
 
         for reference, authoritative_input in expected_inputs_by_ref.items():
             existing_input: Var | None = current_input_by_ref.get(reference, None)
-            if existing_input is None:
-                self.main_block.in_vars.append(authoritative_input)
-                self.main_block.external_mapping[reference] = authoritative_input
-                if not created_initial_authoritative_interface and interface_input_wrappers.get(reference,
-                                                                                                None) is None:
-                    wrapper_block = Block(name=authoritative_input.name)
-                    wrapper_block.out_vars = list((authoritative_input,))
-                    self.main_block.add(wrapper_block)
-                    interface_input_wrappers[reference] = wrapper_block
-                else:
-                    pass
-                changed = True
-            else:
-                if existing_input is authoritative_input:
-                    pass
-                else:
-                    if reference in missing_input_wrapper_refs:
-                        self.main_block.update_model(existing_input, authoritative_input)
-                        rehash_block_tree_var_keyed_dicts(root_block=self.root_block)
-                        changed = True
+            if is_template_backed_branch:
+                if existing_input is None:
+                    root_input: Var = self.var_factory.add_var(
+                        name=reference.name,
+                        reference=reference,
+                    )
+                    self.main_block.in_vars.append(root_input)
+                    self.main_block.external_mapping[reference] = root_input
+                    if not created_initial_authoritative_interface and interface_input_wrappers.get(reference,
+                                                                                                    None) is None:
+                        wrapper_block = Block(name=root_input.name)
+                        wrapper_block.out_vars = list((root_input,))
+                        self.main_block.add(wrapper_block)
+                        interface_input_wrappers[reference] = wrapper_block
                     else:
                         pass
-                self.main_block.external_mapping[reference] = authoritative_input
+                    changed = True
+                else:
+                    root_input = existing_input
+                    self.main_block.external_mapping[reference] = root_input
+
+                # Only direct branch templates expose side-specific vf/vt root
+                # variables that must remain separate from the bus identity.
+                self.var_factory.add_connections(
+                    vars_to_subs=list((root_input,)),
+                    incoming_vars=list((authoritative_input,)),
+                )
+            else:
+                if existing_input is None:
+                    root_input = authoritative_input
+                    self.main_block.in_vars.append(root_input)
+                    self.main_block.external_mapping[reference] = root_input
+                    if not created_initial_authoritative_interface and interface_input_wrappers.get(reference,
+                                                                                                    None) is None:
+                        wrapper_block = Block(name=root_input.name)
+                        wrapper_block.out_vars = list((root_input,))
+                        self.main_block.add(wrapper_block)
+                        interface_input_wrappers[reference] = wrapper_block
+                    else:
+                        pass
+                    changed = True
+                else:
+                    if existing_input is authoritative_input:
+                        pass
+                    else:
+                        if reference in missing_input_wrapper_refs:
+                            self.main_block.update_model(existing_input, authoritative_input)
+                            rehash_block_tree_var_keyed_dicts(root_block=self.root_block)
+                            changed = True
+                        else:
+                            pass
+                    root_input = authoritative_input
+                    self.main_block.external_mapping[reference] = root_input
 
             wrapper_block = interface_input_wrappers.get(reference, None)
             if wrapper_block is not None:
-                wrapper_block.out_vars = list((authoritative_input,))
+                wrapper_block.out_vars = list((root_input,))
                 wrapper_block.in_vars = list()
-                wrapper_block.set_name(authoritative_input.name)
+                wrapper_block.set_name(root_input.name)
             else:
                 pass
 
@@ -12543,7 +12822,15 @@ class DynamicBlockEditorGUI(QtWidgets.QMainWindow):
                   graph.RectBaseArithmeticOpItem | graph.UnOpItem | \
                   graph.GenericBlockItem | None = None
 
-            if block_type == BlockType.INPUT_CONN or block_type == BlockType.OUTPUT_CONN:
+            if block_type in [BlockType.INPUT_CONN,
+                              BlockType.OUTPUT_CONN,
+                              BlockType.MEASUREMENTS_CURRENT_FROM_DC,
+                              BlockType.MEASUREMENTS_CURRENT_FROM_PQ,
+                              BlockType.MEASUREMENTS_P_Q,
+                              BlockType.MEASUREMENTS_VOLTAGE_ANGLE,
+                              BlockType.MEASUREMENTS_VOLTAGE_FROM_DC,
+                              BlockType.MEASUREMENTS_VOLTAGE_FROM_POLAR,
+                              BlockType.MEASUREMENTS_PLL]:
                 if self.mode == DynamicSimulationMode.EMT:
                     # EMT interface nodes are individual protected views over
                     # one authoritative root variable. Repair legacy identity

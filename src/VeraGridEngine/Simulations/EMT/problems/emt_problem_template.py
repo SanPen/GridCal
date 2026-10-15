@@ -15,7 +15,7 @@ from VeraGridEngine.Devices.Events.emt_events_group import EmtEventsGroup
 from VeraGridEngine.Devices import MultiCircuit
 from VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified import (
     build_api_parameter_initial_values_by_uid,
-    get_api_parameter_initial_value_by_uid,
+    resolve_parameter_initial_expression,
 )
 from VeraGridEngine.enumerations import DynamicEventTransitionType, VarPowerFlowReferenceType
 
@@ -533,9 +533,9 @@ class EmtProblemTemplate(ABC):
         self._event_parameters_eqs: List[Any] = list()
         self._runtime_mode_uids: set[int] = set()
 
-        # The API-object mapping provides initial values only. Block.parameters
-        # and Block.event_dict remain authoritative for immutable and runtime
-        # roles respectively, matching the RMS registration contract.
+        # The API-object mapping provides initial values only. Block.parameters,
+        # Block.event_dict and Block.mode_dict remain authoritative for immutable,
+        # continuous-runtime and discrete-runtime roles, matching RMS.
         for block_item in block_sequence:
             self._state_vars.extend(block_item.state_vars)
             self._algebraic_vars.extend(block_item.algebraic_vars)
@@ -552,31 +552,38 @@ class EmtProblemTemplate(ABC):
                 else:
                     registered_parameter_uids.add(const_var.uid)
 
-                    mapped_const_expr: Const | None = get_api_parameter_initial_value_by_uid(
+                    resolved_const_expression: Expr | Const = resolve_parameter_initial_expression(
                         parameter=const_var,
+                        declared_expression=const_expr,
                         problem_mapping=static_parameter_values_mapping,
                     )
-                    if mapped_const_expr is None:
-                        self._static_parameter_values[const_var] = const_expr
+                    if isinstance(resolved_const_expression, Const):
+                        self._static_parameter_values[const_var] = resolved_const_expression
                     else:
-                        self._static_parameter_values[const_var] = mapped_const_expr
+                        raise TypeError(
+                            f"EMT immutable parameter '{const_var.name}' (uid={const_var.uid}) "
+                            + f"in block '{block_item.name}' must resolve to Const."
+                        )
 
             for runtime_var, runtime_expr in block_item.event_dict.items():
                 self._variable_parameters.append(runtime_var)
-                mapped_runtime_expr: Const | None = get_api_parameter_initial_value_by_uid(
+                resolved_runtime_expression: Expr | Const = resolve_parameter_initial_expression(
                     parameter=runtime_var,
+                    declared_expression=runtime_expr,
                     problem_mapping=static_parameter_values_mapping,
                 )
-                if mapped_runtime_expr is None:
-                    self._event_parameters_eqs.append(runtime_expr)
-                else:
-                    # The block keeps the runtime declaration while the problem
-                    # uses the static-device value as its event baseline.
-                    self._event_parameters_eqs.append(mapped_runtime_expr)
+                # The block keeps its runtime declaration while the problem
+                # stores the authoritative mapped value as the initial baseline.
+                self._event_parameters_eqs.append(resolved_runtime_expression)
 
             for runtime_var, runtime_expr in block_item.mode_dict.items():
                 self._variable_parameters.append(runtime_var)
-                self._event_parameters_eqs.append(runtime_expr)
+                resolved_mode_expression: Expr | Const = resolve_parameter_initial_expression(
+                    parameter=runtime_var,
+                    declared_expression=runtime_expr,
+                    problem_mapping=static_parameter_values_mapping,
+                )
+                self._event_parameters_eqs.append(resolved_mode_expression)
                 self._runtime_mode_uids.add(runtime_var.uid)
 
         self._constant_parameters: List[Var] = list(self._static_parameter_values.keys())
@@ -1131,7 +1138,10 @@ class EmtProblemTemplate(ABC):
                         if idx_var is not None:
                             init_value: float | int | complex | None = self.init_guess.get(expression.uid, None)
                             if init_value is None:
-                                return 0.0
+                                raise ValueError(
+                                    f"EMT runtime variable '{expression.name}' "
+                                    + f"(uid={expression.uid}) has no initialized state value."
+                                )
                             else:
                                 return float(init_value)
                         else:
@@ -1139,11 +1149,17 @@ class EmtProblemTemplate(ABC):
                             if idx_diff is not None:
                                 diff_init_value: float | int | complex | None = self.diff_init_guess.get(expression.uid, None)
                                 if diff_init_value is None:
-                                    return 0.0
+                                    raise ValueError(
+                                        f"EMT runtime variable '{expression.name}' "
+                                        + f"(uid={expression.uid}) has no initialized differential value."
+                                    )
                                 else:
                                     return float(diff_init_value)
                             else:
-                                return 0.0
+                                raise KeyError(
+                                    f"EMT runtime expression variable '{expression.name}' "
+                                    + f"(uid={expression.uid}) is not registered."
+                                )
 
         elif isinstance(expression, Expr):
             uid_bindings: Dict[int, float] = dict()

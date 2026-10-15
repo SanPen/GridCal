@@ -37,96 +37,75 @@ from VeraGridEngine.Utils.Symbolic.dynamic_connection_intent import (DynamicConn
 from VeraGridEngine.enumerations import VarPowerFlowReferenceType, ParamPowerFlowReferenceType
 
 
-def symbolic_objects_to_dict(obj_dict: Dict[int | str, Var | Const | Var | SharedVarReferenceType]) -> List[Dict[str, Any]]:
-    """
-    Save all unique variables, differential variables, and constants.
-    :param obj_dict: Dictionary storing the unique objects
-    :return: List of dictionaries representing each object
-    """
-    lst: List[Dict[str, Any]] = list()
+def symbolic_objects_to_dict(
+        obj_dict: Mapping[int | str, Var | Const | SharedVarReferenceType],
+) -> List[Dict[str, Any]]:
+    """Serialize one symbolic-object registry without modifying its owner.
 
-    for uuid, expr in obj_dict.items():
+    The registry key is intentionally irrelevant to the persisted format: every
+    symbolic object carries its own stable identity. Treating the input as a
+    read-only mapping also prevents serialization from changing a factory while
+    its entries are being traversed.
 
+    :param obj_dict: Symbolic objects indexed by their factory lookup keys.
+    :return: Serialized records in the registry's iteration order.
+    """
+    serialized_objects: List[Dict[str, Any]] = list()
+    expr: Var | Const | SharedVarReferenceType
+
+    # Serialize values only. Registry keys are an in-memory lookup detail and
+    # must never be rewritten as a side effect of saving a model.
+    for expr in obj_dict.values():
         if isinstance(expr, Const):
-
-            # add it to the references dict
-            obj_dict[expr.uid] = expr
-
-            # The const didn't exist, we create it here
             if isinstance(expr.value, complex):
-                lst.append({"type": "Const",
-                            "value": [expr.value.real, expr.value.imag],
-                            "kind": "complex",
-                            "uid": expr.uid})
+                serialized_objects.append({
+                    "type": "Const",
+                    "value": [expr.value.real, expr.value.imag],
+                    "kind": "complex",
+                    "uid": expr.uid,
+                })
             else:
-                lst.append({"type": "Const",
-                            "value": expr.value,
-                            "uid": expr.uid})
-
+                serialized_objects.append({
+                    "type": "Const",
+                    "value": expr.value,
+                    "uid": expr.uid,
+                })
         elif isinstance(expr, Var):
-            shared = expr.shared_ref
+            shared_reference: SharedVarReferenceType | None = expr.shared_ref
+            object_type: str
+            base_var_uid: int | None
             if expr.base_var is not None:
-                if type(expr.ref) == str:
-                    lst.append({
-                        "type": "DiffVar",
-                        "name": expr.name,
-                        "uid": expr.uid,
-                        "non_mutable_uid": expr.non_mutable_uid,
-                        "base_var": expr.base_var.non_mutable_uid,
-                        "shared_ref": {"name": shared.name if shared is not None else None,
-                                "uid": shared.uid if shared is not None else None},
-                        "ref": expr.ref.value if expr.ref is not None else None,
-                    })
-                else:
-                    lst.append({
-                        "type": "DiffVar",
-                        "name": expr.name,
-                        "uid": expr.uid,
-                        "non_mutable_uid": expr.non_mutable_uid,
-                        "base_var": expr.base_var.non_mutable_uid,
-                        "shared_ref": {"name": shared.name if shared is not None else None,
-                                "uid": shared.uid if shared is not None else None},
-                        "ref": expr.ref.value if expr.ref is not None else None,
-                    })
-
-
-
+                object_type = "DiffVar"
+                base_var_uid = expr.base_var.non_mutable_uid
             else:
-                # it is a normal var
-                if type(expr.ref) == str:
-                    lst.append({"type": "Var",
-                                "name": expr.name,
-                                "uid": expr.uid,
-                                "non_mutable_uid": expr.non_mutable_uid,
-                                "base_var": None,
-                                "shared_ref": {"name": shared.name if shared is not None else None,
-                                                "uid": shared.uid if shared is not None else None},
-                                "ref": expr.ref.value if expr.ref is not None else None,
-                                })
-                else:
-                    lst.append({"type": "Var",
-                                "name": expr.name,
-                                "uid": expr.uid,
-                                "non_mutable_uid": expr.non_mutable_uid,
-                                "base_var": None,
-                                "shared_ref": {"name": shared.name if shared is not None else None,
-                                                "uid": shared.uid if shared is not None else None},
-                                "ref": expr.ref.value if expr.ref is not None else None,
-                                })
+                object_type = "Var"
+                base_var_uid = None
 
-        if isinstance(expr, SharedVarReferenceType):
-            lst.append({"type": "share_reference",
-                        "name": expr.name,
-                        "uid": expr.uid})
+            serialized_objects.append({
+                "type": object_type,
+                "name": expr.name,
+                "uid": expr.uid,
+                "non_mutable_uid": expr.non_mutable_uid,
+                "base_var": base_var_uid,
+                "shared_ref": {
+                    "name": shared_reference.name if shared_reference is not None else None,
+                    "uid": shared_reference.uid if shared_reference is not None else None,
+                },
+                "ref": expr.ref.value if expr.ref is not None else None,
+            })
+        elif isinstance(expr, SharedVarReferenceType):
+            serialized_objects.append({
+                "type": "share_reference",
+                "name": expr.name,
+                "uid": expr.uid,
+            })
+        else:
+            # The closed union above documents every supported persisted object.
+            # This branch keeps the serializer tolerant of an invalid runtime
+            # collection without inventing an unsupported file record.
+            pass
 
-        if isinstance(expr, Connection):
-            lst.append({"type": "Connection",
-                        "non_mutable_uid": expr.non_mutable_uid,
-                        "name": expr.name,
-                        "uid": expr.uid})
-
-
-    return lst
+    return serialized_objects
 
 def connections_to_dict(obj_dict: Dict[int, List[Connection]]) -> Dict[int, List[Any]]:
 
@@ -1198,7 +1177,7 @@ class BlockParser:
                 expected_value=(
                     "Static API mapping targets in Block.parameters and "
                     "runtime model values in Block.event_dict, without obsolete "
-                    "dynamic API mappings and with one owner per parameter"
+                    "governor API mappings and with one owner per parameter"
                 ),
                 device_class="Dynamic model compatibility",
                 device_property="api_obj_mapping",
@@ -1214,22 +1193,46 @@ class BlockParser:
         """Identify one obsolete dynamic mapping from the old governor layout.
 
         The reference key alone is insufficient because, for example, ``P0``
-        is also a valid runtime mapping for converter models. Historical governor
-        blocks are identified by their joint droop and power-limit mapping
-        signature before any key is treated as model-owned dynamic data. This
-        also covers older governors which predate the PI-control fields.
+        is also a valid runtime mapping for converter models. Every archived
+        Kundur governor which used the obsolete layout persisted the same eleven
+        mapping keys. Requiring that complete key set prevents an unrelated or
+        partially declared controller from being rewritten as a governor.
 
         :param block: Block which owns the API-object mapping.
         :param mapping_key: Mapping reference to classify.
         :return: Whether the mapping belongs to the old governor dynamic layout.
         """
-        if not mapping_key.is_legacy_governor_dynamic_reference():
+        legacy_mapping_keys: set[ParamPowerFlowReferenceType] = set((
+            ParamPowerFlowReferenceType.K,
+            ParamPowerFlowReferenceType.Uc,
+            ParamPowerFlowReferenceType.Uo,
+            ParamPowerFlowReferenceType.T_aux,
+            ParamPowerFlowReferenceType.Kp,
+            ParamPowerFlowReferenceType.Ki,
+            ParamPowerFlowReferenceType.omega_ref,
+            ParamPowerFlowReferenceType.p0,
+            ParamPowerFlowReferenceType.P0,
+            ParamPowerFlowReferenceType.Pmin,
+            ParamPowerFlowReferenceType.Pmax,
+        ))
+        persisted_mapping_keys: set[ParamPowerFlowReferenceType] = set(block.api_obj_mapping)
+        unique_target_uids: set[int] = set()
+        complete_unique_targets: bool = True
+        legacy_reference: ParamPowerFlowReferenceType
+        for legacy_reference in legacy_mapping_keys:
+            legacy_target: Var | None = block.api_obj_mapping.get(legacy_reference, None)
+            if legacy_target is None:
+                complete_unique_targets = False
+            elif legacy_target.non_mutable_uid in unique_target_uids:
+                complete_unique_targets = False
+            else:
+                unique_target_uids.add(legacy_target.non_mutable_uid)
+
+        if mapping_key not in legacy_mapping_keys:
             result: bool = False
-        elif ParamPowerFlowReferenceType.Pmin not in block.api_obj_mapping:
+        elif persisted_mapping_keys != legacy_mapping_keys:
             result = False
-        elif ParamPowerFlowReferenceType.Pmax not in block.api_obj_mapping:
-            result = False
-        elif ParamPowerFlowReferenceType.K not in block.api_obj_mapping:
+        elif not complete_unique_targets:
             result = False
         else:
             result = True
@@ -1257,7 +1260,9 @@ class BlockParser:
             result = False
         elif mapping_target is None:
             result = False
-        elif mapping_target in block.parameters and mapping_target not in block.event_dict:
+        elif (mapping_target in block.parameters
+              and mapping_target not in block.event_dict
+              and mapping_target not in block.mode_dict):
             result = True
         else:
             # The declaration, rather than the enum key, determines whether a
@@ -1271,7 +1276,7 @@ class BlockParser:
             mapping_block: Block,
             mapping_key: ParamPowerFlowReferenceType,
             stable_uid: int,
-    ) -> tuple[bool, bool]:
+    ) -> bool:
         """Localize an ancestor mapping on its child runtime owner.
 
         Historical non-recursive initialization copied child mappings onto a
@@ -1283,32 +1288,20 @@ class BlockParser:
         :param mapping_block: Ancestor which currently stores the mapping.
         :param mapping_key: Static-device reference being migrated.
         :param stable_uid: Stable identity of the mapped target.
-        :return: Whether to remove the ancestor mapping and whether a static
-                 declaration was promoted.
+        :return: Whether to remove the ancestor mapping.
         """
-        runtime_owner: Block | None = None
-        runtime_variable: Var | None = None
-        runtime_value: Expr | Const | None = None
-        candidate_block: Block
-        candidate_variable: Var
-        candidate_value: Expr | Const
-
-        # Locate the actual child declaration by stable identity because legacy
-        # connection replay may have changed the variable's mutable UID.
-        for candidate_block in hierarchy_blocks:
-            for candidate_variable, candidate_value in candidate_block.event_dict.items():
-                if runtime_owner is None and candidate_variable.non_mutable_uid == stable_uid:
-                    runtime_owner = candidate_block
-                    runtime_variable = candidate_variable
-                    runtime_value = candidate_value
-                else:
-                    pass
+        runtime_owner: Block | None
+        runtime_variable: Var | None
+        runtime_value: Expr | Const | None
+        runtime_owner, runtime_variable, runtime_value = self._find_legacy_runtime_parameter_owner(
+            hierarchy_blocks=hierarchy_blocks,
+            stable_uid=stable_uid,
+        )
 
         if runtime_owner is None or runtime_variable is None or runtime_value is None:
-            # Mode-dictionary parameters also have a runtime role but cannot be
-            # promoted to static data. Their ancestor mapping is still obsolete.
+            # No unique runtime declaration exists. The caller removes only the
+            # obsolete ancestor mapping and leaves unrelated declarations intact.
             remove_ancestor_mapping: bool = True
-            promoted_static_parameter: bool = False
         else:
             existing_mapping_target: Var | None = runtime_owner.api_obj_mapping.get(mapping_key, None)
             if existing_mapping_target is None:
@@ -1328,16 +1321,15 @@ class BlockParser:
 
             if mapping_localized:
                 remove_ancestor_mapping = True
-                promoted_static_parameter = False
             else:
                 remove_ancestor_mapping = False
-                promoted_static_parameter = False
 
-        return remove_ancestor_mapping, promoted_static_parameter
+        return remove_ancestor_mapping
 
     def _repair_legacy_static_parameter_ownership(
             self,
             root_block: Block,
+            ambiguous_parameter_uids: set[int],
     ) -> int:
         """Normalize historical parent/child copies of one static parameter.
 
@@ -1350,6 +1342,8 @@ class BlockParser:
         identities.
 
         :param root_block: Parsed dynamic-model root to normalize.
+        :param ambiguous_parameter_uids: Stable identities whose equivalent
+                                         owners must remain unchanged.
         :return: Number of ownership records repaired.
         """
         hierarchy_blocks: List[Block] = root_block.get_all_blocks()
@@ -1388,6 +1382,11 @@ class BlockParser:
                         field_name="parameters",
                         missing_uid=None,
                     )
+                elif optional_declaration_uid in ambiguous_parameter_uids:
+                    # Equivalent sibling owners carry no structural evidence for
+                    # selecting a canonical declaration. Exclude only this UID
+                    # while allowing independent ownership repairs to continue.
+                    pass
                 else:
                     declaration_uid: int = optional_declaration_uid
                     existing_owners: List[Block] | None = parameter_owners_by_uid.get(
@@ -1552,6 +1551,202 @@ class BlockParser:
 
         return ownership_repairs
 
+    def _get_ambiguous_legacy_parameter_uids(
+            self,
+            root_block: Block,
+    ) -> tuple[set[int], set[int]]:
+        """Find legacy declarations for which no unique owner can be inferred.
+
+        Parent/child copies are unambiguous because the deepest declaration is
+        the equation owner. Two declarations with the same stable identity and
+        depth, however, normally belong to sibling blocks. A mapping cannot break
+        that tie because historical wrapper/editor paths also copied mappings.
+        Choosing either owner would therefore discard serialized structure based
+        only on traversal order. Only the affected stable identity is excluded
+        from compatibility migration so unrelated repairs in the same root can
+        still be applied safely.
+
+        :param root_block: Parsed dynamic-model root to inspect.
+        :return: Ambiguous static and runtime stable identities, respectively.
+        """
+        hierarchy_blocks: List[Block] = root_block.get_all_blocks()
+        block_depth_by_uid: Dict[int, int] = dict()
+        parameter_owner_uids_by_uid: Dict[int, set[int]] = dict()
+        runtime_owner_uids_by_uid: Dict[int, set[int]] = dict()
+        pending_blocks: List[tuple[Block, int]] = list(((root_block, 0),))
+
+        # Depth distinguishes an obsolete wrapper copy from the child which owns
+        # the equations. Repeated visits retain the deepest known location.
+        while len(pending_blocks) > 0:
+            pending_block: Block
+            pending_depth: int
+            pending_block, pending_depth = pending_blocks.pop()
+            previous_depth: int | None = block_depth_by_uid.get(pending_block.uid, None)
+            if previous_depth is None or pending_depth > previous_depth:
+                block_depth_by_uid[pending_block.uid] = pending_depth
+                child_block: Block
+                for child_block in pending_block.children:
+                    pending_blocks.append((child_block, pending_depth + 1))
+            else:
+                pass
+
+        # Preserve static and runtime roles separately. The role conflict itself
+        # is handled by the narrow historical signatures in the migration pass.
+        owner_block: Block
+        owner_variable: Var
+        for owner_block in hierarchy_blocks:
+            for owner_variable in owner_block.parameters:
+                parameter_uid: int = owner_variable.non_mutable_uid
+                parameter_owner_uids: set[int] | None = parameter_owner_uids_by_uid.get(parameter_uid, None)
+                if parameter_owner_uids is None:
+                    parameter_owner_uids = set()
+                    parameter_owner_uids_by_uid[parameter_uid] = parameter_owner_uids
+                else:
+                    pass
+                parameter_owner_uids.add(owner_block.uid)
+
+            for owner_variable in owner_block.event_dict:
+                runtime_uid: int = owner_variable.non_mutable_uid
+                runtime_owner_uids: set[int] | None = runtime_owner_uids_by_uid.get(runtime_uid, None)
+                if runtime_owner_uids is None:
+                    runtime_owner_uids = set()
+                    runtime_owner_uids_by_uid[runtime_uid] = runtime_owner_uids
+                else:
+                    pass
+                runtime_owner_uids.add(owner_block.uid)
+
+            for owner_variable in owner_block.mode_dict:
+                runtime_uid = owner_variable.non_mutable_uid
+                runtime_owner_uids = runtime_owner_uids_by_uid.get(runtime_uid, None)
+                if runtime_owner_uids is None:
+                    runtime_owner_uids = set()
+                    runtime_owner_uids_by_uid[runtime_uid] = runtime_owner_uids
+                else:
+                    pass
+                runtime_owner_uids.add(owner_block.uid)
+
+        ambiguous_parameter_uids: set[int] = set()
+        declaration_uid: int
+        declaration_owner_uids: set[int]
+        for declaration_uid, declaration_owner_uids in parameter_owner_uids_by_uid.items():
+            parameter_depths: set[int] = set()
+            parameter_owner_uid: int
+            for parameter_owner_uid in declaration_owner_uids:
+                parameter_depth: int = block_depth_by_uid.get(parameter_owner_uid, 0)
+                if parameter_depth in parameter_depths:
+                    ambiguous_parameter_uids.add(declaration_uid)
+                else:
+                    parameter_depths.add(parameter_depth)
+
+            if declaration_uid in ambiguous_parameter_uids:
+                self._add_warning(
+                    msg="Legacy static parameter has multiple equivalent owners; migration was skipped",
+                    block_name=root_block.name,
+                    block_uid=root_block.uid,
+                    field_name="parameters",
+                    missing_uid=declaration_uid,
+                )
+            else:
+                pass
+
+        ambiguous_runtime_uids: set[int] = set()
+        runtime_uid: int
+        runtime_owner_uids: set[int]
+        for runtime_uid, runtime_owner_uids in runtime_owner_uids_by_uid.items():
+            runtime_depths: set[int] = set()
+            runtime_owner_uid: int
+            for runtime_owner_uid in runtime_owner_uids:
+                runtime_depth: int = block_depth_by_uid.get(runtime_owner_uid, 0)
+                if runtime_depth in runtime_depths:
+                    ambiguous_runtime_uids.add(runtime_uid)
+                else:
+                    runtime_depths.add(runtime_depth)
+
+            if runtime_uid in ambiguous_runtime_uids:
+                self._add_warning(
+                    msg="Legacy runtime parameter has multiple equivalent owners; migration was skipped",
+                    block_name=root_block.name,
+                    block_uid=root_block.uid,
+                    field_name="event_dict/mode_dict",
+                    missing_uid=runtime_uid,
+                )
+            else:
+                pass
+
+        return ambiguous_parameter_uids, ambiguous_runtime_uids
+
+    def _find_legacy_runtime_parameter_owner(
+            self,
+            hierarchy_blocks: List[Block],
+            stable_uid: int,
+    ) -> tuple[Block | None, Var | None, Expr | Const | None]:
+        """Find the deepest event or mode declaration for one stable identity.
+
+        Descendants are inspected first because historical wrappers frequently
+        copied child mappings without owning the corresponding equation. The
+        earlier ambiguity pass ensures this helper is used only when one owner
+        can be selected safely.
+
+        :param hierarchy_blocks: Complete parsed block hierarchy.
+        :param stable_uid: Persisted non-mutable variable identity.
+        :return: Runtime owner, declared variable and fallback expression.
+        """
+        runtime_owner: Block | None = None
+        runtime_variable: Var | None = None
+        runtime_expression: Expr | Const | None = None
+        runtime_owner_depth: int = -1
+        block_depth_by_uid: Dict[int, int] = dict()
+        pending_blocks: List[tuple[Block, int]] = list()
+        candidate_block: Block
+        candidate_depth: int
+        candidate_variable: Var
+        candidate_expression: Expr | Const
+
+        if len(hierarchy_blocks) > 0:
+            pending_blocks.append((hierarchy_blocks[0], 0))
+        else:
+            pass
+
+        # The hierarchy list is depth-first, not depth-sorted. Record explicit
+        # depths so a later shallow sibling cannot win over an earlier nested
+        # declaration merely because the list is traversed in reverse.
+        while len(pending_blocks) > 0:
+            pending_block: Block
+            pending_depth: int
+            pending_block, pending_depth = pending_blocks.pop()
+            previous_depth: int | None = block_depth_by_uid.get(pending_block.uid, None)
+            if previous_depth is None or pending_depth > previous_depth:
+                block_depth_by_uid[pending_block.uid] = pending_depth
+                child_block: Block
+                for child_block in pending_block.children:
+                    pending_blocks.append((child_block, pending_depth + 1))
+            else:
+                pass
+
+        for candidate_block in hierarchy_blocks:
+            candidate_depth = block_depth_by_uid.get(candidate_block.uid, 0)
+            for candidate_variable, candidate_expression in candidate_block.event_dict.items():
+                if (candidate_variable.non_mutable_uid == stable_uid
+                        and candidate_depth > runtime_owner_depth):
+                    runtime_owner = candidate_block
+                    runtime_variable = candidate_variable
+                    runtime_expression = candidate_expression
+                    runtime_owner_depth = candidate_depth
+                else:
+                    pass
+
+            for candidate_variable, candidate_expression in candidate_block.mode_dict.items():
+                if (candidate_variable.non_mutable_uid == stable_uid
+                        and candidate_depth > runtime_owner_depth):
+                    runtime_owner = candidate_block
+                    runtime_variable = candidate_variable
+                    runtime_expression = candidate_expression
+                    runtime_owner_depth = candidate_depth
+                else:
+                    pass
+
+        return runtime_owner, runtime_variable, runtime_expression
+
     def _migrate_legacy_static_api_parameters(self, root_block: Block) -> int:
         """
         Restore parameter ownership omitted by historical model files.
@@ -1573,6 +1768,12 @@ class BlockParser:
         :param root_block: Fully parsed root block whose complete hierarchy is available.
         :return: Number of parameter declarations repaired in the block hierarchy.
         """
+        ambiguous_parameter_uids: set[int]
+        ambiguous_runtime_uids: set[int]
+        ambiguous_parameter_uids, ambiguous_runtime_uids = self._get_ambiguous_legacy_parameter_uids(
+            root_block=root_block,
+        )
+
         hierarchy_blocks: List[Block] = root_block.get_all_blocks()
         migration_blocks: List[Block] = list(reversed(hierarchy_blocks))
         parameter_uids: set[int] = set()
@@ -1580,6 +1781,7 @@ class BlockParser:
         non_parameter_uids: set[int] = set()
         migrated_parameter_count: int = self._repair_legacy_static_parameter_ownership(
             root_block=root_block,
+            ambiguous_parameter_uids=ambiguous_parameter_uids,
         )
         block_item: Block
         parameter_var: Var
@@ -1640,10 +1842,12 @@ class BlockParser:
 
         # Repair every legacy mapping primarily from its serialized owner role.
         # Sharing and converter-control references remain runtime values.
-        # Obsolete governor and calculated converter-loss mappings remain
-        # model-owned dynamic values but lose their obsolete API mapping. Only
-        # explicitly recognized legacy governor limits are promoted because the
-        # historical template contract identifies them unambiguously as fixed.
+        # Obsolete governor mappings are removed after all serialized governor
+        # values are restored to event_dict. Pmin/Pmax belonged to that same
+        # runtime vector in historical Kundur models, so changing only their
+        # storage role would alter the persisted model contract. Calculated
+        # converter-loss mappings likewise remain model-owned dynamic values
+        # without an obsolete API mapping.
         # Process descendants before their wrappers. A historical composite can
         # expose the same mapping at both levels without declaring the target in
         # ``parameters``. The deepest mapping is the real equation owner, so it
@@ -1651,27 +1855,31 @@ class BlockParser:
         for block_item in migration_blocks:
             mapping_keys_to_remove: List[ParamPowerFlowReferenceType] = list()
             mapping_entries_to_add: List[tuple[ParamPowerFlowReferenceType, Var]] = list()
-            for mapping_key, mapping_target in block_item.api_obj_mapping.items():
+            migration_mapping_entries: List[tuple[ParamPowerFlowReferenceType, Var | None]] = list()
+            candidate_mapping_key: ParamPowerFlowReferenceType
+            candidate_mapping_target: Var | None
+            for candidate_mapping_key, candidate_mapping_target in block_item.api_obj_mapping.items():
+                if candidate_mapping_target is None:
+                    migration_mapping_entries.append((candidate_mapping_key, candidate_mapping_target))
+                elif (candidate_mapping_target.non_mutable_uid in ambiguous_parameter_uids
+                      or candidate_mapping_target.non_mutable_uid in ambiguous_runtime_uids):
+                    # Preserve every mapping associated with an ambiguous owner,
+                    # while continuing to migrate independent identities.
+                    pass
+                else:
+                    migration_mapping_entries.append((candidate_mapping_key, candidate_mapping_target))
+
+            for mapping_key, mapping_target in migration_mapping_entries:
                 if mapping_target is None:
                     pass
                 else:
                     stable_uid: int = mapping_target.non_mutable_uid
-                    target_is_local_runtime: bool = mapping_target in block_item.event_dict
+                    target_is_local_runtime: bool = (
+                        mapping_target in block_item.event_dict
+                        or mapping_target in block_item.mode_dict
+                    )
                     target_is_local_constant: bool = mapping_target in block_item.parameters
-                    legacy_governor_signature: bool = self._is_legacy_governor_dynamic_mapping(
-                        block=block_item,
-                        mapping_key=ParamPowerFlowReferenceType.K,
-                    )
-                    mapping_is_known_legacy_static: bool = (
-                        legacy_governor_signature
-                        and mapping_key in (
-                            ParamPowerFlowReferenceType.Pmin,
-                            ParamPowerFlowReferenceType.Pmax,
-                        )
-                    )
-                    if mapping_is_known_legacy_static:
-                        mapping_is_runtime: bool = False
-                    elif target_is_local_runtime:
+                    if target_is_local_runtime:
                         mapping_is_runtime: bool = True
                     elif mapping_key.is_runtime_parameter_reference():
                         # An intermediate compatibility save could move special
@@ -1690,9 +1898,11 @@ class BlockParser:
                         # which its role can be recovered. Retain the historical
                         # key hint for that narrow compatibility case.
                         mapping_is_runtime = mapping_key.is_runtime_parameter_reference()
-                    mapping_is_legacy_dynamic = self._is_legacy_governor_dynamic_mapping(
-                        block=block_item,
-                        mapping_key=mapping_key,
+                    mapping_is_legacy_dynamic = (
+                        self._is_legacy_governor_dynamic_mapping(
+                            block=block_item,
+                            mapping_key=mapping_key,
+                        )
                     )
                     if (not mapping_is_legacy_dynamic
                             and mapping_key == ParamPowerFlowReferenceType.converter_loss_power_0
@@ -1730,40 +1940,25 @@ class BlockParser:
                                     field_name="api_obj_mapping",
                                     missing_uid=stable_uid,
                                 )
-                        elif (mapping_is_known_legacy_static
-                              and mapping_target in block_item.event_dict):
-                            declared_parameter_value: Const = block_item.parameters[mapping_target]
-                            runtime_expression: Expr | Const = block_item.event_dict[mapping_target]
-
-                            # An intermediate compatibility save may contain both
-                            # roles. The complete historical governor signature is
-                            # the only case where legacy evidence unambiguously
-                            # identifies Pmin/Pmax as immutable device parameters.
-                            if (declared_parameter_value.value is None
-                                    and isinstance(runtime_expression, Const)
-                                    and runtime_expression.value is not None):
-                                block_item.parameters[mapping_target] = runtime_expression
-                            else:
-                                pass
-
-                            del block_item.event_dict[mapping_target]
-                            runtime_parameter_uids.discard(stable_uid)
-                            parameter_uids.add(stable_uid)
-                            migrated_parameter_count += 1
                         elif mapping_is_legacy_dynamic:
                             declared_parameter_value: Const = block_item.parameters[mapping_target]
-                            runtime_expression = block_item.event_dict.get(mapping_target, None)
+                            event_expression: Expr | Const | None = block_item.event_dict.get(mapping_target, None)
+                            mode_expression: Expr | Const | None = block_item.mode_dict.get(mapping_target, None)
 
                             # Files saved after the first static-parameter migration
                             # can contain a dynamic governor value in ``parameters``.
                             # Move it back so reopening such an intermediate file is
                             # as safe as opening the original historical archive.
-                            if runtime_expression is None:
+                            if event_expression is None and mode_expression is None:
                                 block_item.event_dict[mapping_target] = declared_parameter_value
-                            elif (isinstance(runtime_expression, Const)
-                                  and runtime_expression.value is None
+                            elif (isinstance(event_expression, Const)
+                                  and event_expression.value is None
                                   and declared_parameter_value.value is not None):
                                 block_item.event_dict[mapping_target] = declared_parameter_value
+                            elif (isinstance(mode_expression, Const)
+                                  and mode_expression.value is None
+                                  and declared_parameter_value.value is not None):
+                                block_item.mode_dict[mapping_target] = declared_parameter_value
                             else:
                                 pass
 
@@ -1774,18 +1969,23 @@ class BlockParser:
                             migrated_parameter_count += 1
                         elif mapping_is_runtime:
                             declared_parameter_value = block_item.parameters[mapping_target]
-                            runtime_expression = block_item.event_dict.get(mapping_target, None)
+                            event_expression = block_item.event_dict.get(mapping_target, None)
+                            mode_expression = block_item.mode_dict.get(mapping_target, None)
 
                             # An intermediate compatibility save may have moved a
                             # converter operating reference into static storage.
                             # Restore its runtime owner while retaining the API
                             # mapping used to seed the operating point.
-                            if runtime_expression is None:
+                            if event_expression is None and mode_expression is None:
                                 block_item.event_dict[mapping_target] = declared_parameter_value
-                            elif (isinstance(runtime_expression, Const)
-                                  and runtime_expression.value is None
+                            elif (isinstance(event_expression, Const)
+                                  and event_expression.value is None
                                   and declared_parameter_value.value is not None):
                                 block_item.event_dict[mapping_target] = declared_parameter_value
+                            elif (isinstance(mode_expression, Const)
+                                  and mode_expression.value is None
+                                  and declared_parameter_value.value is not None):
+                                block_item.mode_dict[mapping_target] = declared_parameter_value
                             else:
                                 pass
 
@@ -1793,17 +1993,24 @@ class BlockParser:
                             parameter_uids.discard(stable_uid)
                             runtime_parameter_uids.add(stable_uid)
                             migrated_parameter_count += 1
-                        elif mapping_is_static and mapping_target in block_item.event_dict:
-                            runtime_expression = block_item.event_dict[mapping_target]
+                        elif (mapping_is_static
+                              and (mapping_target in block_item.event_dict
+                                   or mapping_target in block_item.mode_dict)):
+                            event_expression = block_item.event_dict.get(mapping_target, None)
+                            mode_expression = block_item.mode_dict.get(mapping_target, None)
                             declared_parameter_value = block_item.parameters[mapping_target]
 
                             # A duplicated declaration produced by an intermediate
                             # migration must retain the event-capable role. Preserve
                             # its usable fallback and remove only the constant copy.
-                            if (isinstance(runtime_expression, Const)
-                                    and runtime_expression.value is None
+                            if (isinstance(event_expression, Const)
+                                    and event_expression.value is None
                                     and declared_parameter_value.value is not None):
                                 block_item.event_dict[mapping_target] = declared_parameter_value
+                            elif (isinstance(mode_expression, Const)
+                                    and mode_expression.value is None
+                                    and declared_parameter_value.value is not None):
+                                block_item.mode_dict[mapping_target] = declared_parameter_value
                             else:
                                 pass
 
@@ -1813,7 +2020,7 @@ class BlockParser:
                             migrated_parameter_count += 1
                         else:
                             pass
-                    elif mapping_target in block_item.event_dict:
+                    elif mapping_target in block_item.event_dict or mapping_target in block_item.mode_dict:
                         if mapping_is_legacy_dynamic:
                             # The value already has the correct owner. Removing only
                             # the stale mapping prevents RMS/EMT initialization from
@@ -1825,21 +2032,10 @@ class BlockParser:
                             # at runtime and must not be converted to static constants.
                             pass
                         elif mapping_is_static:
-                            if mapping_is_known_legacy_static:
-                                runtime_expression = block_item.event_dict[mapping_target]
-                                if isinstance(runtime_expression, Const):
-                                    del block_item.event_dict[mapping_target]
-                                    block_item.parameters[mapping_target] = runtime_expression
-                                    runtime_parameter_uids.discard(stable_uid)
-                                    parameter_uids.add(stable_uid)
-                                    migrated_parameter_count += 1
-                                else:
-                                    pass
-                            else:
-                                # The serialized event_dict declaration is the
-                                # source of truth. A mapped initial value does not
-                                # make the target immutable, even for Const.
-                                pass
+                            # The serialized event_dict declaration is the
+                            # source of truth. A mapped initial value does not
+                            # make the target immutable, even for Const.
+                            pass
                         else:
                             pass
                     elif stable_uid in parameter_uids:
@@ -1855,7 +2051,7 @@ class BlockParser:
                             # which an intermediate compatibility save placed in a
                             # descendant ``parameters`` collection. Restore that
                             # declaration at its actual equation owner.
-                            for candidate_block in hierarchy_blocks:
+                            for candidate_block in reversed(hierarchy_blocks):
                                 for candidate_parameter, candidate_value in candidate_block.parameters.items():
                                     if (legacy_parameter_owner is None
                                             and candidate_parameter.non_mutable_uid == stable_uid):
@@ -1906,7 +2102,7 @@ class BlockParser:
                             # which an earlier migration incorrectly made static.
                             # Restore the child event declaration and localize the
                             # mapping before removing the wrapper copy.
-                            for runtime_candidate_block in hierarchy_blocks:
+                            for runtime_candidate_block in reversed(hierarchy_blocks):
                                 for runtime_candidate_var, runtime_candidate_value in (
                                         runtime_candidate_block.parameters.items()
                                 ):
@@ -1968,7 +2164,7 @@ class BlockParser:
                             # declared by one descendant. Localize the mapping on
                             # that declaration owner so recursive RMS and EMT
                             # initialization follow the same owner-local contract.
-                            for static_candidate_block in hierarchy_blocks:
+                            for static_candidate_block in reversed(hierarchy_blocks):
                                 for static_candidate_var in static_candidate_block.parameters:
                                     if (static_parameter_owner is None
                                             and static_candidate_var.non_mutable_uid == stable_uid):
@@ -2012,24 +2208,19 @@ class BlockParser:
                             mapping_keys_to_remove.append(mapping_key)
                             migrated_parameter_count += 1
                         elif mapping_is_runtime:
-                            runtime_owner: Block | None = None
-                            runtime_owner_var: Var | None = None
-                            owner_candidate: Block
-                            owner_runtime_var: Var
+                            runtime_owner: Block | None
+                            runtime_owner_var: Var | None
+                            _runtime_owner_expression: Expr | Const | None
 
                             # Old composite files may expose a child operating
-                            # reference only from their wrapper. Move that mapping
-                            # to the block which owns the event declaration so the
-                            # shared recursive mapper sees one local contract.
-                            for owner_candidate in hierarchy_blocks:
-                                for owner_runtime_var in owner_candidate.event_dict:
-                                    if (runtime_owner is None
-                                            and owner_runtime_var.non_mutable_uid == stable_uid):
-                                        runtime_owner = owner_candidate
-                                        runtime_owner_var = owner_runtime_var
-                                    else:
-                                        pass
-
+                            # reference only from their wrapper. Event and mode
+                            # declarations share the same runtime ownership rule.
+                            runtime_owner, runtime_owner_var, _runtime_owner_expression = (
+                                self._find_legacy_runtime_parameter_owner(
+                                    hierarchy_blocks=hierarchy_blocks,
+                                    stable_uid=stable_uid,
+                                )
+                            )
                             if runtime_owner is None or runtime_owner_var is None:
                                 pass
                             elif runtime_owner is block_item:
@@ -2047,25 +2238,15 @@ class BlockParser:
                                 mapping_keys_to_remove.append(mapping_key)
                                 migrated_parameter_count += 1
                         elif mapping_is_static:
-                            remove_ancestor_mapping: bool
-                            promoted_static_parameter: bool
-                            remove_ancestor_mapping, promoted_static_parameter = (
-                                self._migrate_legacy_ancestor_static_mapping(
-                                    hierarchy_blocks=hierarchy_blocks,
-                                    mapping_block=block_item,
-                                    mapping_key=mapping_key,
-                                    stable_uid=stable_uid,
-                                )
+                            remove_ancestor_mapping: bool = self._migrate_legacy_ancestor_static_mapping(
+                                hierarchy_blocks=hierarchy_blocks,
+                                mapping_block=block_item,
+                                mapping_key=mapping_key,
+                                stable_uid=stable_uid,
                             )
                             if remove_ancestor_mapping:
                                 mapping_keys_to_remove.append(mapping_key)
                                 migrated_parameter_count += 1
-                            else:
-                                pass
-
-                            if promoted_static_parameter:
-                                runtime_parameter_uids.discard(stable_uid)
-                                parameter_uids.add(stable_uid)
                             else:
                                 pass
                         else:
@@ -2116,6 +2297,7 @@ class BlockParser:
         # cause a second structural migration.
         migrated_parameter_count += self._repair_legacy_static_parameter_ownership(
             root_block=root_block,
+            ambiguous_parameter_uids=ambiguous_parameter_uids,
         )
 
         return migrated_parameter_count
@@ -2184,29 +2366,6 @@ class BlockParser:
 
         return resolved_var
 
-    def _get_var_by_non_mutable_uid(self, non_mutable_uid: int) -> Var:
-        """
-        Recover one algebraic variable using its stable non-mutable UID.
-
-        The symbolic connection system intentionally aliases connected
-        variables by rewriting their runtime ``uid`` values. That aliasing is
-        required by the solver, but block interfaces such as ``in_vars`` and
-        ``out_vars`` must still be reconstructed with the original variable
-        objects so metadata like ``ref`` keeps the semantic meaning assigned by
-        the template author. Looking up ports by the mutable ``uid`` after
-        replaying saved connections can therefore return a different connected
-        variable, such as a bus variable replacing a branch terminal variable.
-
-        :param non_mutable_uid: Stable symbolic variable identity.
-        :return: Matching algebraic variable.
-        :raises KeyError: If the variable is not present in the factory.
-        """
-        var_obj: Var | None = self._var_identity_lookup.get(non_mutable_uid, None)
-        if var_obj is not None:
-            return var_obj
-        else:
-            raise KeyError(f"Var with non_mutable_uid {non_mutable_uid} was not found in VarFactory")
-
     def _find_var_or_diff_var_by_non_mutable_uid(self, non_mutable_uid: int) -> Var | None:
         """
         Recover one symbolic variable or differential variable by stable identity.
@@ -2231,49 +2390,45 @@ class BlockParser:
             else:
                 return None
 
-    def parse_consts(self, data: List[Dict[str, Any]]):
-        """
+    def parse_consts(self, data: List[Dict[str, Any]]) -> None:
+        """Restore constants into this parser's variable factory.
 
-        :param data:
-        :return:
+        :param data: Serialized constant records.
+        :return: None.
         """
         self.var_factory.parse_const_dict(data_list=data)
 
-    def parse_vars(self, data: List[Dict[str, Any]]):
-        """
+    def parse_vars(self, data: List[Dict[str, Any]]) -> None:
+        """Restore algebraic variables and refresh stable-identity lookups.
 
-        :param data:
-        :return:
+        :param data: Serialized algebraic-variable records.
+        :return: None.
         """
         self.var_factory.parse_var_dict(data_list=data)
         self._rebuild_persisted_identity_lookups()
 
-    def parse_diff_vars(self, data: List[Dict[str, Any]]):
-        """
+    def parse_diff_vars(self, data: List[Dict[str, Any]]) -> None:
+        """Restore differential variables and refresh identity lookups.
 
-        :param data:
-        :return:
+        :param data: Serialized differential-variable records.
+        :return: None.
         """
         self.var_factory.parse_diff_var_dict(data_list=data)
         self._rebuild_persisted_identity_lookups()
 
-    def parse_references(self, data: List[Dict[str, Any]]):
-        """
+    def parse_references(self, data: List[Dict[str, Any]]) -> None:
+        """Restore shared symbolic references into the variable factory.
 
-        :param data:
-        :type data:
-        :return:
-        :rtype:
+        :param data: Serialized shared-reference records.
+        :return: None.
         """
         self.var_factory.parse_references_dict(datalist=data)
 
-    def parse_connections(self, data: Dict[int, List[Any]]):
-        """
+    def parse_connections(self, data: Dict[int, List[Any]]) -> None:
+        """Restore symbolic connection aliases and refresh identity lookups.
 
-        :param data:
-        :type data:
-        :return:
-        :rtype:
+        :param data: Serialized connection records grouped by source identity.
+        :return: None.
         """
         self.var_factory.parse_connections_dict(datalist=data)
         self._rebuild_persisted_identity_lookups()
@@ -4406,13 +4561,6 @@ def compare_blocks(
         remain identical in production and diagnostic callers.
     :return: Whether both blocks produce the same persisted symbolic content.
     """
-    if testing:
-        # Diagnostic callers intentionally exercise the production equality
-        # path, so the flag does not select a weaker comparison algorithm.
-        pass
-    else:
-        pass
-
     # TODO: do not use dictionaries and compare directly using the block information
     saver1 = BlockSaver(var_factory1)
     saver1.save_block(block1, main=False)

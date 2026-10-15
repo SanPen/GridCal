@@ -16,6 +16,7 @@ from VeraGridEngine.Simulations.EMT.problems.emt_problem_template import EmtProb
 from VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver import BoundaryUpdateWrapper, JitSymbolicSolver
 from VeraGridEngine.Utils.procedural_logic import (
     aflipflop,
+    BlockProceduralLogicUpdater,
     DelayedThresholdLatchLogic,
     bool_and,
     bool_or,
@@ -603,7 +604,7 @@ def _run_benchmark_simulation(
         data=logic_snapshot,
         procedural_logic_codec=ProceduralLogicCodec(),
     )
-    updater = build_boundary_updater_from_block(problem)
+    updater: BlockProceduralLogicUpdater | None = build_boundary_updater_from_block(problem)
 
     collector = NewtonTraceCollector()
     problem.set_newton_trace_collector(collector)
@@ -745,6 +746,74 @@ def test_boundary_updater_builds_from_block_logic() -> None:
     forced_time = updater.get_next_forced_event_time(0.0, 0.01)
     assert forced_time is not None
     assert pytest.approx(forced_time, abs=1e-7) == 1.5e-3
+
+
+def test_boundary_updater_re_evaluates_memoryless_mode_at_same_timestamp() -> None:
+    """Refresh a memoryless mode when its state snapshot changes at one time.
+
+    :return: None.
+    """
+    vf: VarFactory = VarFactory()
+    source: Var = vf.add_var("sample_source")
+    sampled_mode: Var = vf.add_var("sample_mode")
+    block: Block = Block(
+        algebraic_vars=list((source,)),
+        algebraic_eqs=list((source - Const(1.0),)),
+        mode_dict=dict(((sampled_mode, Const(0.0)),)),
+        procedural_logic=list((sampled_value(output=sampled_mode, source=source),)),
+        name="Procedural startup reevaluation",
+    )
+    problem: GenericEmtProblem = GenericEmtProblem(
+        sys_block=block,
+        glob_time=vf.add_var("t_glob_startup"),
+        static_parameter_values_mapping=dict(),
+    )
+    updater = build_boundary_updater_from_block(problem)
+
+    assert updater is not None
+    state: np.ndarray = problem.get_x0().copy()
+    parameters: np.ndarray = problem.event_params_values.copy()
+    source_index: int = problem.get_var_idx(source)
+    mode_index: int = problem.uid2idx_event_params[sampled_mode.uid]
+    state[source_index] = 1.0
+
+    updater.initialize_modes(t=0.0, x=state, params=parameters)
+    assert parameters[mode_index] == 1.0
+
+    # Nonlinear initialization and equilibrium solves can improve the state
+    # without advancing time. The memoryless mode must follow that new state.
+    state[source_index] = 2.0
+    updater.update(t=0.0, x=state, params=parameters)
+    assert parameters[mode_index] == 2.0
+
+
+def test_boundary_updater_rejects_duplicate_procedural_mode_writers() -> None:
+    """Reject update order as an implicit owner for one retained mode.
+
+    :return: None.
+    """
+    vf: VarFactory = VarFactory()
+    source_a: Var = vf.add_var("source_a")
+    source_b: Var = vf.add_var("source_b")
+    sampled_mode: Var = vf.add_var("shared_mode")
+    block: Block = Block(
+        algebraic_vars=list((source_a, source_b)),
+        algebraic_eqs=list((source_a, source_b)),
+        mode_dict=dict(((sampled_mode, Const(0.0)),)),
+        procedural_logic=list((
+            sampled_value(output=sampled_mode, source=source_a),
+            sampled_value(output=sampled_mode, source=source_b),
+        )),
+        name="Duplicate procedural mode ownership",
+    )
+    problem: GenericEmtProblem = GenericEmtProblem(
+        sys_block=block,
+        glob_time=vf.add_var("t_glob_duplicate_owner"),
+        static_parameter_values_mapping=dict(),
+    )
+
+    with pytest.raises(ValueError, match="Multiple procedural logic entries write runtime parameter"):
+        _ = build_boundary_updater_from_block(problem)
 
 
 def test_sampled_value_uses_declarative_atan2_argument_order() -> None:

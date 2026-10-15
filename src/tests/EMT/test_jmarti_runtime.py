@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 import VeraGridEngine.api as gce
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
@@ -248,3 +249,58 @@ def test_jmarti_runtime_fundamental_phasor_initialization_reproduces_initial_cur
 
     assert np.allclose(reconstructed_i_f, i_f_sample, atol=5.0e-4)
     assert np.allclose(reconstructed_i_t, i_t_sample, atol=5.0e-4)
+
+
+@pytest.mark.parametrize("delay_steps", [1, 3, 8])
+def test_jmarti_periodic_history_matches_telegrapher_terminal_currents_after_wraparound(delay_steps):
+    """Check an entire periodic orbit, not only the supplied initial sample."""
+    rt, _, params, _ = _build_jmarti_runtime_fixture()
+    from types import SimpleNamespace
+    from VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime import _initialize_jmarti_runtime_storage
+    # Use a real impulse response, including a conjugate pair of filter states.
+    # The older fixture above fits arbitrary complex synthetic frequency data,
+    # which do not enforce conjugate symmetry and cannot define this real orbit.
+    mode = SimpleNamespace(
+        get_yc_constant_term=lambda: 1.1,
+        get_yc_alpha=lambda: np.array([.90+.04j, .90-.04j]),
+        get_yc_beta=lambda: np.array([-.005+.002j, -.005-.002j]),
+        get_hres_constant_term=lambda: .95,
+        get_hres_alpha=lambda: np.array([.97]),
+        get_hres_beta=lambda: np.array([.0003]),
+        get_delay_step_count=lambda: delay_steps,
+        get_residual_delay_s=lambda: .2*rt.h,
+    )
+    rt.runtime_data = SimpleNamespace(
+        get_mode_data=lambda: (mode, mode),
+        get_modal_transform=lambda: np.eye(rt.m),
+        get_modal_transform_inv=lambda: np.eye(rt.m),
+    )
+    _initialize_jmarti_runtime_storage(rt)
+    frequency = 50.0
+    advance = np.exp(2j * np.pi * frequency * rt.h)
+    vf = np.array([1.0 - .2j, .95 - .1j])
+    vt = np.array([.98 - .18j, .92 - .09j])
+    transform = rt.runtime_data.get_modal_transform()
+    inverse = rt.runtime_data.get_modal_transform_inv()
+    vfm, vtm = inverse @ vf, inverse @ vt
+    ifm, itm = np.zeros(rt.m, complex), np.zeros(rt.m, complex)
+    for k, mode in enumerate(rt.runtime_data.get_mode_data()):
+        yc = mode.get_yc_constant_term() + np.sum(mode.get_yc_beta() / (advance - mode.get_yc_alpha()))
+        h = mode.get_hres_constant_term() + np.sum(mode.get_hres_beta() / (advance - mode.get_hres_alpha()))
+        fraction = mode.get_residual_delay_s() / rt.h
+        h *= advance ** -mode.get_delay_step_count() * (1 - fraction + fraction / advance)
+        # Distributed-line boundary identity, independent of Norton state layout.
+        ifm[k] = yc * ((1 + h*h)*vfm[k] - 2*h*vtm[k]) / (1 - h*h)
+        itm[k] = yc * ((1 + h*h)*vtm[k] - 2*h*vfm[k]) / (1 - h*h)
+    current_f, current_t = transform @ ifm, transform @ itm
+    hf, ht = rt.initialize_from_fundamental_phasors(vf, vt, current_f, current_t, frequency)
+    params[:] = np.r_[hf.real, ht.real]
+    for step in range(3 * rt.buffer_size):
+        previous_rotation = advance ** max(0, step - 1)
+        previous_state = np.sqrt(2) * np.imag(np.r_[vf, vt] * previous_rotation)
+        rt.update_history(step, previous_state, params)
+        rotation = advance ** step
+        actual_f = rt.direct_yc_phase @ (np.sqrt(2)*np.imag(vf*rotation)) + params[:rt.m]
+        actual_t = rt.direct_yc_phase @ (np.sqrt(2)*np.imag(vt*rotation)) + params[rt.m:]
+        np.testing.assert_allclose(actual_f, np.sqrt(2)*np.imag(current_f*rotation), atol=1e-9)
+        np.testing.assert_allclose(actual_t, np.sqrt(2)*np.imag(current_t*rotation), atol=1e-9)

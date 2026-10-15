@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.OPF.Formulations package &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Simulations.OPF.Formulations package &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -73,6 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -1168,6 +1169,16 @@ That means that solves the OPF problem for a complete time series at once</p>
 <dd><p>Bases: <a class="reference internal" href="#VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.GenerationVars" title="VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.GenerationVars"><code class="xref py py-class docutils literal notranslate"><span class="pre">GenerationVars</span></code></a></p>
 <p>struct extending the generation vars to handle the battery vars</p>
 <dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.BatteryVars.charge">
+<span class="sig-name descname"><span class="pre">charge</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.BatteryVars.charge" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.BatteryVars.discharge">
+<span class="sig-name descname"><span class="pre">discharge</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.BatteryVars.discharge" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.BatteryVars.e">
 <span class="sig-name descname"><span class="pre">e</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.BatteryVars.e" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -1791,6 +1802,30 @@ content is not LP vars but their value
 :param t_idx: time step
 :param bus_vars: BusVars
 :param prob: LpModel</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.add_facility_battery_constraints">
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.</span></span><span class="sig-name descname"><span class="pre">add_facility_battery_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facility_groups</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="VeraGridEngine.Devices.Aggregation.html#VeraGridEngine.Devices.Aggregation.facility.Facility" title="VeraGridEngine.Devices.Aggregation.facility.Facility"><span class="pre">Facility</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="VeraGridEngine.Devices.html#VeraGridEngine.Devices.multi_circuit.FacilityDispatchGroup" title="VeraGridEngine.Devices.multi_circuit.FacilityDispatchGroup"><span class="pre">FacilityDispatchGroup</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.DataStructures.html#VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit" title="VeraGridEngine.DataStructures.numerical_circuit.NumericalCircuit"><span class="pre">NumericalCircuit</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mip_vars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.OpfVars" title="VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.OpfVars"><span class="pre">OpfVars</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">prob</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel" title="VeraGridEngine.Utils.MIP.pulp_interface.PulpLpModel"><span class="pre">PulpLpModel</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="VeraGridEngine.Utils.MIP.html#VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel" title="VeraGridEngine.Utils.MIP.ortools_interface.OrToolsLpModel"><span class="pre">OrToolsLpModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_generation_limits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/OPF/Formulations/linear_opf_ts.html#add_facility_battery_constraints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.OPF.Formulations.linear_opf_ts.add_facility_battery_constraints" title="Link to this definition"></a></dt>
+<dd><p>Limit restricted battery flows to their facility’s actual production and demand.</p>
+<p>Budgets use gross generation and served demand, without prioritizing local
+consumption over charging. Grid-mode batteries do not consume these budgets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>t</strong> – Local optimization time index.</p></li>
+<li><p><strong>global_t</strong> – Profile time index, or None for snapshot values.</p></li>
+<li><p><strong>facility_groups</strong> – Precomputed device references and compiled indices per facility.</p></li>
+<li><p><strong>nc</strong> – Compiled circuit at the profile time index.</p></li>
+<li><p><strong>mip_vars</strong> – Optimization variables, in per unit.</p></li>
+<li><p><strong>prob</strong> – Optimization model.</p></li>
+<li><p><strong>skip_generation_limits</strong> – Whether generator power bounds are disabled.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">

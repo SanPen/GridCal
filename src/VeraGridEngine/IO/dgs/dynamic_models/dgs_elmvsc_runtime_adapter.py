@@ -80,6 +80,47 @@ def _append_unique_var(variables: List[Var], variable: Var) -> None:
     variables.append(variable)
 
 
+def _apply_adapted_composite_boundary(
+        block: Block,
+        boundary_inputs: List[Var],
+        boundary_outputs: List[Var],
+) -> None:
+    """Apply one adapter-declared physical boundary to a composite block.
+
+    Device adapters own the physical meaning of their added equations. This
+    general operation only installs their already-resolved boundary variables,
+    preserving order and removing duplicate identities without inferring
+    causality from algebraic equations or external mappings.
+
+    :param block: Adapted composite whose public interface is being finalized.
+    :param boundary_inputs: Ordered physical variables supplied from outside.
+    :param boundary_outputs: Ordered physical variables supplied to the exterior.
+    :return: None.
+    """
+    normalized_inputs: List[Var] = list()
+    boundary_input: Var
+    for boundary_input in boundary_inputs:
+        _append_unique_var(
+            variables=normalized_inputs,
+            variable=boundary_input,
+        )
+    else:
+        pass
+
+    normalized_outputs: List[Var] = list()
+    boundary_output: Var
+    for boundary_output in boundary_outputs:
+        _append_unique_var(
+            variables=normalized_outputs,
+            variable=boundary_output,
+        )
+    else:
+        pass
+
+    block.in_vars = normalized_inputs
+    block.out_vars = normalized_outputs
+
+
 def _find_first_named_var_recursive(
         block: Block,
         candidate_names: Iterable[str],
@@ -173,6 +214,59 @@ def _connect_all_named_signal_vars(
                 block.update_model(candidate_var, canonical_var)
 
 
+def _reconcile_dgs_composite_inputs_from_children(block: Block) -> None:
+    """Expose direct-child inputs that have no producer in a sibling block.
+
+    The check belongs to each concrete input port rather than only to its
+    ``Var`` identity. Pass-through measurements can legitimately reuse one
+    variable as both their external input and internal output: their own input
+    must remain public while a consumer of their output stays internal.
+
+    :param block: Composite whose definitive direct children are available.
+    :return: None.
+    """
+    exposed_inputs_by_uid: Dict[int, Var] = dict()
+    consumer_block: Block
+    producer_block: Block
+    input_var: Var
+    output_var: Var
+
+    # Rebuild the public input boundary only after every controller,
+    # measurement and physical equipment child has been materialized.
+    for consumer_block in block.children:
+        for input_var in consumer_block.in_vars:
+            has_sibling_producer: bool = False
+            for producer_block in block.children:
+                if producer_block is consumer_block:
+                    pass
+                else:
+                    for output_var in producer_block.out_vars:
+                        same_uid: bool = output_var.uid == input_var.uid
+                        same_shared_reference: bool = (
+                                output_var.shared_ref is not None
+                                and input_var.shared_ref is not None
+                                and output_var.shared_ref == input_var.shared_ref
+                        )
+                        if same_uid or same_shared_reference:
+                            has_sibling_producer = True
+                        else:
+                            pass
+
+            if has_sibling_producer:
+                pass
+            else:
+                existing_input: Var | None = exposed_inputs_by_uid.get(
+                    input_var.uid,
+                    None,
+                )
+                if existing_input is None:
+                    exposed_inputs_by_uid[input_var.uid] = input_var
+                else:
+                    pass
+
+    block.in_vars = list(exposed_inputs_by_uid.values())
+
+
 def _connect_all_named_input_vars(
         block: Block,
         signal_name: str,
@@ -216,6 +310,67 @@ def _connect_all_named_input_vars(
     else:
         pass
 
+    return len(matching_inputs)
+
+
+def _connect_all_referenced_input_vars(
+        block: Block,
+        reference: VarPowerFlowReferenceType,
+        canonical_var: Var,
+) -> int:
+    """Connect typed template placeholders to one physical adapter variable.
+
+    Imported measurements are built before a DGS controller is wrapped by its
+    physical VSC adapter. Their root inputs therefore carry the correct
+    power-flow reference but initially own an independent UID. Replacing those
+    inputs here makes the controller and ``external_mapping`` consume the same
+    physical variable during initialization and runtime.
+
+    :param block: Imported controller hierarchy updated in place.
+    :param reference: Exact terminal quantity represented by the placeholders.
+    :param canonical_var: Physical adapter variable owning that quantity.
+    :return: Number of distinct placeholder UIDs connected.
+    """
+    matching_inputs: List[Var] = list()
+    matching_uids: Set[int] = set()
+    produced_uids: Set[int] = set()
+    candidate_block: Block
+    input_var: Var
+    output_var: Var
+
+    # A measurement output remains an input at its controller consumer, but it
+    # is not a physical boundary placeholder. Protect every produced UID from
+    # reference-based canonicalization so Pt/Qt describe the measured quantity
+    # without collapsing P_act/Q_act onto the adapter's Pac/Qac variables.
+    for candidate_block in block.get_all_blocks():
+        for output_var in candidate_block.out_vars:
+            produced_uids.add(output_var.uid)
+
+    # Collect before substitution because a root input and several measurement
+    # children can expose the same placeholder object.
+    for candidate_block in block.get_all_blocks():
+        for input_var in candidate_block.in_vars:
+            if (
+                    input_var.ref == reference
+                    and input_var.uid != canonical_var.uid
+                    and input_var.uid not in matching_uids
+                    and input_var.uid not in produced_uids
+            ):
+                matching_inputs.append(input_var)
+                matching_uids.add(input_var.uid)
+            else:
+                pass
+
+    for input_var in matching_inputs:
+        block.update_model(input_var, canonical_var)
+
+    if len(matching_inputs) > 0:
+        _remove_connected_input_runtime_aliases(
+            block=block,
+            canonical_var=canonical_var,
+        )
+    else:
+        pass
     return len(matching_inputs)
 
 
@@ -775,6 +930,29 @@ def build_dgs_elmvscmono_rms_runtime_template(
     )
     epsilon: Var = Var(name="elmvscmono_epsilon")
 
+    # Measurements created by the DGS parser initially consume independent
+    # typed placeholders. Bind them to the adapter variables that own the
+    # external power-flow values before wrapper interfaces are assembled.
+    physical_input_bindings: Tuple[
+        Tuple[VarPowerFlowReferenceType, Var],
+        ...,
+    ] = (
+        (VarPowerFlowReferenceType.Vf_dc, dc_voltage),
+        (VarPowerFlowReferenceType.Vmt, ac_voltage_magnitude),
+        (VarPowerFlowReferenceType.Vat, ac_voltage_angle),
+        (VarPowerFlowReferenceType.Pf, dc_power),
+        (VarPowerFlowReferenceType.Pt, ac_active_power),
+        (VarPowerFlowReferenceType.Qt, ac_reactive_power),
+    )
+    physical_reference: VarPowerFlowReferenceType
+    physical_var: Var
+    for physical_reference, physical_var in physical_input_bindings:
+        _connect_all_referenced_input_vars(
+            block=control_block,
+            reference=physical_reference,
+            canonical_var=physical_var,
+        )
+
     # Rotate the network voltage into the exact reference frame exported by
     # PowerFactory. cosref/sinref are controller outputs, not inferred angles.
     ac_voltage_real = ac_voltage_magnitude * sym.cos(ac_voltage_angle)
@@ -820,39 +998,55 @@ def build_dgs_elmvscmono_rms_runtime_template(
             * converter_to_system_power_gain
     )
 
-    wrapper_inputs: List[Var] = list([
-        dc_voltage,
-        ac_voltage_magnitude,
-        ac_voltage_angle,
-    ])
-    controller_input: Var
-    for controller_input in control_block.in_vars:
-        _append_unique_var(wrapper_inputs, controller_input)
+    # Keep the physical bridge at the same hierarchy level as the imported
+    # inner and outer controllers. The editor can then recover every cable
+    # between those visible siblings from their shared variable identities.
+    equipment_algebraic_vars: List[Var] = list((
+        current_d_var,
+        current_q_var,
+        controller_dc_voltage_var,
+        dc_power,
+        dc_conversion_power,
+        ac_active_power,
+        ac_reactive_power,
+        ac_current_magnitude,
+        network_dc_current,
+    ))
+    # This adapter is selected only after validating the native monopolar slot
+    # contract. Its three canonical outputs must belong to the visible physical
+    # block even when the structural control child no longer retains the slot
+    # boundary after direct DGS materialization.
+    equipment_output_vars: List[Var] = list((
+        current_d_var,
+        current_q_var,
+        controller_dc_voltage_var,
+        dc_power,
+    ))
 
-    wrapper_outputs: List[Var] = list()
-    controller_output: Var
-    for controller_output in control_block.out_vars:
-        _append_unique_var(wrapper_outputs, controller_output)
-    _append_unique_var(wrapper_outputs, current_d_var)
-    _append_unique_var(wrapper_outputs, current_q_var)
-    _append_unique_var(wrapper_outputs, controller_dc_voltage_var)
-
-    wrapper_block: Block = Block(
-        name=control_template.name,
-        children=list([control_block]),
-        in_vars=wrapper_inputs,
-        out_vars=wrapper_outputs,
-        algebraic_vars=list([
-            current_d_var,
-            current_q_var,
-            controller_dc_voltage_var,
-            dc_power,
-            dc_conversion_power,
-            ac_active_power,
-            ac_reactive_power,
-            ac_current_magnitude,
-            network_dc_current,
-        ]),
+    # Pac and Qac are adapter-owned signals consumed by the native measurement
+    # children. Other physical observers remain algebraic internals even when
+    # an external mapping supplies their power-flow initialization value.
+    _append_unique_var(
+        variables=equipment_output_vars,
+        variable=ac_active_power,
+    )
+    _append_unique_var(
+        variables=equipment_output_vars,
+        variable=ac_reactive_power,
+    )
+    equipment_block: Block = Block(
+        name="VSC Converter",
+        in_vars=list((
+            dc_voltage,
+            ac_voltage_magnitude,
+            ac_voltage_angle,
+            pmd_var,
+            pmq_var,
+            cosref_var,
+            sinref_var,
+        )),
+        out_vars=equipment_output_vars,
+        algebraic_vars=list(equipment_algebraic_vars),
         algebraic_eqs=list([
             # Vconv - Vgrid = (R + jX) I on the converter equipment base.
             converter_voltage_d
@@ -886,6 +1080,33 @@ def build_dgs_elmvscmono_rms_runtime_template(
             dc_power - dc_conversion_power,
             network_dc_current - dc_power / (dc_voltage + epsilon),
         ]),
+    )
+    control_children: List[Block] = list(control_block.children)
+    control_children.append(equipment_block)
+    control_block.children = control_children
+    _reconcile_dgs_composite_inputs_from_children(block=control_block)
+
+    # The adapter declares the physical boundary of the complete converter.
+    # Controller feedback signals remain between siblings, while only terminal
+    # powers cross from the assembled device back to the network-facing parent.
+    physical_boundary_inputs: List[Var] = list(control_block.in_vars)
+    physical_boundary_outputs: List[Var] = list((
+        dc_power,
+        ac_active_power,
+        ac_reactive_power,
+    ))
+    _apply_adapted_composite_boundary(
+        block=control_block,
+        boundary_inputs=physical_boundary_inputs,
+        boundary_outputs=physical_boundary_outputs,
+    )
+
+    # The root remains the device-facing template boundary. Configuration,
+    # initialization and external mappings stay here because runtime compilers
+    # resolve those contracts directly from the assigned template root.
+    wrapper_block: Block = Block(
+        name=control_template.name,
+        children=list((control_block,)),
         event_dict=dict([
             (resistance, Const(0.0)),
             (reactance, Const(0.0)),
@@ -922,6 +1143,11 @@ def build_dgs_elmvscmono_rms_runtime_template(
             # would close an artificial Pac/Qac <-> id/iq dependency cycle.
             (dc_conversion_power, -ac_active_power + converter_loss),
         ]),
+    )
+    _apply_adapted_composite_boundary(
+        block=wrapper_block,
+        boundary_inputs=control_block.in_vars,
+        boundary_outputs=control_block.out_vars,
     )
     _normalize_unowned_interface_initializers(block=wrapper_block)
     result: RmsModelTemplate = RmsModelTemplate(name=control_template.name)
@@ -1169,6 +1395,31 @@ def build_dgs_elmvsc_rms_runtime_template(
         name="elmvsc_system_power_base_mva",
     )
     epsilon: Var = Var(name="elmvsc_epsilon")
+
+    # Rebind parser-created measurement inputs to the exact variables exposed
+    # through this adapter's external mapping. This prevents parallel Pt/Qt or
+    # voltage identities from surviving into explicit initialization.
+    physical_input_bindings: Tuple[
+        Tuple[VarPowerFlowReferenceType, Var],
+        ...,
+    ] = (
+        (VarPowerFlowReferenceType.Vf_dc, dc_positive_voltage),
+        (VarPowerFlowReferenceType.Vt_dc, dc_negative_voltage),
+        (VarPowerFlowReferenceType.Vmt, ac_voltage_magnitude),
+        (VarPowerFlowReferenceType.Vat, ac_voltage_angle),
+        (VarPowerFlowReferenceType.Pf, dc_power),
+        (VarPowerFlowReferenceType.Pt, ac_active_power),
+        (VarPowerFlowReferenceType.Qt, ac_reactive_power),
+    )
+    physical_reference: VarPowerFlowReferenceType
+    physical_var: Var
+    for physical_reference, physical_var in physical_input_bindings:
+        _connect_all_referenced_input_vars(
+            block=control_block,
+            reference=physical_reference,
+            canonical_var=physical_var,
+        )
+
     dc_span = dc_positive_voltage - dc_negative_voltage
     physical_dc_span = (
             dc_positive_voltage * dc_positive_nominal_voltage

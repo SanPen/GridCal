@@ -8,9 +8,13 @@ import tarfile
 import zipfile
 import hashlib
 import ast
+import time
+import urllib.error
+import urllib.request
+from http.client import HTTPResponse
 from pathlib import Path
 from typing import List, Tuple
-from subprocess import call
+from subprocess import run
 
 
 def file_hash(filename: str) -> str:
@@ -178,7 +182,7 @@ def collect_extra_package_files(pkg_name: str, relative_folder: str, suffixes: L
     :param suffixes: allowed file suffixes
     :return: list of package-relative file paths
     """
-    package_path: Path = Path(pkg_name)
+    package_path: Path = Path(__file__).resolve().parent / pkg_name
     folder_path: Path = package_path / relative_folder
     allowed_suffixes: set[str] = set()
     extra_files: List[str] = list()
@@ -226,6 +230,45 @@ def read_module_constant(module_path: str | Path, constant_name: str) -> str:
     raise ValueError(f"Constant {constant_name!r} not found in {module_file}")
 
 
+def wait_for_pypi_release_index(pkg_name: str, version: str) -> None:
+    """Wait until PyPI's pip-facing index lists the uploaded source archive.
+
+    :param pkg_name: Distribution name as uploaded to PyPI.
+    :param version: Uploaded release version.
+    :return: None.
+    :raises RuntimeError: If PyPI does not expose the archive within one minute.
+    """
+    normalized_name: str = pkg_name.lower().replace('_', '-').replace('.', '-')
+    index_url: str = f"https://pypi.org/simple/{normalized_name}/"
+    expected_filename: str = f"{normalized_name}-{version}.tar.gz"
+    attempt: int = 0
+    max_attempts: int = 10
+    retry_interval: float = 4.0
+
+    while attempt < max_attempts:
+        attempt += 1
+        simple_index: str = ''
+
+        try:
+            response: HTTPResponse = urllib.request.urlopen(index_url, timeout=2)
+            with response:
+                simple_index = response.read().decode('utf-8', errors='replace')
+        except (urllib.error.URLError, TimeoutError):
+            simple_index = ''
+
+        if expected_filename in simple_index:
+            print(f"Verified {pkg_name} {version} on PyPI's pip index")
+            return
+        else:
+            if attempt < max_attempts:
+                time.sleep(retry_interval)
+            else:
+                raise RuntimeError(
+                    f"PyPI accepted {pkg_name} {version}, but {expected_filename} "
+                    f"did not appear at {index_url} after {max_attempts} checks"
+                )
+
+
 def get_repo_readme_path() -> Path | None:
     """
     Return the top-level README used for package descriptions when available.
@@ -253,7 +296,8 @@ def build_tar_gz_pkg(pkg_name: str,
                      long_description: str,
                      folder_to_save='dist',
                      ext_filter: List[str] | None= None,
-                     extra_files=()):
+                     extra_files=(),
+                     flatten_package_root: bool = False):
     """
 
     :param pkg_name:
@@ -273,6 +317,7 @@ def build_tar_gz_pkg(pkg_name: str,
     :param folder_to_save:
     :param ext_filter:
     :param extra_files:
+    :param flatten_package_root: Place package files beside setup.py in the source archive.
     :return:
     """
     pkg_name2 = pkg_name.lower() + '-' + version
@@ -286,11 +331,12 @@ def build_tar_gz_pkg(pkg_name: str,
 
     output_filename = os.path.join(folder_to_save, filename)
 
-    files = find_pkg_files(path=pkg_name,
+    package_root: Path = Path(setup_path).resolve().parent
+    files = find_pkg_files(path=str(package_root),
                            ext_filter=ext_filter)
 
     for f in extra_files:
-        files.append((f, os.path.join(pkg_name, f)))
+        files.append((f, str(package_root / f)))
 
     pkg_info = build_pkg_info(name=pkg_name,
                               version=version,
@@ -319,7 +365,12 @@ def build_tar_gz_pkg(pkg_name: str,
     with tarfile.open(output_filename, "w:gz") as tar:
         for name, file_path in files:
             if not name.endswith('setup.py'):
-                tar.add(file_path, arcname=os.path.join(pkg_name2, file_path))
+                archive_path: Path = Path(file_path).relative_to(package_root)
+                if flatten_package_root:
+                    pass
+                else:
+                    archive_path = Path(pkg_name) / archive_path
+                tar.add(file_path, arcname=os.path.join(pkg_name2, archive_path))
 
         # add the setup where it belongs
         tar.add(setup_path, arcname=os.path.join(pkg_name2, 'setup.py'))
@@ -477,23 +528,53 @@ def read_pypirc() -> Tuple[str, str]:
     return user, pwd
 
 
-def check_all_folders_contain_init_py(directory, exceptions=('__pycache__')):
+def check_all_folders_contain_init_py(
+        directory: str,
+        exceptions: tuple[str, ...] = ('__pycache__',),
+) -> bool:
+    """Validate package folders while pruning explicitly excluded subtrees.
+
+    A one-part exception matches an exact directory name at any depth. An
+    exception containing multiple path parts matches one exact path relative
+    to the package root. Descendants of a matched directory are not inspected.
+
+    :param directory: Package root to validate, relative to this module or absolute.
+    :param exceptions: Exact directory names or package-relative subtree paths to prune.
+    :return: ``True`` when every non-excluded directory is a Python package.
+    :raises Exception: If a non-excluded directory has no ``__init__.py`` file.
     """
+    module_root: Path = Path(__file__).resolve().parent
+    package_root: Path = module_root / directory
+    excluded_names: set[str] = set()
+    excluded_relative_paths: set[Path] = set()
 
-    :param directory:
-    :param exceptions:
-    :return:
-    """
+    # Preserve exact-name exclusions while allowing one precise resource subtree.
+    for exception in exceptions:
+        exception_path: Path = Path(exception)
+        if len(exception_path.parts) == 1:
+            excluded_names.add(exception)
+        else:
+            excluded_relative_paths.add(exception_path)
 
-    here = Path(__file__).resolve().parent
+    for root, directories, files in os.walk(package_root):
+        current_root: Path = Path(root)
+        relative_root: Path = current_root.relative_to(package_root)
+        retained_directories: list[str] = list()
 
-    for root, dirs, files in os.walk(here / directory):
+        # Pruning here prevents excluded resource descendants from being visited.
+        for directory_name in directories:
+            relative_directory: Path = relative_root / directory_name
+            if directory_name in excluded_names or relative_directory in excluded_relative_paths:
+                pass
+            else:
+                retained_directories.append(directory_name)
+        directories[:] = retained_directories
 
-        root_name = os.path.basename(root)
-        if root_name not in exceptions:
-            # Check if current folder is not the root folder
-            if '__init__.py' not in files:
-                raise Exception(f"Missing __init__.py in {root}")
+        # Every directory that remains in the traversal must be importable.
+        if '__init__.py' not in files:
+            raise Exception(f"Missing __init__.py in {root}")
+        else:
+            pass
     return True
 
 
@@ -513,7 +594,8 @@ def publish(pkg_name: str,
             long_description: str,
             ext_filter=('.py', '.csv', '.txt'),
             exeption_paths=('__pycache__', 'icons', 'svg'),
-            extra_files=()):
+            extra_files=(),
+            flatten_package_root: bool = False):
     """
     Publish package to Pypi using twine
     :param pkg_name: name of the package (i.e VeraGrid)
@@ -533,14 +615,19 @@ def publish(pkg_name: str,
     :param ext_filter:
     :param exeption_paths:
     :param extra_files:
+    :param flatten_package_root: Match setup.py files that map their package root to the archive root.
     """
 
-    check_all_folders_contain_init_py(directory=os.path.dirname(setup_path),
+    setup_file: Path = Path(setup_path).resolve()
+    package_root: Path = setup_file.parent
+    source_root: Path = package_root.parent
+
+    check_all_folders_contain_init_py(directory=str(package_root),
                                       exceptions=exeption_paths)
 
     # build the tar.gz file
     fpath = build_tar_gz_pkg(pkg_name=pkg_name,
-                             setup_path=setup_path,
+                             setup_path=str(setup_file),
                              version=version,
                              summary=summary,
                              home_page=home_page,
@@ -553,18 +640,23 @@ def publish(pkg_name: str,
                              description_content_type=description_content_type,
                              provides_extra=provides_extra,
                              long_description=long_description,
-                             folder_to_save='dist',
+                             folder_to_save=str(source_root / 'dist'),
                              ext_filter=ext_filter,
-                             extra_files=extra_files)
+                             extra_files=extra_files,
+                             flatten_package_root=flatten_package_root)
 
     # check the tar.gz file
-    call([sys.executable, '-m', 'twine', 'check', fpath])
+    run([sys.executable, '-m', 'twine', 'check', fpath], check=True)
 
     user, pwd = read_pypirc()
 
     # upload the tar.gz file
-    call([sys.executable, '-m', 'twine', 'upload',
-          '--repository', 'pypi',
-          '--username', user,
-          '--password', pwd,
-          fpath])
+    upload_return_code: int = run([sys.executable, '-m', 'twine', 'upload',
+                                  '--repository', 'pypi',
+                                  '--username', user,
+                                  '--password', pwd,
+                                  fpath]).returncode
+    if upload_return_code == 0:
+        pass
+    else:
+        raise RuntimeError(f"Twine upload failed for {pkg_name} {version}")

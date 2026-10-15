@@ -10,10 +10,9 @@ There are mainly three steps. First you have to import your weather data, then
 you need to specify your wind turbine, and in the last step call the
 windpowerlib functions to calculate the feed-in time series.
 
-Install the windpowerlib and optionally matplotlib to see the plots:
+Install windpowerlib:
 
    pip install windpowerlib
-   pip install matplotlib
 
 Go down to the "run_example()" function to start the example.
 
@@ -25,7 +24,6 @@ import pandas as pd
 import requests
 import logging
 from windpowerlib import ModelChain, WindTurbine, create_power_curve
-from matplotlib import pyplot as plt
 
 
 def get_weather_data(filename="weather.csv", **kwargs):
@@ -231,9 +229,9 @@ def calculate_power_output(weather, my_turbine, e126, my_turbine2):
     return
 
 
-def plot_or_print(my_turbine, e126, my_turbine2):
+def print_results(my_turbine, e126, my_turbine2):
     r"""
-    Plots or prints power output and power (coefficient) curves.
+    Prints power output and power curve values.
 
     Parameters
     ----------
@@ -247,56 +245,13 @@ def plot_or_print(my_turbine, e126, my_turbine2):
 
     """
 
-    # plot or print turbine power output
-    if plt:
-        e126.power_output.plot(legend=True, label="Enercon E126")
-        my_turbine.power_output.plot(legend=True, label="myTurbine")
-        my_turbine2.power_output.plot(legend=True, label="myTurbine2")
-        plt.xlabel("Time")
-        plt.ylabel("Power in W")
-        plt.show()
-    else:
-        print(e126.power_output)
-        print(my_turbine.power_output)
-        print(my_turbine2.power_output)
-
-    # plot or print power curve
-    if plt:
-        if e126.power_curve is not False:
-            e126.power_curve.plot(
-                x="wind_speed",
-                y="value",
-                style="*",
-                title="Enercon E126 power curve",
-            )
-            plt.xlabel("Wind speed in m/s")
-            plt.ylabel("Power in W")
-            plt.show()
-        if my_turbine.power_curve is not False:
-            my_turbine.power_curve.plot(
-                x="wind_speed",
-                y="value",
-                style="*",
-                title="myTurbine power curve",
-            )
-            plt.xlabel("Wind speed in m/s")
-            plt.ylabel("Power in W")
-            plt.show()
-        if my_turbine2.power_curve is not False:
-            my_turbine2.power_curve.plot(
-                x="wind_speed",
-                y="value",
-                style="*",
-                title="myTurbine2 power curve",
-            )
-            plt.xlabel("Wind speed in m/s")
-            plt.ylabel("Power in W")
-            plt.show()
-    else:
-        if e126.power_coefficient_curve is not False:
-            print(e126.power_coefficient_curve)
-        if e126.power_curve is not False:
-            print(e126.power_curve)
+    print(e126.power_output)
+    print(my_turbine.power_output)
+    print(my_turbine2.power_output)
+    if e126.power_coefficient_curve is not False:
+        print(e126.power_coefficient_curve)
+    if e126.power_curve is not False:
+        print(e126.power_curve)
 
 
 def run_example():
@@ -313,7 +268,7 @@ def run_example():
     weather = get_weather_data("weather.csv")
     my_turbine, e126, my_turbine2 = initialize_wind_turbines()
     calculate_power_output(weather, my_turbine, e126, my_turbine2)
-    plot_or_print(my_turbine, e126, my_turbine2)
+    print_results(my_turbine, e126, my_turbine2)
 
 
 if __name__ == "__main__":

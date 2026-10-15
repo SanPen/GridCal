@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Branches.dc_line &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Devices.Branches.dc_line &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -69,7 +69,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -124,65 +125,65 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.dc_line.DcLine">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DcLine</span><span class="p">(</span><span class="n">BranchParent</span><span class="p">):</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s1">'measurements'</span><span class="p">,</span>
-        <span class="s1">'_length'</span><span class="p">,</span>
-        <span class="s1">'tolerance'</span><span class="p">,</span>
-        <span class="s1">'_r_fault'</span><span class="p">,</span>
-        <span class="s1">'_fault_pos'</span><span class="p">,</span>
-        <span class="s1">'_R'</span><span class="p">,</span>
-        <span class="s1">'template'</span><span class="p">,</span>
-        <span class="s1">'dc_conductor'</span><span class="p">,</span>
-        <span class="s1">'_locations'</span><span class="p">,</span>
+        <span class="s1">&#39;measurements&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_length&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;tolerance&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_r_fault&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_fault_pos&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_R&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;template&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;dc_conductor&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_locations&#39;</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">'dc_conductor'</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
-               <span class="n">definition</span><span class="o">=</span><span class="s1">'Global conductor number in the Cable System (one-based).'</span><span class="p">,</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;dc_conductor&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+               <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Global conductor number in the Cable System (one-based).&#39;</span><span class="p">,</span>
                <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">]),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'R'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;R&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Total positive sequence resistance.'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Total positive sequence resistance.&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">PF</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">dc_line_r_pu</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'length'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'km'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;length&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;km&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Length of the line (not used for calculation)'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Length of the line (not used for calculation)&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">dc_line_length_km</span><span class="p">,</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'r_fault'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;r_fault&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Resistance of the mid-line fault.Used in short circuit studies.'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Resistance of the mid-line fault.Used in short circuit studies.&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">SC</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'fault_pos'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">'p.u.'</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;fault_pos&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;p.u.&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Per-unit positioning of the fault:0 would be at the "from" side,1 would '</span>
-                                 <span class="s1">'be at the "to" side,therefore 0.5 is at the middle.'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Per-unit positioning of the fault:0 would be at the &quot;from&quot; side,1 would &#39;</span>
+                                 <span class="s1">&#39;be at the &quot;to&quot; side,therefore 0.5 is at the middle.&#39;</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">SC</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'template'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;template&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">UnderGroundLineDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">'Cable System applied to this DC line.'</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Cable System applied to this DC line.&#39;</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
-            <span class="n">prop_name</span><span class="o">=</span><span class="s1">'locations'</span><span class="p">,</span>
-            <span class="n">units</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;locations&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">SubObjectType</span><span class="o">.</span><span class="n">LineLocations</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">editable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
@@ -191,9 +192,9 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">bus_from</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Bus</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">bus_to</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Bus</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">'Dc Line'</span><span class="p">,</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Dc Line&#39;</span><span class="p">,</span>
                  <span class="n">idtag</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
+                 <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
                  <span class="n">r</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">,</span>
                  <span class="n">design_rate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">9999</span><span class="p">,</span>
                  <span class="n">rate</span><span class="o">=</span><span class="mf">9999.0</span><span class="p">,</span>
@@ -217,7 +218,7 @@
                  <span class="n">opex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                  <span class="n">build_status</span><span class="p">:</span> <span class="n">BuildStatus</span> <span class="o">=</span> <span class="n">BuildStatus</span><span class="o">.</span><span class="n">Commissioned</span><span class="p">,</span>
                  <span class="n">dc_conductor</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        DC current line</span>
 <span class="sd">        :param bus_from: Bus from</span>
 <span class="sd">        :param bus_to: Bus to</span>
@@ -246,7 +247,7 @@
 <span class="sd">        :param capex: Cost of investment (e/MW)</span>
 <span class="sd">        :param opex: Cost of operation (e/MWh)</span>
 <span class="sd">        :param build_status: build status (now time)</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">BranchParent</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                               <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -300,10 +301,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">temp_oper_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileFloat</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_temp_oper_prof</span>
 
     <span class="nd">@temp_oper_prof</span><span class="o">.</span><span class="n">setter</span>
@@ -313,14 +314,14 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_temp_oper_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a temp_oper_prof'</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a temp_oper_prof&#39;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">locations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LineLocations</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Cost profile</span>
 <span class="sd">        :return: Profile</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_locations</span>
 
     <span class="nd">@locations</span><span class="o">.</span><span class="n">setter</span>
@@ -330,24 +331,24 @@
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_locations</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">'not supported to be set into a locations'</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;not supported to be set into a locations&#39;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">R_corrected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a temperature corrected resistance based on a formula provided by:</span>
 <span class="sd">        NFPA 70-2005, National Electrical Code, Table 8, footnote #2; and</span>
 <span class="sd">        https://en.wikipedia.org/wiki/Electrical_resistivity_and_conductivity#Linear_approximation</span>
 <span class="sd">        (version of 2019-01-03 at 15:20 EST).</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_oper</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_base</span><span class="p">))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">length</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Line length in km</span>
 <span class="sd">        :return: float</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_length</span>
 
     <span class="nd">@length</span><span class="o">.</span><span class="n">setter</span>
@@ -363,19 +364,19 @@
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">_length</span> <span class="o">=</span> <span class="n">val</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># print('The length cannot be zero, ignoring value')</span>
+                <span class="c1"># print(&#39;The length cannot be zero, ignoring value&#39;)</span>
                 <span class="k">pass</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">'The length must be a float value'</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;The length must be a float value&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DcLine.change_base">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.dc_line.DcLine.change_base">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">change_base</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase_old</span><span class="p">,</span> <span class="n">Sbase_new</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :param Sbase_old:</span>
 <span class="sd">        :param Sbase_new:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">b</span> <span class="o">=</span> <span class="n">Sbase_new</span> <span class="o">/</span> <span class="n">Sbase_old</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">R</span> <span class="o">*=</span> <span class="n">b</span></div>
@@ -384,10 +385,10 @@
 <div class="viewcode-block" id="DcLine.get_weight">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.dc_line.DcLine.get_weight">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">R</span></div>
 
 
@@ -397,7 +398,7 @@
                        <span class="n">obj</span><span class="p">:</span> <span class="n">UndergroundLineType</span><span class="p">,</span>
                        <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                        <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Apply one Cable System to this line atomically.</span>
 
 <span class="sd">        The resistance copied to ``DcLine`` is the static per-unit value used</span>
@@ -410,7 +411,7 @@
 <span class="sd">        :param Sbase: System power base in MVA.</span>
 <span class="sd">        :param logger: Optional logger receiving validation failures.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">calculation_logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
@@ -419,15 +420,15 @@
         <span class="n">line_voltage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_max_bus_nominal_voltage</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">UndergroundLineType</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Select a Cable System'</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Select a Cable System&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">Vnom</span><span class="p">)</span> <span class="ow">or</span> <span class="n">obj</span><span class="o">.</span><span class="n">Vnom</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">Imax</span><span class="p">)</span> <span class="ow">or</span> <span class="n">obj</span><span class="o">.</span><span class="n">Imax</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">'Invalid Cable System rating'</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid Cable System rating&#39;</span><span class="p">)</span>
             <span class="n">resistance_pu</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">get_dc_values</span><span class="p">(</span>
                 <span class="n">Sbase</span><span class="o">=</span><span class="n">Sbase</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">,</span> <span class="n">line_Vnom</span><span class="o">=</span><span class="n">line_voltage</span><span class="p">,</span>
                 <span class="n">conductor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dc_conductor</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
-            <span class="n">calculation_logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">'DC cable template could not be applied'</span><span class="p">,</span>
+            <span class="n">calculation_logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;DC cable template could not be applied&#39;</span><span class="p">,</span>
                                          <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">error</span><span class="p">))</span>
             <span class="k">return</span>
 
@@ -442,7 +443,7 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.dc_line.DcLine.get_applied_dynamic_values_pu_seconds">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_applied_dynamic_values_pu_seconds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                               <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert the associated physical cable data for dynamic consumers.</span>
 
 <span class="sd">        This method returns ``None`` when the line has no physical cable</span>
@@ -451,7 +452,7 @@
 <span class="sd">        :param Sbase: System power base in MVA.</span>
 <span class="sd">        :return: Total series inductance and shunt capacitance in p.u. seconds,</span>
 <span class="sd">                 or ``None`` when no physical cable type is associated.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">template</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">line_voltage</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_max_bus_nominal_voltage</span><span class="p">()</span>
             <span class="n">resistance_pu</span><span class="p">:</span> <span class="nb">float</span>
@@ -472,8 +473,8 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.dc_line.DcLine.get_dynamic_values_pu_seconds">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dynamic_values_pu_seconds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                       <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
-                                      <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+                                      <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the physical cable coefficients required by a dynamic simulation.</span>
 
 <span class="sd">        A line without a physical cable template remains usable as a purely</span>
@@ -481,9 +482,9 @@
 <span class="sd">        of stopping the simulation.</span>
 
 <span class="sd">        :param Sbase: System power base in MVA.</span>
-<span class="sd">        :param logger: Simulation logger receiving the resistive-fallback warning.</span>
+<span class="sd">        :param logger: Optional driver logger receiving the resistive-fallback warning.</span>
 <span class="sd">        :return: Total series inductance and shunt capacitance in p.u. seconds.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">physical_values</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_applied_dynamic_values_pu_seconds</span><span class="p">(</span>
             <span class="n">Sbase</span><span class="o">=</span><span class="n">Sbase</span><span class="p">,</span>
         <span class="p">)</span>
@@ -493,24 +494,29 @@
             <span class="c1"># No physical L/C default exists for a DC cable. Returning zero</span>
             <span class="c1"># selects the existing resistive simulation reduction without</span>
             <span class="c1"># creating a fictitious physical UndergroundLineType.</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
-                <span class="n">msg</span><span class="o">=</span><span class="s1">'DC line has no cable template; using the resistive fallback'</span><span class="p">,</span>
-                <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
-                <span class="n">value</span><span class="o">=</span><span class="s1">'L=0, C=0'</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">logger</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Direct low-level calls may intentionally run without a</span>
+                <span class="c1"># driver; the numerical resistive fallback remains identical.</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span>
+                    <span class="n">msg</span><span class="o">=</span><span class="s1">&#39;DC line has no cable template; using the resistive fallback&#39;</span><span class="p">,</span>
+                    <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="s1">&#39;L=0, C=0&#39;</span><span class="p">,</span>
+                <span class="p">)</span>
             <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span></div>
 
 
 <div class="viewcode-block" id="DcLine.copy">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.dc_line.DcLine.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-             <span class="n">bus_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Bus</span><span class="p">,</span> <span class="n">Bus</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'DcLine'</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+             <span class="n">bus_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Bus</span><span class="p">,</span> <span class="n">Bus</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;DcLine&#39;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Copy the DC line and keep its physical span.</span>
 
 <span class="sd">        :param bus_dict: Optional mapping from source buses to copied buses.</span>
 <span class="sd">        :return: New DC line with the same electrical data and cable template.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">bus_dict</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">bus_from</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_from</span>
@@ -545,19 +551,19 @@
 
 
     <span class="c1"># def get_save_data(self):</span>
-    <span class="c1">#     """</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
     <span class="c1">#     Return the data that matches the edit_headers</span>
     <span class="c1">#     :return:</span>
-    <span class="c1">#     """</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
     <span class="c1">#     data = list()</span>
     <span class="c1">#     for name, properties in self.registered_properties.items():</span>
     <span class="c1">#         obj = getattr(self, name)</span>
     <span class="c1">#</span>
     <span class="c1">#         if obj is None:</span>
-    <span class="c1">#             data.append("")</span>
+    <span class="c1">#             data.append(&quot;&quot;)</span>
     <span class="c1">#         else:</span>
     <span class="c1">#</span>
-    <span class="c1">#             if hasattr(obj, 'idtag'):</span>
+    <span class="c1">#             if hasattr(obj, &#39;idtag&#39;):</span>
     <span class="c1">#                 obj = obj.idtag</span>
     <span class="c1">#             else:</span>
     <span class="c1">#                 if properties.tpe not in [str, float, int, bool]:</span>
@@ -572,9 +578,9 @@
 <div class="viewcode-block" id="DcLine.get_coordinates">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.dc_line.DcLine.get_coordinates">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get the branch defining coordinates</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">get_coordinates</span><span class="p">()]</span></div>
 
 
@@ -582,59 +588,59 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">R</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get ``R``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_R</span>
 
     <span class="nd">@R</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">R</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set ``R``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_R</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">r_fault</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get ``r_fault``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_r_fault</span>
 
     <span class="nd">@r_fault</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">r_fault</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set ``r_fault``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_r_fault</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fault_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get ``fault_pos``.</span>
 
 <span class="sd">        :return: float</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fault_pos</span>
 
     <span class="nd">@fault_pos</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fault_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set ``fault_pos``.</span>
 
 <span class="sd">        :param val: Value to assign.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fault_pos</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">val</span><span class="p">)</span></div>
 
 

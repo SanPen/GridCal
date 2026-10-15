@@ -570,6 +570,10 @@ Use Floquet when the objective is the local stability of the periodic EMT model 
 
 ## Validation and benchmark strategy
 
+The cross-software results against STAMP, including the conversion from EMT
+Floquet multipliers to continuous-time exponents, are documented in
+[Dynamic simulation benchmarks](dynamic_benchmarks.md#3-stamp-comparison).
+
 Useful repository examples are located in `trunk/Floquet_stability/`, including:
 
 - `scripting_floquet_generator_piline_Rload_emt.py` for an EMT generator-line-load case;

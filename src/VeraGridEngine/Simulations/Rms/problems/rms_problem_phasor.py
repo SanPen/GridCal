@@ -641,6 +641,7 @@ class RmsProblemPhasor(RmsProblemTemplate):
                                       device=elm.name)
             else:
                 bus_index = bus_dict[elm.bus]
+                Sdev: complex = injection_init_data[elm.idtag]
 
                 if elm.device_type == DeviceType.ShuntDevice:
                     elm.rms_model.parameters[elm.rms_model.api_obj_mapping[ParamPowerFlowReferenceType.g]] = Const(float(elm.G) / grid.Sbase)
@@ -651,13 +652,17 @@ class RmsProblemPhasor(RmsProblemTemplate):
                 register_rms_fmu_me_device(self, elm, elm.rms_model)
 
                 if elm.bus.is_dc:
-                    # DC buses: use power directly if supported, otherwise skip
-                    Sbus_dc = self.power_flow_results.Sbus[bus_index]
+                    # DC models use the individual PF allocation. The aggregate
+                    # Sbus value would be repeated by every injection at the bus.
                     if VarPowerFlowReferenceType.P in elm.rms_model.external_mapping:
-                        self.set_init_guess(elm.rms_model, VarPowerFlowReferenceType.P, np.real(Sbus_dc))
+                        self.set_init_guess(elm.rms_model, VarPowerFlowReferenceType.P, Sdev.real)
+                    else:
+                        pass
                     if VarPowerFlowReferenceType.Ir in elm.rms_model.external_mapping:
                         # Approximate: I = P/V (assuming V ≈ 1)
-                        self.set_init_guess(elm.rms_model, VarPowerFlowReferenceType.Ir, np.real(Sbus_dc))
+                        self.set_init_guess(elm.rms_model, VarPowerFlowReferenceType.Ir, Sdev.real)
+                    else:
+                        pass
                 else:
                     # Phasor formulation: convert per-device power injection to current
                     Vbus = self.power_flow_results.voltage[bus_index]
@@ -695,7 +700,9 @@ class RmsProblemPhasor(RmsProblemTemplate):
                             Vbus.imag * Ir_val - Vbus.real * Ii_val
                         )
                     else:
-                        Sdev = injection_init_data[elm.idtag]
+                        # Non-adjustable AC injections preserve the same
+                        # per-device operating point used by the other variants.
+                        pass
 
                     Ir_val, Ii_val = _s_to_i(Sdev, Vbus)
                     if VarPowerFlowReferenceType.Ir in elm.rms_model.external_mapping:

@@ -32,6 +32,12 @@ from VeraGridEngine.Templates.Emt.pi_line_emt_template import get_pi_line_emt_te
 from VeraGridEngine.Templates.Emt.thevenin_equivalent_emt_generator_template import get_generator_thevenin_rl_emt_template_with_ref
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.compiled_functions import SymbolicVector
+from VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic import (
+    ExplicitInitializationResult,
+    SymbolicVectorSingleEquationCompiler,
+    build_symbolic_vector_single_equation_compiler,
+    init_explicit_common,
+)
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import set_emt_model
 from VeraGridEngine.enumerations import (
@@ -47,7 +53,6 @@ from VeraGridEngine.enumerations import (
 from VeraGridEngine.Simulations.EMT.emt_options import EmtOptions
 from VeraGridEngine.Simulations.EMT.initialization_emt import (
     _collect_reduced_initialization_problem,
-    run_emt_explicit_initialization,
     run_emt_native_initialization,
 )
 
@@ -57,6 +62,124 @@ class GenericEmtProblem(EmtProblemTemplate):
     Minimal EMT problem implementation used by initialization workflow tests.
     """
     __slots__ = []
+
+
+def run_common_explicit_initialization_for_test(
+        problem: EmtProblemTemplate,
+) -> ExplicitInitializationResult:
+    """Run the same common explicit initializer used by ``EmtProblemDae``.
+
+    This helper only adapts the generic test problem's storage to the common
+    engine. It deliberately contains no initialization algorithm of its own.
+
+    :param problem: Generic EMT problem prepared by the test fixture.
+    :type problem: EmtProblemTemplate
+    :return: Successful common explicit-initialization result.
+    :rtype: ExplicitInitializationResult
+    :raises RuntimeError: If the common initializer does not converge.
+    """
+    sys_vars: Dict[int, Var] = {
+        variable.uid: variable
+        for variable in problem.get_state_vars() + problem.get_algebraic_vars()
+    }
+    sys_diff_vars: Dict[int, Var] = {
+        variable.uid: variable
+        for variable in problem.get_diff_vars()
+    }
+    compile_single_equation: SymbolicVectorSingleEquationCompiler = (
+        build_symbolic_vector_single_equation_compiler(
+            compiler_names_dict=problem.get_compiler_names_dict(),
+            alias_names_dict=problem.get_alias_names_dict(),
+            vars_name=problem.VARS_NAME,
+            diff_name=problem.DIFF_NAME,
+            event_params_name=problem.VARIABLE_PARAMS_NAME,
+            params_name=problem.CONSTANT_PARAMS_NAME,
+        )
+    )
+    result: ExplicitInitializationResult = init_explicit_common(
+        mdl=problem.sys_block,
+        sys_vars=sys_vars,
+        sys_diff_vars=sys_diff_vars,
+        variable_parameters=problem.get_variable_parameters(),
+        event_parameters_eqs=problem.event_parameters_eqs,
+        constant_parameters=problem.get_constant_parameters(),
+        init_guess=problem.init_guess,
+        event_param_init_dict=problem.event_params_init_dict,
+        diff_init_guess=problem.diff_init_guess,
+        uid2idx_vars=problem.uid2idx_vars,
+        uid2idx_diff=problem.uid2idx_diff,
+        uid2idx_params=problem.uid2idx_params,
+        uid2idx_event_params=problem.uid2idx_event_params,
+        params_array=problem.get_parameters_values(),
+        compile_single_equation=compile_single_equation,
+        event_params_array_seed=problem.event_params_values,
+    )
+
+    if result.converged:
+        problem.rebuild_runtime_param_vectors()
+    else:
+        raise RuntimeError(result.message)
+
+    return result
+
+
+def test_emt_registers_device_root_once_for_nested_initialization() -> None:
+    """Register one recursive root when both parent and child own init equations.
+
+    :return: None.
+    """
+    parent_state: Var = Var("parent_state")
+    child_state: Var = Var("child_state")
+    child_block: Block = Block(
+        state_vars=list((child_state,)),
+        state_eqs=list((Const(0.0),)),
+        init_eqs=dict(((child_state, Const(2.0)),)),
+        name="Nested initialization child",
+    )
+    parent_block: Block = Block(
+        state_vars=list((parent_state,)),
+        state_eqs=list((Const(0.0),)),
+        init_eqs=dict(((parent_state, Const(1.0)),)),
+        children=list((child_block,)),
+        name="Nested initialization root",
+    )
+    problem: EmtProblemDae = EmtProblemDae.__new__(EmtProblemDae)
+    problem._device_models_with_init_eqs = list()
+    problem._device_models_with_init_eqs_seen = set()
+
+    # Registering the device twice emulates repeated discovery without making
+    # the recursive child an additional explicit-initialization entry.
+    problem._register_init_model(parent_block)
+    problem._register_init_model(parent_block)
+
+    assert problem._device_models_with_init_eqs == [parent_block]
+    assert problem._device_models_with_init_eqs_seen == {parent_block.uid}
+
+
+def test_emt_registers_root_when_only_nested_block_has_initialization() -> None:
+    """Keep the device root when initialization exists only in a descendant.
+
+    :return: None.
+    """
+    child_state: Var = Var("nested_only_state")
+    child_block: Block = Block(
+        state_vars=list((child_state,)),
+        state_eqs=list((Const(0.0),)),
+        init_eqs=dict(((child_state, Const(3.0)),)),
+        name="Only initialized nested block",
+    )
+    parent_block: Block = Block(
+        children=list((child_block,)),
+        name="Root without local initialization",
+    )
+    problem: EmtProblemDae = EmtProblemDae.__new__(EmtProblemDae)
+    problem._device_models_with_init_eqs = list()
+    problem._device_models_with_init_eqs_seen = set()
+
+    problem._register_init_model(parent_block)
+
+    assert problem._device_models_with_init_eqs == [parent_block]
+    assert problem._device_models_with_init_eqs_seen == {parent_block.uid}
 
 
 class SimpleInitializationContext:
@@ -509,7 +632,7 @@ def test_consistent_newton_initializes_missing_algebraic_and_dx0() -> None:
     problem, context = build_single_state_single_algebraic_problem()
     options = EmtOptions(initialization_method=EmtInitializationMethod.ConsistentNewton)
 
-    run_emt_explicit_initialization(problem)
+    explicit_result: ExplicitInitializationResult = run_common_explicit_initialization_for_test(problem)
     report = run_emt_native_initialization(problem, options)
 
     idx_x = problem.get_var_idx(context.get_x_var())
@@ -519,6 +642,7 @@ def test_consistent_newton_initializes_missing_algebraic_and_dx0() -> None:
     x0 = problem.get_x0()
     dx0 = problem.get_dx0()
 
+    assert explicit_result.converged
     assert report.status == EmtInitializationStatus.RESOLVED
     assert abs(x0[idx_x] - 2.0) < 1e-9
     assert abs(x0[idx_y] - 2.0) < 1e-9
@@ -738,11 +862,12 @@ def test_consistent_newton_mode_runs_explicit_then_newton() -> None:
     idx_x: int = problem.get_var_idx(context.get_x_var())
     idx_y: int = problem.get_var_idx(context.get_y_var())
 
-    run_emt_explicit_initialization(problem)
+    explicit_result: ExplicitInitializationResult = run_common_explicit_initialization_for_test(problem)
     x_after_explicit: np.ndarray = problem.get_x0().copy()
     report = run_emt_native_initialization(problem, options)
     x_after_native: np.ndarray = problem.get_x0()
 
+    assert explicit_result.converged
     assert float(x_after_explicit[idx_x]) == 2.0
     assert report.status == EmtInitializationStatus.RESOLVED
     assert report.method_used == EmtInitializationMethod.ConsistentNewton

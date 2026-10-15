@@ -26,7 +26,8 @@ from VeraGridEngine.enumerations import (DeviceType, PrpCat, TimeFrame, BuildSta
                                          EraSvdSolverType, ShuntControlMode, RmsProblemTypes, FmuTemplateDomain,
                                          FmuTemplateMode, RmsInitializationMethod, EmtSolverTypes, PlotSimulationType,
                                          DynamicEventTransitionType, DynamicPlotEntryKind, DynamicPlotEntryRole,
-                                         ParamPowerFlowReferenceType, GeneratorControlMode)
+                                         ParamPowerFlowReferenceType, GeneratorControlMode,
+                                         RemedialActionPropertyEnum, BatteryDispatchMode)
 # types that can be assigned to a VeraGrid property
 GCPROP_TYPES = Union[
     Type[int],
@@ -60,6 +61,7 @@ GCPROP_TYPES = Union[
     Type[TapChangerTypes],
     Type[VoltageLevelTypes],
     Type[ContingencyOperationTypes],
+    Type[RemedialActionPropertyEnum],
     Type[BranchGroupTypes],
     Type[ConverterControlType],
     Type[WindingType],
@@ -71,6 +73,7 @@ GCPROP_TYPES = Union[
     Type[SwitchGraphicType],
     Type[DynamicIntegrationMethod],
     Type[RmsInitializationMethod],
+    Type[BatteryDispatchMode],
     Type[OpfDispatchMode],
     Type[EmtLineTypes],
     Type[EmtSolverTypes],
@@ -153,7 +156,8 @@ class GCProp:
         "_is_color",
         "_is_date",
         "_category",
-        "dyn_ref"
+        "_dyn_ref",
+        "_reflexive"
     )
 
     def __init__(self,
@@ -169,7 +173,8 @@ class GCProp:
                  is_date: bool = False,
                  key: Union[str, None] = None,
                  cat: List[PrpCat] | None = None,
-                 dyn_ref: ParamPowerFlowReferenceType | None = None,):
+                 dyn_ref: ParamPowerFlowReferenceType | None = None,
+                 reflexive: bool = False):
         """
         VeraGrid property
         :param prop_name:
@@ -205,7 +210,8 @@ class GCProp:
         self._editable: bool = editable
         self._is_color: bool = is_color
         self._is_date: bool = is_date
-        self.dyn_ref = dyn_ref
+        self._dyn_ref = dyn_ref
+        self._reflexive = reflexive
 
         self._old_names: Tuple[str, ...] = tuple() if old_names is None else tuple(old_names)
 
@@ -298,6 +304,22 @@ class GCProp:
         :return: List[PropertyCategory]
         """
         return self._category
+
+    @property
+    def reflexive(self) -> bool:
+        """
+        Is reflexive?
+        :return: Boolean
+        """
+        return self._reflexive
+
+    @property
+    def dyn_ref(self) -> ParamPowerFlowReferenceType | None :
+        """
+        dyn_ref
+        :return: Boolean
+        """
+        return self._dyn_ref
 
     def has_profile(self) -> bool:
         """

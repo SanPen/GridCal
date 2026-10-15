@@ -213,6 +213,201 @@ li.checked::标记 { content: &quot;\2612&quot;; }
     </message>
 </context>
 <context>
+    <name>AddSymbolDialog</name>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="12"/>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
+        <source>Add block property</source>
+        <translation>添加模块属性</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="31"/>
+        <source>Define a new property for the selected block.</source>
+        <translation>为选定的块定义新属性。</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="48"/>
+        <source>Owner block</source>
+        <translation>所有者块</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="58"/>
+        <source>Name</source>
+        <translation>名称</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="64"/>
+        <source>Enter a valid symbol name</source>
+        <translation>输入有效的符号名称</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="70"/>
+        <source>Variable type</source>
+        <translation>变量类型</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="80"/>
+        <source>Choose how this symbol participates in the dynamic model.</source>
+        <translation>选择此符号如何参与动态模型。</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="98"/>
+        <source>Options</source>
+        <translation>选项</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="111"/>
+        <source>Expose as output</source>
+        <translation>暴露为输出</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="116"/>
+        <source>Create derivative variable</source>
+        <translation>创建导数变量</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="130"/>
+        <source>Power-flow variable used to initialize this dynamic variable.</source>
+        <translation>用于初始化此动态变量的潮流变量。</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="131"/>
+        <source>Power-flow initialization source</source>
+        <translation>潮流初始化源</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="154"/>
+        <source>Local initial value</source>
+        <translation>本地初始值</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="167"/>
+        <source>Device initial value</source>
+        <translation>设备初始值</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="186"/>
+        <source>Retained modes preserve discrete state between simulation steps.</source>
+        <translation>保持模式在仿真步骤之间保留离散状态。</translation>
+    </message>
+    <message>
+        <source>Add parameter</source>
+        <translation>添加参数</translation>
+    </message>
+    <message>
+        <source>Add retained mode</source>
+        <translation>添加保持模式</translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation>添加变量</translation>
+    </message>
+    <message>
+        <source>Algebraic</source>
+        <translation>代数</translation>
+    </message>
+    <message>
+        <source>Declare a configurable value owned by the selected dynamic block.</source>
+        <translation>声明由选定的动态块拥有的可配置值。</translation>
+    </message>
+    <message>
+        <source>Declare a variable owned by the selected dynamic block.</source>
+        <translation>声明由选定的动态块拥有的变量。</translation>
+    </message>
+    <message>
+        <source>Declare discrete state that persists between simulation steps.</source>
+        <translation>声明在仿真步骤之间持续存在的离散状态。</translation>
+    </message>
+    <message>
+        <source>Dynamic parameter</source>
+        <translation>动态参数</translation>
+    </message>
+    <message>
+        <source>Enter a valid Python symbol name.</source>
+        <translation>输入有效的 Python 符号名称。</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>输入</translation>
+    </message>
+    <message>
+        <source>May change during the simulation and can optionally start from a grid-device value.</source>
+        <translation>仿真过程中可能会改变，并且可以选择从电网设备值开始。</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>无</translation>
+    </message>
+    <message>
+        <source>Nothing was added: {message}</source>
+        <translation>未添加任何内容：{message}</translation>
+    </message>
+    <message>
+        <source>Parameter type</source>
+        <translation>参数类型</translation>
+    </message>
+    <message>
+        <source>Preserves discrete state between simulation steps.</source>
+        <translation>在仿真步骤之间保留离散状态。</translation>
+    </message>
+    <message>
+        <source>Receives its value from an incoming block connection.</source>
+        <translation>从传入的块连接接收其值。</translation>
+    </message>
+    <message>
+        <source>Remains fixed during the simulation and can optionally start from a grid-device value.</source>
+        <translation>在仿真过程中保持固定，并且可以选择从电网设备值开始。</translation>
+    </message>
+    <message>
+        <source>Represents a differential state integrated during the simulation.</source>
+        <translation>代表在仿真过程中积分的微分状态。</translation>
+    </message>
+    <message>
+        <source>Represents a value solved by the algebraic equations.</source>
+        <translation>代表由代数方程求解的值。</translation>
+    </message>
+    <message>
+        <source>Retained mode</source>
+        <translation>保留模式</translation>
+    </message>
+    <message>
+        <source>Search device parameters</source>
+        <translation>搜索设备参数</translation>
+    </message>
+    <message>
+        <source>Search power-flow variables</source>
+        <translation>搜索潮流变量</translation>
+    </message>
+    <message>
+        <source>Select a device initialization source from the list.</source>
+        <translation>从列表中选择设备初始化源。</translation>
+    </message>
+    <message>
+        <source>Select a power-flow initialization source from the list.</source>
+        <translation>从列表中选择潮流初始化源。</translation>
+    </message>
+    <message>
+        <source>Select a valid owner block.</source>
+        <translation>选择有效的拥有块。</translation>
+    </message>
+    <message>
+        <source>Select a valid symbol type.</source>
+        <translation>选择有效的符号类型。</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>状态</translation>
+    </message>
+    <message>
+        <source>Static parameter</source>
+        <translation>静态参数</translation>
+    </message>
+    <message>
+        <source>Use local numeric value</source>
+        <translation>使用本地数值</translation>
+    </message>
+</context>
+<context>
     <name>AdmittanceMatrixEditorWidget</name>
     <message>
         <location filename="../DeviceEditors/AdmittanceMatrixEditor/admittance_matrix_editor_gui.ui" line="19"/>
@@ -804,7 +999,7 @@ li.checked::标记 { content: &quot;\2612&quot;; }
     <name>BlockPropertyTreeModel</name>
     <message>
         <source>Missing PF mapping</source>
-        <translation>缺少 PF 映射</translation>
+        <translation type="vanished">缺少 PF 映射</translation>
     </message>
     <message>
         <source>Name</source>
@@ -820,7 +1015,7 @@ li.checked::标记 { content: &quot;\2612&quot;; }
     </message>
     <message>
         <source>Template issue: static parameters require api_obj_mapping. An independently editable parameter should be in event_dict. This refactor does not migrate templates automatically.</source>
-        <translation>模板问题：静态参数需要 api_obj_mapping。独立可编辑的参数应在 event_dict 中。此重构不会自动迁移模板。</translation>
+        <translation type="vanished">模板问题：静态参数需要 api_obj_mapping。独立可编辑的参数应在 event_dict 中。此重构不会自动迁移模板。</translation>
     </message>
     <message>
         <source>Type</source>
@@ -829,6 +1024,14 @@ li.checked::标记 { content: &quot;\2612&quot;; }
     <message>
         <source>Value / PF reference</source>
         <translation>值 / PF 参考</translation>
+    </message>
+    <message>
+        <source>Fixed local value. Select a device initialization mapping only when this value must come from the associated grid device.</source>
+        <translation>固定本地值。仅当此值必须来自相关的电网设备时，才选择设备初始化映射。</translation>
+    </message>
+    <message>
+        <source>Invalid device initialization mapping: the target is not declared in this block's parameters or event_dict.</source>
+        <translation>无效的设备初始化映射：目标未声明在此块的参数或 event_dict 中。</translation>
     </message>
 </context>
 <context>
@@ -3256,6 +3459,58 @@ Reference: {status}</source>
         <source>Valid</source>
         <translation>有效</translation>
     </message>
+    <message>
+        <source>Equation counts</source>
+        <translation>方程计数</translation>
+    </message>
+    <message>
+        <source>Repeated variable names</source>
+        <translation>重复的变量名称</translation>
+    </message>
+    <message>
+        <source>Static parameter mappings</source>
+        <translation>静态参数映射</translation>
+    </message>
+    <message>
+        <source>Unnamed block</source>
+        <translation>未命名块</translation>
+    </message>
+    <message>
+        <source>Variable initialization</source>
+        <translation>变量初始化</translation>
+    </message>
+    <message>
+        <source>algebraic variables={variable_count}, algebraic equations={equation_count}</source>
+        <translation>代数变量={variable_count}，代数方程={equation_count}</translation>
+    </message>
+    <message>
+        <source>derivative variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>缺少初始化或潮流源的导数变量：{variable_names}</translation>
+    </message>
+    <message>
+        <source>event parameters with no value: {parameter_names}</source>
+        <translation>没有值的事件参数：{parameter_names}</translation>
+    </message>
+    <message>
+        <source>mapping targets not declared as local parameters: {parameter_names}</source>
+        <translation>未声明为本地参数的映射目标：{parameter_names}</translation>
+    </message>
+    <message>
+        <source>parameters missing a static mapping: {parameter_names}</source>
+        <translation>缺少静态映射的参数：{parameter_names}</translation>
+    </message>
+    <message>
+        <source>state variables={variable_count}, state equations={equation_count}</source>
+        <translation>状态变量={variable_count}，状态方程={equation_count}</translation>
+    </message>
+    <message>
+        <source>variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>缺少初始化或潮流源的变量：{variable_names}</translation>
+    </message>
+    <message>
+        <source>variables: {variable_names}</source>
+        <translation>变量：{variable_names}</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -3364,7 +3619,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Enter a valid Python symbol name.</source>
-        <translation>输入有效的 Python 符号名称。</translation>
+        <translation type="vanished">输入有效的 Python 符号名称。</translation>
     </message>
     <message>
         <source>Equation PDF created: {path}</source>
@@ -3467,7 +3722,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>None</source>
-        <translation>无</translation>
+        <translation type="vanished">无</translation>
     </message>
     <message>
         <source>Nothing was applied: {message}</source>
@@ -3499,7 +3754,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Parameter whose value may change during the simulation.</source>
-        <translation>参数，其值在仿真过程中可能会改变。</translation>
+        <translation type="vanished">参数，其值在仿真过程中可能会改变。</translation>
     </message>
     <message>
         <source>Parameters</source>
@@ -3548,11 +3803,11 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Select a valid owner block.</source>
-        <translation>选择一个有效的所属块。</translation>
+        <translation type="vanished">选择一个有效的所属块。</translation>
     </message>
     <message>
         <source>Select a valid symbol type.</source>
-        <translation>选择一个有效的符号类型。</translation>
+        <translation type="vanished">选择一个有效的符号类型。</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="319"/>
@@ -3653,7 +3908,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Retained mode</source>
-        <translation>保留模式</translation>
+        <translation type="vanished">保留模式</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="82"/>
@@ -3708,7 +3963,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Nothing was added: {message}</source>
-        <translation>未添加任何内容: {message}</translation>
+        <translation type="vanished">未添加任何内容: {message}</translation>
     </message>
     <message>
         <source>Add to plot...</source>
@@ -4965,74 +5220,60 @@ select the expected processing format</source>
 <context>
     <name>Form</name>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="14"/>
         <source>Add block property</source>
-        <translation>添加模块属性</translation>
+        <translation type="vanished">添加模块属性</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
         <source>Add symbol to selected block</source>
-        <translation>将符号添加到选定的块</translation>
+        <translation type="vanished">将符号添加到选定的块</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="71"/>
         <source>Output</source>
-        <translation>输出</translation>
+        <translation type="vanished">输出</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="78"/>
         <source>Create derivative variable</source>
-        <translation>创建导数变量</translation>
+        <translation type="vanished">创建导数变量</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="144"/>
         <source>New symbol name</source>
-        <translation>新符号名称</translation>
+        <translation type="vanished">新符号名称</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="151"/>
         <source>Symbol category</source>
-        <translation>符号类别</translation>
+        <translation type="vanished">符号类别</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="158"/>
         <source>Owner block</source>
-        <translation>所有者块</translation>
+        <translation type="vanished">所有者块</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="165"/>
         <source>Type</source>
-        <translation>类型</translation>
+        <translation type="vanished">类型</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="172"/>
         <source>Add symbol</source>
-        <translation>添加符号</translation>
+        <translation type="vanished">添加符号</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="195"/>
         <source>Static device mapping</source>
-        <translation>静态设备映射</translation>
+        <translation type="vanished">静态设备映射</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="202"/>
         <source>Power-flow variable used to initialize this dynamic variable.</source>
-        <translation>用于初始化此动态变量的潮流变量。</translation>
+        <translation type="vanished">用于初始化此动态变量的潮流变量。</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="205"/>
         <source>Power-flow variable</source>
-        <translation>电网潮流变量</translation>
+        <translation type="vanished">电网潮流变量</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="266"/>
         <source>Enter a name</source>
-        <translation>输入名称</translation>
+        <translation type="vanished">输入名称</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="273"/>
         <source>Initial numeric value</source>
-        <translation>初始数值</translation>
+        <translation type="vanished">初始数值</translation>
     </message>
 </context>
 <context>
@@ -7727,6 +7968,195 @@ Do you want to continue without a template?</source>
     <message>
         <source>Stability boundary</source>
         <translation>稳定边界</translation>
+    </message>
+</context>
+<context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>两项声明都是制造商交付合同的一部分，在认证之前是必需的。</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>浏览...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>选择现有的制造商二进制文件。</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>完成所选接口所需的制造商声明。</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>目标提供商</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>每个逗号分隔的值是该位置源序数的目标序数。示例：1,0 将源 0 映射到目标 1，将源 1 映射到目标 0。</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>示例：0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>示例：1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>示例：2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>导入制造商原生模型</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>输入目标序数</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>检查并附加变体</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>检查并导入</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>正在隔离工作线程中检查二进制文件...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>Linux 库 (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>制造商二进制文件</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>制造商接口</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>制造商原生模型就绪</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>制造商原生模型变体</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>尚未导入任何提供商。</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>无</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>输出目标序数</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>参数目标序数</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>平台变体</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>提供商: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>提供商: {provider}
+已附加平台: {platform}
+创建的模板: 无 (保留现有模板)。</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>提供商: {provider}
+平台: {platform}
+创建的RMS模板: {rms}
+创建的EMT模板: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>已认证并附加 {platform}: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>已认证并导入 {name}。创建了 {rms} 个 RMS 和 {emt} 个 EMT 模板。</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>重新绑定现有模板</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>重新绑定选定模板</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>已将 {consumer} 重新绑定到 {provider}。</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>选择源、目标和模板。</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>选择制造商库</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>选择制造商合同及其预编译平台库。VeraGrid 在隔离工作进程中验证并运行二进制文件。</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>模板</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>制造商声明所有可变模型状态归每个实例所有。</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>制造商声明该库不执行延迟原生加载。</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>Windows 库 (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: 缺失</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
+    </message>
+    <message>
+        <source>Choose the LLVM bin directory</source>
+        <translation>选择 LLVM bin 目录</translation>
+    </message>
+    <message>
+        <source>Choose the MinGW/UCRT support directory</source>
+        <translation>选择 MinGW/UCRT 支持目录</translation>
+    </message>
+    <message>
+        <source>LLVM selection was cancelled; the manufacturer model was not imported.</source>
+        <translation>取消了 LLVM 选择；未导入制造商模型。</translation>
     </message>
 </context>
 <context>
@@ -10609,6 +11039,10 @@ Modify the number of clusters in the ML settings.</source>
         <source>The short-circuit worker finished without results.</source>
         <translation>短路工作器完成，没有结果。</translation>
     </message>
+    <message>
+        <source>Power flow 3ph failed</source>
+        <translation>三相潮流计算失败</translation>
+    </message>
 </context>
 <context>
     <name>SolarPvWizard</name>
@@ -11540,12 +11974,91 @@ You need to load or create a grid!</source>
         <translation type="vanished">本节发现问题</translation>
     </message>
     <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="20"/>
         <source>Model Consistency Validation</source>
-        <translation type="vanished">模型一致性验证</translation>
+        <translation>模型一致性验证</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="31"/>
+        <source>Check the edited model&apos;s equation counts, variable names, parameter mappings, and variable initialization. This report is informational and does not block saving the model.</source>
+        <translation>请检查编辑模型的方程数量、变量名称、参数映射和变量初始化。此报告仅供参考，不会阻止保存模型。</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="53"/>
+        <source>Show:</source>
+        <translation>显示：</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="60"/>
+        <source>Filter validation results by check</source>
+        <translation>按检查筛选验证结果</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="85"/>
+        <source>No validation results match this filter.</source>
+        <translation>没有验证结果匹配此筛选条件。</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="95"/>
+        <source>Show issues in the model</source>
+        <translation>显示模型中的问题</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="96"/>
+        <source>Show Issues</source>
+        <translation>显示问题</translation>
     </message>
     <message>
         <source>Run an informational validation of the edited model structure, mappings, initialization, and port connectivity. This check reports issues but does not block saving the model.</source>
         <translation type="vanished">运行对编辑后的模型结构、映射、初始化和端口连接的信息性验证。此检查会报告问题，但不会阻止保存模型。</translation>
+    </message>
+    <message>
+        <source>All checks</source>
+        <translation>所有检查</translation>
+    </message>
+    <message>
+        <source>Block</source>
+        <translation>错误</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <source>Details</source>
+        <translation>详情</translation>
+    </message>
+    <message>
+        <source>Issue</source>
+        <translation>问题</translation>
+    </message>
+    <message>
+        <source>Issues only</source>
+        <translation>仅显示问题</translation>
+    </message>
+    <message>
+        <source>No issues found</source>
+        <translation>未发现问题</translation>
+    </message>
+    <message>
+        <source>No issues found.</source>
+        <translation>No issues found.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>好的</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>状态</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · No issues found</source>
+        <translation>{check_count} 个检查 · 未发现问题</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · {issue_section_count} checks with issues · {finding_count} findings</source>
+        <translation>{check_count} 个检查 · {issue_section_count} 个包含问题的检查 · {finding_count} 个发现</translation>
     </message>
 </context>
 <context>
@@ -17498,183 +18011,6 @@ You need to load or create a grid!</source>
     <message>
         <source>Question</source>
         <translation>问题</translation>
-    </message>
-</context>
-<context>
-    <name>ManufacturerNativeImporterDialog</name>
-    <message>
-        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
-        <translation>两项声明都是制造商交付合同的一部分，在认证之前是必需的。</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>浏览...</translation>
-    </message>
-    <message>
-        <source>Choose an existing manufacturer binary.</source>
-        <translation>选择现有的制造商二进制文件。</translation>
-    </message>
-    <message>
-        <source>Complete the manufacturer declarations required by the selected interface.</source>
-        <translation>完成所选接口所需的制造商声明。</translation>
-    </message>
-    <message>
-        <source>Destination provider</source>
-        <translation>目标提供商</translation>
-    </message>
-    <message>
-        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
-        <translation>每个逗号分隔的值是该位置源序数的目标序数。示例：1,0 将源 0 映射到目标 1，将源 1 映射到目标 0。</translation>
-    </message>
-    <message>
-        <source>Example: 0,1</source>
-        <translation>示例：0,1</translation>
-    </message>
-    <message>
-        <source>Example: 1,0</source>
-        <translation>示例：1,0</translation>
-    </message>
-    <message>
-        <source>Example: 2,0,1</source>
-        <translation>示例：2,0,1</translation>
-    </message>
-    <message>
-        <source>Import manufacturer native model</source>
-        <translation>导入制造商原生模型</translation>
-    </message>
-    <message>
-        <source>Input destination ordinals</source>
-        <translation>输入目标序数</translation>
-    </message>
-    <message>
-        <source>Inspect and attach variant</source>
-        <translation>检查并附加变体</translation>
-    </message>
-    <message>
-        <source>Inspect and import</source>
-        <translation>检查并导入</translation>
-    </message>
-    <message>
-        <source>Inspecting the binary in an isolated worker...</source>
-        <translation>正在隔离工作线程中检查二进制文件...</translation>
-    </message>
-    <message>
-        <source>Linux libraries (*.so)</source>
-        <translation>Linux 库 (*.so)</translation>
-    </message>
-    <message>
-        <source>Manufacturer binary</source>
-        <translation>制造商二进制文件</translation>
-    </message>
-    <message>
-        <source>Manufacturer interface</source>
-        <translation>制造商接口</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model ready</source>
-        <translation>制造商原生模型就绪</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model variants</source>
-        <translation>制造商原生模型变体</translation>
-    </message>
-    <message>
-        <source>No provider has been imported yet.</source>
-        <translation>尚未导入任何提供商。</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>无</translation>
-    </message>
-    <message>
-        <source>Output destination ordinals</source>
-        <translation>输出目标序数</translation>
-    </message>
-    <message>
-        <source>Parameter destination ordinals</source>
-        <translation>参数目标序数</translation>
-    </message>
-    <message>
-        <source>Platform variant</source>
-        <translation>平台变体</translation>
-    </message>
-    <message>
-        <source>Provider: {name}</source>
-        <translation>提供商: {name}</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform attached: {platform}
-Templates created: None (existing templates retained).</source>
-        <translation>提供商: {provider}
-已附加平台: {platform}
-创建的模板: 无 (保留现有模板)。</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform: {platform}
-RMS templates created: {rms}
-EMT templates created: {emt}</source>
-        <translation>提供商: {provider}
-平台: {platform}
-创建的RMS模板: {rms}
-创建的EMT模板: {emt}</translation>
-    </message>
-    <message>
-        <source>Qualified and attached {platform}: {digest}</source>
-        <translation>已认证并附加 {platform}: {digest}</translation>
-    </message>
-    <message>
-        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
-        <translation>已认证并导入 {name}。创建了 {rms} 个 RMS 和 {emt} 个 EMT 模板。</translation>
-    </message>
-    <message>
-        <source>Rebind an existing template</source>
-        <translation>重新绑定现有模板</translation>
-    </message>
-    <message>
-        <source>Rebind selected template</source>
-        <translation>重新绑定选定模板</translation>
-    </message>
-    <message>
-        <source>Rebound {consumer} to {provider}.</source>
-        <translation>已将 {consumer} 重新绑定到 {provider}。</translation>
-    </message>
-    <message>
-        <source>Select a source, destination and template.</source>
-        <translation>选择源、目标和模板。</translation>
-    </message>
-    <message>
-        <source>Select manufacturer library</source>
-        <translation>选择制造商库</translation>
-    </message>
-    <message>
-        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
-        <translation>选择制造商合同及其预编译平台库。VeraGrid 在隔离工作进程中验证并运行二进制文件。</translation>
-    </message>
-    <message>
-        <source>Template</source>
-        <translation>模板</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
-        <translation>制造商声明所有可变模型状态归每个实例所有。</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that the library performs no late native loading.</source>
-        <translation>制造商声明该库不执行延迟原生加载。</translation>
-    </message>
-    <message>
-        <source>Windows libraries (*.dll)</source>
-        <translation>Windows 库 (*.dll)</translation>
-    </message>
-    <message>
-        <source>{platform}: missing</source>
-        <translation>{platform}: 缺失</translation>
-    </message>
-    <message>
-        <source>{platform}: {status}, SHA-256 {digest}</source>
-        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

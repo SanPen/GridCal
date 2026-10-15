@@ -1,7 +1,5 @@
 import os
-from matplotlib import pyplot as plt
 import VeraGridEngine.api as gce
-plt.style.use('fivethirtyeight')
 
 folder = os.path.join('..', 'Grids_and_profiles', 'grids')
 fname = os.path.join(folder, 'South Island of New Zealand.gridcal')
@@ -38,19 +36,3 @@ vc = gce.ContinuationPowerFlowDriver(grid=main_circuit,
                                      inputs=vc_inputs,
                                      pf_options=pf_options)
 vc.run()
-
-fig = plt.figure(figsize=(18, 6))
-
-ax1 = fig.add_subplot(121)
-res = vc.results.mdl(gce.ResultTypes.BusActivePower)
-res.plot(ax=ax1)
-
-ax2 = fig.add_subplot(122)
-res = vc.results.mdl(gce.ResultTypes.BusVoltageModule)
-res.plot(ax=ax2)
-
-plt.tight_layout()
-
-plt.savefig('cpf_south_island_new_zealand.png')
-
-plt.show()

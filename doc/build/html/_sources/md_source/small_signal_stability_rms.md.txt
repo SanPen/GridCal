@@ -776,98 +776,14 @@ sss_options = RmsSmallSignalStabilityOptions(
 
 In that case, the driver first runs the RMS simulation to `t = 5.0 s` and then computes the modal analysis there.
 
-## Benchmark
+## Benchmarking
 
-### Running ANDES
+The complete RMS validation against ANDES is documented in
+[Dynamic simulation benchmarks](dynamic_benchmarks.md#1-andes-comparison). It
+covers Kundur, IEEE14, IEEE39, NPCC140, and WECC179 and reports operating-point,
+state-matrix, eigenvalue, participation-factor, time-domain, and timing results.
 
-Thanks to its symbolic precision and reliable numerical performance, ANDES provides a great baseline for stability analysis in contemporary power system studies. That's why VeraGrid uses ANDES as its benchmark for Small-Signal analysis. Of course, VeraGrid successfully reproduces all eigenvalue placements from ANDES.
-
-VeraGrid loads ANDES models by opening json files. Naturally, VeraGrid replicates all eigenvalue results from ANDES across standard benchmarks like the Kundur two area system with consistent accuracy and sub-second performance.
-
-This is the code to get ANDES results:
-
-```python
-"""
-To run this script andes must be installed (pip install andes)
-"""
-import andes
-import time
-import pandas as pd
-import numpy as np
-
-def stability_andes():
-
-   ss = andes.load('Gen_Load/kundur_ieee_no_shunt.json', default_config=True)
-   n_xy = len(ss.dae.xy_name)
-   print(f"Andes variables = {n_xy}")
-   ss.files.no_output = True
-
-   # fix P & Q load ANDES
-   ss.PQ.config.p2p = 1.0
-   ss.PQ.config.p2i = 0
-   ss.PQ.config.p2z = 0
-
-   ss.PQ.config.q2q = 1.0
-   ss.PQ.config.q2i = 0
-   ss.PQ.config.q2z = 0
-
-   dae = ss.dae
-
-   # Run PF
-   ss.PFlow.config.tol = 1e-8
-   ss.PFlow.run()
-
-   #Run Small-Signal Stability analysis
-   eig = ss.EIG
-   eig.run()
-
-   df_Eig = pd.DataFrame(eig.mu)
-   df_Eig.to_csv("Eigenvalues_results_Andes.csv", index=False, header=False)
-
-   df_pfactors = pd.DataFrame(eig.pfactors.T)
-   df_pfactors.to_csv("pfactors_results_Andes.csv", index=False, header=False, float_format="%.10f")
-
-    return eig.mu, eig.pfactors
-```
-
-Comparing the case of Kundur two-area system VeraGrid gets exactly the same results.
-
-![](figures/dynamics/andes_vs_veragrid_kundur.png)
-
-The following plot template is used to compare results.
-
-```python
-import matplotlib.pyplot as plt
-import numpy as np
-
-x1 = VeraGrid_Eig.real
-y1 = VeraGrid_Eig.imag
-x2= Andes_Eig.real
-y2 = Andes_Eig.imag
-slope = 1 / 0.05
-x_z = np.linspace(-200, 0, 400)
-y_z = slope * x_z
-# Plot the two lines (positive and negative imaginary axis)
-plt.plot(x_z, y_z, '--', color='grey', label='$\lambda$ = 5%')
-plt.plot(x_z, -y_z, '--', color='grey')
-plt.scatter(x2, y2, marker='o', color='orange', label='Andes')
-plt.scatter(x1, y1, marker='x', color='blue', label='VeraGrid')
-plt.xlabel("Re [s -1]")
-plt.ylabel("Im [s -1]")
-plt.title("Stability plot")
-margin_x = (x1.max() - x1.min()) * 0.1
-margin_y = (y1.max() - y1.min()) * 0.1
-x_min = x1.min() - margin_x
-x_max = x1.max() + margin_x
-y_min = y1.min() - margin_y
-y_max = y1.max() + margin_y
-plt.xlim([x_min, x_max])
-plt.ylim([y_min, y_max])
-plt.axhline(0, color='black', linewidth=1)
-plt.axvline(0, color='black', linewidth=1)
-plt.legend(loc='upper left', ncol=2)
-plt.tight_layout()
-plt.show()
-```
-
-Where `VeraGrid_Eig` and `Andes_Eig` are numpy arrays with the eigenvalues results from the VeraGrid and Andes stability assessments respectively.
+The benchmark page also explains state-name alignment, repeated-mode handling,
+and the difference between local linear agreement and nonlinear equivalence
+after a limiter changes branch. Use those criteria instead of relying only on
+an overlaid eigenvalue plot.

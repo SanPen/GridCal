@@ -12,7 +12,7 @@ from VeraGridEngine.Devices.admittance_matrix import AdmittanceMatrix
 from VeraGridEngine.basic_structures import Logger, Mat, IntVec, Vec, CxMat
 from VeraGridEngine.Devices.Parents.editable_device import DeviceType, GCProp
 from VeraGridEngine.Devices.Parents.dynamic_parent import DynamicDevice
-from VeraGridEngine.Devices.Branches.wire import Wire
+from VeraGridEngine.Devices.Branches.wire import Wire, calc_GMR
 from VeraGridEngine.enumerations import SubObjectType, PrpCat
 
 """
@@ -209,132 +209,73 @@ def calc_L_int(is_tube, r, q):
     return L_int
 
 
-def calc_GMR(is_tube: bool, r: float, q: float):
-    """
-    Calculates geometric mean radius (GMR) of solid or tubular conductor
-    Note that calculations assume uniform current distribution in the conductor, thus conductor stranding is not taken into account.
-
-    :param is_tube:
-    :param r: radius of the conductor [m]
-    :param q: radius of the inner tube [m] (only relevant for tubes)
-    :return: GMR the geometric mean radius [m]
-    """
-
-    if is_tube:
-        # Tubular conductor GMR [m]
-        GMR = (r * np.exp((3 * q ** 2 - r ** 2) / (4 * (r ** 2 - q ** 2))
-                          - q ** 4 / (r ** 2 - q ** 2) ** 2 * np.log(r / q)))
-
-    else:
-        # Solid conductor GMR [m]
-        GMR = r * np.exp(-0.25)
-
-    return GMR
-
-
 def carsons(is_self: bool, h_i: float, h_k: float, x_ik: float, f: float, rho: float, err_tol: float = 1e-6):
+    """Calculate Carson earth-return corrections (Rp, Xp), in Ohm/km.
+
+    Heights and horizontal separation are in metres, f in Hz and rho in Ohm.m.
+    err_tol bounds the magnitude of terms in the dimensionless Carson series.
+    The EMTP series is summed in complete groups of four terms, so a vanishing
+    angular factor cannot prematurely terminate the calculation.
+    Coefficient recurrence: Carson implementation in https://doi.org/10.5772/58383.
     """
-    Calculates Carson's earth return correction factors Rp and Xp for both self and mutual terms.
-    The number of terms evaluated in the infinite loop is based on convergence to the desired error tolerance.
+    if not all(math.isfinite(v) and v > 0.0 for v in (f, rho, err_tol)):
+        raise ValueError('Carson frequency, earth resistivity and tolerance must be finite and positive.')
+    height = 2.0 * h_i if is_self else h_i + h_k
+    separation = 0.0 if is_self else abs(x_ik)
+    if not math.isfinite(height) or height <= 0.0 or not math.isfinite(separation):
+        raise ValueError('Carson image height must be positive and geometry must be finite.')
 
-    Usage:
-        Rp, Xp = carsons(type, h_i, h_k, x_ik, f, rho, err_tol)
+    omega = 2.0 * np.pi * f
+    mu_0 = 4.0 * np.pi * 1e-7  # H/m
+    a = math.hypot(height, separation) * math.sqrt(omega * mu_0 / rho)
+    phi = math.atan2(separation, height)
+    log_a = math.log(a)
+    constant = 0.5 + math.log(2.0) - np.euler_gamma
+    b = [0.0, math.sqrt(2.0) / 6.0, 1.0 / 16.0]
+    c = [0.0, 0.0, constant + 0.75]
+    Rp = np.pi / 8.0
+    Xp = 0.5 * (constant - log_a)
+    step = a * complex(math.cos(phi), math.sin(phi))
+    power = 1.0 + 0.0j
+    group_error = 0.0
 
-    where   type is 'self' or 'mutual'
-            h_i is the height of conductor i above ground (m)
-            h_k is the height of conductor k above ground (m)
-            x_ik is the horizontal distance between conductors i and k (m)
-            f is the frequency (Hz)
-            rho is the earth resistivity (Ohm.m)
-            err_tol is the error tolerance for the calculation (default = 1e-6)
-
-    Returns:
-            Rp, Xp the Carson earth return correction factors (in Ohm/km)
-    """
-    # Geometrical calculations - See Figure 4.4. of EMTP Theory Book
-    if is_self:
-        D = 2 * h_i  # Distance between conductor i and its image [m]
-        cos_phi = 1
-        sin_phi = 0
-        phi = 0
-    else:
-        D = np.sqrt((h_i + h_k) ** 2 + x_ik ** 2)  # Distance between conductor i and image of conductor k [m]
-        cos_phi = (h_i + h_k) / D
-        sin_phi = x_ik / D
-        phi = np.arccos(cos_phi)
-
-    # Initialise parameters
-    i = 1
-    err = 1
-    sgn = 1
-
-    # Initial values and constants for calculation
-    omega = 2 * np.pi * f
-    a = 4 * np.pi * np.sqrt(5) * 1e-4 * D * np.sqrt(f / rho)  # Equation 4.10 EMTP
-    acosphi = a * cos_phi
-    asinphi = a * sin_phi
-    b = np.array([np.sqrt(2) / 6, 1 / 16])  # Equation 4.12 EMTP
-    c = np.array([0, 1.3659315])
-    d = np.pi / 4 * b
-
-    # First two terms of carson correction factor
-    Rp = np.pi / 8 - b[0] * acosphi
-    Xp = 0.5 * (0.6159315 - np.log(a)) + b[0] * acosphi
-
-    # Loop through carson coefficient terms starting with i = 2
-    while (err > err_tol):
-        term = np.mod(i, 4)
-        # Check sign for b term
-        if term == 0:
-            sgn = -1 * sgn
-
-        # Calculate coefficients
-        bi = b[i - 1] * sgn / ((i + 1) * (i + 3))
-        ci = c[i - 1] + 1 / (i + 1) + 1 / (i + 3)
-        di = np.pi / 4 * bi
-        b = np.append(b, bi)
-        c = np.append(c, ci)
-        d = np.append(d, di)
-
-        # Recursively calculate powers of acosphi and asinphi
-        acosphi_prev = acosphi
-        asinphi_prev = asinphi
-        acosphi = (acosphi_prev * cos_phi - asinphi_prev * sin_phi) * a
-        asinphi = (acosphi_prev * sin_phi + asinphi_prev * cos_phi) * a
-
-        Rp_prev = Rp
-        Xp_prev = Xp
-
-        # First term
-        if term == 0:
-            Rp = Rp - bi * acosphi
-            Xp = Xp + bi * acosphi
-
-        # Second term
-        elif term == 1:
-            Rp = Rp + bi * ((ci - np.log(a)) * acosphi + phi * asinphi)
-            Xp = Xp - di * acosphi
-
-        # Third term
-        elif term == 1:
-            Rp = Rp + bi * acosphi
-            Xp = Xp + bi * acosphi
-
-        # Fourth term
+    # Coefficients b_n depend on b_(n-2), with signs alternating every four
+    # terms. In particular, the second power uses the initial b_2 = 1/16.
+    # Bound the iteration instead of allowing a nonconvergent infinite loop.
+    for n in range(1, 201):
+        if n >= 3:
+            sign = -1.0 if ((n - 1) // 4) % 2 else 1.0
+            b.append(abs(b[n - 2]) * sign / (n * (n + 2)))
+            c.append(c[n - 2] + 1.0 / n + 1.0 / (n + 2))
+        power *= step
+        u, v = power.real, power.imag
+        bn = b[n]
+        dn = np.pi / 4.0 * bn
+        term = n % 4
+        if term == 1:
+            dr, dx = -bn * u, bn * u
+        elif term == 2:
+            dr, dx = bn * ((c[n] - log_a) * u + phi * v), -dn * u
+        elif term == 3:
+            dr, dx = bn * u, bn * u
         else:
-            Rp = Rp - di * acosphi
-            Xp = Xp - bi * ((ci - np.log(a)) * acosphi + phi * asinphi)
+            dr, dx = -dn * u, -bn * ((c[n] - log_a) * u + phi * v)
+        if not math.isfinite(dr) or not math.isfinite(dx):
+            raise ArithmeticError('Carson series produced non-finite terms.')
+        Rp += dr
+        Xp += dx
+        group_error = max(group_error, math.hypot(dr, dx))
+        if n % 4 == 0:
+            if math.isfinite(group_error) and group_error <= err_tol:
+                scale = 4.0 * omega * 1e-4  # Ohm/km
+                return scale * Rp, scale * Xp
+            group_error = 0.0
 
-        i = 1
-        err = np.sqrt((Rp - Rp_prev) ** 2 + (Xp - Xp_prev) ** 2)
-
-    Rp = 4 * omega * 1e-04 * Rp
-    Xp = 4 * omega * 1e-04 * Xp
-
-    return Rp, Xp
+    raise ArithmeticError('Carson series did not converge within 200 terms.')
 
 
-def calc_z_ii(R_int, is_tube, r_outer, r_inner, y_i, f, rho, err_tol=1e-6, use_dubanton_aprox: bool = False):
+def calc_z_ii(R_int, is_tube, r_outer, r_inner, y_i, f, rho, err_tol=1e-6,
+              use_dubanton_aprox: bool = False, gmr: float = 0.0):
     """
     Calculates self impedance term [Ohm/km]
     NOTE: No allowance has been made for skin effects
@@ -347,6 +288,7 @@ def calc_z_ii(R_int, is_tube, r_outer, r_inner, y_i, f, rho, err_tol=1e-6, use_d
     :param rho: earth resistivity [Ohm.m]
     :param err_tol: error tolerance for the calculation (default = 1e-6)
     :param use_dubanton_aprox: Use dubanton's approximation (default = False)
+    :param gmr: Specified GMR in metres; zero uses the solid/tubular geometry.
     :return: self impedance term of line impedance matrix [Ohm/km]
     """
 
@@ -362,7 +304,7 @@ def calc_z_ii(R_int, is_tube, r_outer, r_inner, y_i, f, rho, err_tol=1e-6, use_d
 
         p = sqrt(rho / (1j * w * mu_0))
 
-        gmr_i = calc_GMR(is_tube=is_tube, r=r_outer, q=r_inner)
+        gmr_i = gmr if gmr > 0.0 else calc_GMR(is_tube=is_tube, r=r_outer, q=r_inner)
 
         z = R_int + 1j * (w * mu_0_2pi * log((2 * (y_i + p)) / gmr_i))
 
@@ -374,14 +316,15 @@ def calc_z_ii(R_int, is_tube, r_outer, r_inner, y_i, f, rho, err_tol=1e-6, use_d
         omega = 2 * np.pi * f  # Nominal angular frequency [rad/s]
         mu_0 = 4 * np.pi * 1e-7  # Permeability of free space [H/m]
 
-        # Calculate internal conductor reactance (in Ohm/km)
-        X_int = 1000 * omega * calc_L_int(is_tube, r_outer, r_inner)
-
-        # Calculate geometrical reactance (in Ohm/km) - Equation 4.15 EMTP
-        if r_outer > 0.0:
-            X_geo = 1000.0 * omega * mu_0 / 2 / np.pi * np.log(2 * y_i / r_outer)
+        if gmr > 0.0:
+            # GMR already includes the internal flux linkage. Do not add L_int
+            # again, and do not replace the physical radius used for capacitance.
+            X_int = 0.0
+            X_geo = 1000.0 * omega * mu_0 / (2.0 * np.pi) * np.log(2.0 * y_i / gmr)
         else:
-            X_geo = 0.0
+            X_int = 1000 * omega * calc_L_int(is_tube, r_outer, r_inner)
+            X_geo = (1000.0 * omega * mu_0 / (2.0 * np.pi) * np.log(2 * y_i / r_outer)
+                     if r_outer > 0.0 else 0.0)
 
         # Calculate Carson's correction factors (in Ohm/km)
         Rp, Xp = carsons(True, y_i, 0, 0, f, rho, err_tol)
@@ -466,7 +409,8 @@ def calc_z_matrix(wires_in_tower: ListOfWires, f: float = 50, rho: float = 100, 
                                  f=f,
                                  rho=rho,
                                  err_tol=1e-6,
-                                 use_dubanton_aprox=use_dubanton_aprox)
+                                 use_dubanton_aprox=use_dubanton_aprox,
+                                 gmr=wire_i.wire.gmr / 1000.0)
 
         # mutual impedances
         for j, wire_j in enumerate(wires_in_tower.data):

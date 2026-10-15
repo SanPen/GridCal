@@ -1612,7 +1612,8 @@ class MapWidget(QWidget):
         """
         previous_fractional_zoom: float = self.fractional_zoom
         previous_level: int = self.level
-        if level == previous_level and previous_fractional_zoom == 1.0:
+        # A replacement provider may still be at zero even when the widget's zoom is unchanged.
+        if level == previous_level and previous_fractional_zoom == 1.0 and self.tile_src.level == level:
             return True
         else:
             pass
@@ -1872,7 +1873,8 @@ class MapWidget(QWidget):
         """
 
         view_x, view_y = self.point_placement_view(place, 0, 0, 0, 0, )
-        longitude, latitude = self.view_to_geo(view_x, view_y)
+        # Preserve the exact viewport center when replacing tile providers.
+        longitude, latitude = self.view_to_geo_float(view_x, view_y)
 
         return self.level, longitude, latitude
 

@@ -1,6 +1,5 @@
 # Import Meteostat library and dependencies
 from datetime import datetime
-import matplotlib.pyplot as plt
 from meteostat import Point, Daily, Hourly
 import ssl
 
@@ -18,7 +17,4 @@ data = Hourly(vancouver, start, end)
 #
 df = data.fetch()
 df.fillna(0, inplace=True)
-# Plot line chart including average, minimum and maximum temperature
-df.plot(y=['tavg', 'tmin', 'tmax'])
-# df.plot(x=['wdir'], y=['wspd'], kind='polar')
-plt.show()
+print(df[['tavg', 'tmin', 'tmax']])

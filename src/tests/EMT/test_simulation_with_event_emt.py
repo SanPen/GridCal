@@ -174,6 +174,9 @@ def test_simulation_with_event_emt():
     power_flow.run()
     res = power_flow.results
 
+    # A reference trajectory is only valid when its steady-state seed converged.
+    assert bool(res.converged)
+
     print(f"Converged: {res.converged}")
     print(res.get_bus_df())
     print(res.get_branch_df())
@@ -202,13 +205,18 @@ def test_simulation_with_event_emt():
                                  verbose = True)
 
     boundary_updater = cast(Any, problem)
-    t, y, dy, _, _ = solver.simulate(boundary_updater=boundary_updater)
+    t, y, dy, well_initialized, converged = solver.simulate(boundary_updater=boundary_updater)
+
+    # Never accept a golden trajectory from an invalid EMT initialization or run.
+    assert well_initialized
+    assert converged
 
     res = np.concatenate((y, dy), axis=1)
 
     cols_y = [f"y{i}" for i in range(y.shape[1])]
     cols_dy = [f"dy{i}" for i in range(dy.shape[1])]
     cols = cols_y + cols_dy
+
     results_df = pd.DataFrame(res, index=t, columns=cols)
     results_df.index.name = "time_s"
 

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📊 User interface &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>📊 User interface &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -107,6 +107,7 @@
 <li class="toctree-l1"><a class="reference internal" href="reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
@@ -178,6 +179,14 @@ so that reading a manual is not required unless you need the technical details.<
 <section id="schematic-and-map-editors">
 <h3>Schematic and map editors<a class="headerlink" href="#schematic-and-map-editors" title="Link to this heading"></a></h3>
 <p>In the main panel, you can find the schematics and map diagrams that represent the system currently under study. You can create as many maps and schematics, either of the whole system or of specific portions, as you want. Creating these smaller schematics will allow you to focus on results for specific areas, while still simulating the full system.</p>
+<p>Map backgrounds offer OpenFreeMap Colour, Light and Dark palettes without API keys,
+plus the standard OpenStreetMap raster map. Older diagrams using CARTO Voyager,
+Positron or Dark Matter open with the corresponding OpenFreeMap palette.
+OpenFreeMap vector data is decoded by a bundled Python decoder and
+painted with Qt, keeping selection, editing and image export in the existing Qt
+map widget. Downloaded vectors and rendered tiles are cached locally. These are
+VeraGrid’s Qt palettes rather than exact MapLibre styles: terrain effects and
+sprite icons are not rendered, and text placement is limited to individual tiles.</p>
 <p><img alt="" src="../_images/VeraGrid_Map_Light_500bus.png" /><br />
 Sample map diagram of ~500 node grid.</p>
 </section>

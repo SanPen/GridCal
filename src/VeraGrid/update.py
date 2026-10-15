@@ -75,6 +75,9 @@ def get_upgrade_command(latest_version=None):
     if latest_version is None:
         latest_version = find_latest_version()
     cmd = [sys.executable, '-m', 'pip', 'install',
+           '--isolated',
+           '--index-url', 'https://pypi.org/simple',
+           '--no-cache-dir',
            'VeraGrid=={}'.format(latest_version),
            '--upgrade',
            '--break-system-packages']

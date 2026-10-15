@@ -7,7 +7,7 @@ A `Battery` extends generator-style injection modelling with energy-capacity and
 This device connects to a bus and contributes power, current, or admittance to the solved network model.
 
 ### Registered properties
-Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pmin`, `Pmax`, `Q`, `Qmin`, `Qmax`, `control_mode`, `Pf`, `Vset`, `Cost2`, `Cost0`, `enabled_dispatch`, `must_run`, `srap_enabled`.
+Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pmin`, `Pmax`, `Q`, `Qmin`, `Qmax`, `control_mode`, `Pf`, `Vset`, `Cost2`, `Cost0`, `enabled_dispatch`, `must_run`, `srap_enabled`, `dispatch_mode`.
 
 |          name          |       class_type        | unit  |mandatory|max_chars|                                           descriptions                                           |has_profile|comment|
 |------------------------|-------------------------|-------|---------|---------|--------------------------------------------------------------------------------------------------|-----------|-------|
@@ -44,7 +44,7 @@ Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pmin`, `Pmax`, 
 |Cost                    |float                    |e/MWh  |False    |         |Cost of not served energy. Used in OPF.                                                           |True       |       |
 |facility                |Facility                 |       |False    |         |Facility where this is located                                                                    |False      |       |
 |technologies            |AssociationsList         |p.u.   |False    |         |Technologies associations to injections                                                           |False      |       |
-|scalable                |bool                     |       |False    |         |Is the injection scalable?                                                                        |False      |       |
+|scalable                |bool                     |       |False    |         |Is the injection scalable? (only for data compatibility)                                          |False      |       |
 |shift_key               |float                    |       |False    |         |Shift key for net transfer capacity                                                               |True       |       |
 |longitude               |float                    |deg    |False    |         |longitude of the injection.                                                                       |False      |       |
 |latitude                |float                    |deg    |False    |         |latitude of the injection.                                                                        |False      |       |
@@ -103,3 +103,4 @@ Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pmin`, `Pmax`, 
 |charge_efficiency       |float                    |p.u.   |False    |         |Charging efficiency.                                                                              |False      |       |
 |discharge_efficiency    |float                    |p.u.   |False    |         |Discharge efficiency.                                                                             |False      |       |
 |discharge_per_cycle     |float                    |p.u.   |False    |         |                                                                                                  |False      |       |
+|dispatch_mode           |enum BatteryDispatchMode |       |False    |         |Battery dispatch behaviour.                                                                       |True       |       |

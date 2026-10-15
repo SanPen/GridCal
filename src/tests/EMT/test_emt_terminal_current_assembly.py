@@ -320,3 +320,112 @@ def test_emt_contract_rejects_bus_domain_mismatch_atomically() -> None:
 
     assert current_balance[0][0].eval() == pytest.approx(0.0)
     assert current_balance[0][1].eval() == pytest.approx(0.0)
+
+
+def test_multiple_ac_injection_currents_accumulate_on_one_bus_phase() -> None:
+    """Sum two AC injection currents without replacing the first contribution.
+
+    :return: None.
+    """
+    first_current: Var = Var(name="first_ac_injection_current")
+    second_current: Var = Var(name="second_ac_injection_current")
+    first_model: Block = Block(
+        external_mapping=dict(((VarPowerFlowReferenceType.i_A, first_current),)),
+    )
+    second_model: Block = Block(
+        external_mapping=dict(((VarPowerFlowReferenceType.i_A, second_current),)),
+    )
+    current_balance: Dict[int, List[Expr | Var | Const]] = dict({
+        0: list((Const(0.0), Const(0.0), Const(0.0), Const(0.0))),
+    })
+
+    first_was_assembled: bool = assemble_emt_mapped_current_references(
+        model=first_model,
+        current_balance=current_balance,
+        bus_index=0,
+        bus_is_dc=False,
+    )
+    second_was_assembled: bool = assemble_emt_mapped_current_references(
+        model=second_model,
+        current_balance=current_balance,
+        bus_index=0,
+        bus_is_dc=False,
+    )
+    mapped_variables: List[Var] = get_expression_vars(current_balance[0][1])
+
+    assert first_was_assembled
+    assert second_was_assembled
+    assert first_current in mapped_variables
+    assert second_current in mapped_variables
+    assert current_balance[0][1].eval(
+        first_ac_injection_current=0.25,
+        second_ac_injection_current=-0.10,
+    ) == pytest.approx(0.15)
+
+
+def test_multiple_dc_injection_currents_accumulate_on_one_bus() -> None:
+    """Sum two DC injection currents without replacing the first contribution.
+
+    :return: None.
+    """
+    first_current: Var = Var(name="first_dc_injection_current")
+    second_current: Var = Var(name="second_dc_injection_current")
+    first_model: Block = Block(
+        external_mapping=dict(((VarPowerFlowReferenceType.Idc, first_current),)),
+    )
+    second_model: Block = Block(
+        external_mapping=dict(((VarPowerFlowReferenceType.Idc, second_current),)),
+    )
+    current_balance: Dict[int, List[Expr | Var | Const]] = dict({
+        0: list((Const(0.0),)),
+    })
+
+    first_was_assembled: bool = assemble_emt_mapped_current_references(
+        model=first_model,
+        current_balance=current_balance,
+        bus_index=0,
+        bus_is_dc=True,
+    )
+    second_was_assembled: bool = assemble_emt_mapped_current_references(
+        model=second_model,
+        current_balance=current_balance,
+        bus_index=0,
+        bus_is_dc=True,
+    )
+    mapped_variables: List[Var] = get_expression_vars(current_balance[0][0])
+
+    assert first_was_assembled
+    assert second_was_assembled
+    assert first_current in mapped_variables
+    assert second_current in mapped_variables
+    assert current_balance[0][0].eval(
+        first_dc_injection_current=0.40,
+        second_dc_injection_current=-0.15,
+    ) == pytest.approx(0.25)
+
+
+def test_current_assembly_uses_problem_local_external_mapping() -> None:
+    """Use the effective local mapping without rewriting the persistent block.
+
+    :return: None.
+    """
+    local_current: Var = Var(name="local_injection_current")
+    model: Block = Block(external_mapping=dict())
+    effective_mapping: Dict[VarPowerFlowReferenceType, Var] = dict((
+        (VarPowerFlowReferenceType.i_A, local_current),
+    ))
+    current_balance: Dict[int, List[Expr | Var | Const]] = dict({
+        0: list((Const(0.0), Const(0.0), Const(0.0), Const(0.0))),
+    })
+
+    was_assembled: bool = assemble_emt_mapped_current_references(
+        model=model,
+        current_balance=current_balance,
+        effective_external_mapping=effective_mapping,
+        bus_index=0,
+        bus_is_dc=False,
+    )
+
+    assert was_assembled
+    assert len(model.external_mapping) == 0
+    assert current_balance[0][1].eval(local_injection_current=0.35) == pytest.approx(0.35)

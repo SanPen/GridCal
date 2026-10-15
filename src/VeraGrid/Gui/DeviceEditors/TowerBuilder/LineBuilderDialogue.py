@@ -44,6 +44,12 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         self.ui.voltage_doubleSpinBox.setValue(self.tower_driver.tower.Vnom)
 
         if wires_catalogue is not None:
+            catalogue_by_id = {wire.idtag: wire for wire in wires_catalogue}
+            # Older editor sessions copied catalogue wires with the same idtag.
+            # Rebind those references so edited conductor data (including GMR)
+            # are used when recomputing the tower.
+            for wit in self.tower_driver.tower.wires_in_tower.data:
+                wit.wire = catalogue_by_id.get(wit.wire.idtag, wit.wire)
             for wire in wires_catalogue:
                 self.wires_table.add(wire)
             self.compute()
@@ -148,7 +154,7 @@ class TowerBuilderGUI(QtWidgets.QDialog):
         sel_idx = idx.row()
 
         if sel_idx > -1:
-            selected_wire: Wire = self.wires_table.wires[sel_idx].copy()
+            selected_wire: Wire = self.wires_table.wires[sel_idx]
             self.tower_driver.add(WireInTower(wire=selected_wire))
             self.compute()
         else:

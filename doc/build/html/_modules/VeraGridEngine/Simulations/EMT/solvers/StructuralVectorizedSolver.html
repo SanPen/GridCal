@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -137,7 +138,10 @@
     <span class="n">resolve_solver_boundary_updater</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.emt_boundary_update_wrapper</span><span class="w"> </span><span class="kn">import</span> <span class="n">BoundaryUpdateWrapper</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.jit_compiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">EagerEquationCompiler</span><span class="p">,</span> <span class="n">EquationCompiler</span><span class="p">,</span> <span class="n">MatrixVectorizedCompiler</span><span class="p">,</span> <span class="n">_compile_to_file</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.jit_compiler</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EagerEquationCompiler</span><span class="p">,</span> <span class="n">EquationCompiler</span><span class="p">,</span> <span class="n">MatrixVectorizedCompiler</span><span class="p">,</span>
+    <span class="n">_compile_to_file</span><span class="p">,</span> <span class="n">_fingerprint_codegen_expr</span><span class="p">,</span> <span class="n">_StructuralExpressionContext</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.EMT.solvers.structural_compiled_solver</span><span class="w"> </span><span class="kn">import</span> <span class="n">StructuralCompiledSparseFactorizationManager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.driver_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">DummySignal</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.NumericalMethods.external_sparse_solver_interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">SparseLinearSolverBackendProvider</span>
@@ -418,114 +422,27 @@
         <span class="k">return</span> <span class="n">nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">fastmath</span><span class="o">=</span><span class="n">fastmath</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)(</span><span class="n">py_func</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_canonicalize_node</span><span class="p">(</span>
-        <span class="n">node</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span>
-        <span class="n">runtime_uids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
-        <span class="n">param_uids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
-        <span class="n">runtime_slots</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
-        <span class="n">param_slots</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
-        <span class="n">found_runtime_vars_ordered</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span>
-        <span class="n">seen_runtime_uids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Canonicalizes an expression while distinguishing runtime variables from parameters.</span>
-
-<span class="sd">    Runtime variables get placeholders __RVAR_k__ and are also collected in order.</span>
-<span class="sd">    Parameters get placeholders __PARAM_k__ but are NOT collected into template vars.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">Var</span><span class="p">):</span>
-        <span class="n">target_uid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">uid</span> <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">base_var</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">node</span><span class="o">.</span><span class="n">base_var</span><span class="o">.</span><span class="n">uid</span>
-
-        <span class="k">if</span> <span class="n">target_uid</span> <span class="ow">in</span> <span class="n">runtime_uids</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">target_uid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">runtime_slots</span><span class="p">:</span>
-                <span class="n">runtime_slots</span><span class="p">[</span><span class="n">target_uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;__RVAR_</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">runtime_slots</span><span class="p">)</span><span class="si">}</span><span class="s2">__&quot;</span>
-
-            <span class="k">if</span> <span class="n">target_uid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seen_runtime_uids</span><span class="p">:</span>
-                <span class="n">seen_runtime_uids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">target_uid</span><span class="p">)</span>
-                <span class="n">found_runtime_vars_ordered</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-
-            <span class="k">return</span> <span class="n">runtime_slots</span><span class="p">[</span><span class="n">target_uid</span><span class="p">]</span>
-
-        <span class="k">elif</span> <span class="n">target_uid</span> <span class="ow">in</span> <span class="n">param_uids</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">target_uid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">param_slots</span><span class="p">:</span>
-                <span class="n">param_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">name</span>
-                <span class="n">param_slots</span><span class="p">[</span><span class="n">target_uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;__PARAM_</span><span class="si">{</span><span class="n">param_name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">target_uid</span><span class="si">}</span><span class="s2">__&quot;</span>
-
-            <span class="k">return</span> <span class="n">param_slots</span><span class="p">[</span><span class="n">target_uid</span><span class="p">]</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Canonicalization found Var not classified as runtime or parameter: &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;name=</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, target_uid=</span><span class="si">{</span><span class="n">target_uid</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">Const</span><span class="p">):</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">float</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">&quot;</span>
-
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">BinOp</span><span class="p">):</span>
-        <span class="n">left_str</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_canonicalize_node</span><span class="p">(</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">runtime_uids</span><span class="p">,</span> <span class="n">param_uids</span><span class="p">,</span>
-            <span class="n">runtime_slots</span><span class="p">,</span> <span class="n">param_slots</span><span class="p">,</span>
-            <span class="n">found_runtime_vars_ordered</span><span class="p">,</span> <span class="n">seen_runtime_uids</span>
-        <span class="p">)</span>
-        <span class="n">right_str</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_canonicalize_node</span><span class="p">(</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">runtime_uids</span><span class="p">,</span> <span class="n">param_uids</span><span class="p">,</span>
-            <span class="n">runtime_slots</span><span class="p">,</span> <span class="n">param_slots</span><span class="p">,</span>
-            <span class="n">found_runtime_vars_ordered</span><span class="p">,</span> <span class="n">seen_runtime_uids</span>
-        <span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">op</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">left_str</span> <span class="o">&gt;</span> <span class="n">right_str</span><span class="p">:</span>
-            <span class="n">left_str</span><span class="p">,</span> <span class="n">right_str</span> <span class="o">=</span> <span class="n">right_str</span><span class="p">,</span> <span class="n">left_str</span>
-
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">left_str</span><span class="si">}{</span><span class="n">node</span><span class="o">.</span><span class="n">op</span><span class="si">}{</span><span class="n">right_str</span><span class="si">}</span><span class="s2">)&quot;</span>
-
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">UnOp</span><span class="p">):</span>
-        <span class="n">op_str</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_canonicalize_node</span><span class="p">(</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">operand</span><span class="p">,</span> <span class="n">runtime_uids</span><span class="p">,</span> <span class="n">param_uids</span><span class="p">,</span>
-            <span class="n">runtime_slots</span><span class="p">,</span> <span class="n">param_slots</span><span class="p">,</span>
-            <span class="n">found_runtime_vars_ordered</span><span class="p">,</span> <span class="n">seen_runtime_uids</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">op</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">op_str</span><span class="si">}</span><span class="s2">)&quot;</span>
-
-    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">Func</span><span class="p">):</span>
-        <span class="n">arg_str</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_canonicalize_node</span><span class="p">(</span>
-            <span class="n">node</span><span class="o">.</span><span class="n">arg</span><span class="p">,</span> <span class="n">runtime_uids</span><span class="p">,</span> <span class="n">param_uids</span><span class="p">,</span>
-            <span class="n">runtime_slots</span><span class="p">,</span> <span class="n">param_slots</span><span class="p">,</span>
-            <span class="n">found_runtime_vars_ordered</span><span class="p">,</span> <span class="n">seen_runtime_uids</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">op</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">arg_str</span><span class="si">}</span><span class="s2">)&quot;</span>
-
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
-
-
 <div class="viewcode-block" id="canonicalize_expression">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.StructuralVectorizedSolver.canonicalize_expression">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">canonicalize_expression</span><span class="p">(</span>
         <span class="n">expr</span><span class="p">:</span> <span class="n">Expr</span><span class="p">,</span>
         <span class="n">runtime_uids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
-        <span class="n">param_uids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span>
+        <span class="n">param_uids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Returns a canonical structural signature and the ordered runtime variables only.</span>
+<span class="sd">    Return the shared structural signature and first-occurrence runtime gathers.</span>
+
+<span class="sd">    :param expr: Symbolic expression whose literal values must remain exact.</span>
+<span class="sd">    :param runtime_uids: UIDs belonging to the runtime state/algebraic vector.</span>
+<span class="sd">    :param param_uids: UIDs belonging to the shared parameter vector.</span>
+<span class="sd">    :return: Structural fingerprint and one gathered variable per runtime UID.</span>
+<span class="sd">    :raises RuntimeError: If a supported variable has no runtime/parameter classification.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">runtime_slots</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="n">param_slots</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="n">found_runtime_vars_ordered</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-    <span class="n">seen_runtime_uids</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-
-    <span class="n">canonical_str</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_canonicalize_node</span><span class="p">(</span>
-        <span class="n">node</span><span class="o">=</span><span class="n">expr</span><span class="p">,</span>
-        <span class="n">runtime_uids</span><span class="o">=</span><span class="n">runtime_uids</span><span class="p">,</span>
-        <span class="n">param_uids</span><span class="o">=</span><span class="n">param_uids</span><span class="p">,</span>
-        <span class="n">runtime_slots</span><span class="o">=</span><span class="n">runtime_slots</span><span class="p">,</span>
-        <span class="n">param_slots</span><span class="o">=</span><span class="n">param_slots</span><span class="p">,</span>
-        <span class="n">found_runtime_vars_ordered</span><span class="o">=</span><span class="n">found_runtime_vars_ordered</span><span class="p">,</span>
-        <span class="n">seen_runtime_uids</span><span class="o">=</span><span class="n">seen_runtime_uids</span>
-    <span class="p">)</span>
-    <span class="k">return</span> <span class="n">canonical_str</span><span class="p">,</span> <span class="n">found_runtime_vars_ordered</span></div>
+    <span class="c1"># Bind structural roles only for this expression. The existing compiler walk</span>
+    <span class="c1"># preserves exact constants; its code-generation maps are unused in this context.</span>
+    <span class="n">context</span><span class="p">:</span> <span class="n">_StructuralExpressionContext</span> <span class="o">=</span> <span class="n">_StructuralExpressionContext</span><span class="p">(</span><span class="n">runtime_uids</span><span class="p">,</span> <span class="n">param_uids</span><span class="p">)</span>
+    <span class="n">signature</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">_fingerprint_codegen_expr</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="nb">dict</span><span class="p">(),</span> <span class="nb">dict</span><span class="p">(),</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">context</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">signature</span><span class="p">,</span> <span class="n">context</span><span class="o">.</span><span class="n">runtime_variables</span></div>
 
 
 
@@ -1381,6 +1298,7 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">StructuralVectorizedSolver</span><span class="p">:</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
         <span class="s1">&#39;problem&#39;</span><span class="p">,</span> <span class="s1">&#39;t0&#39;</span><span class="p">,</span> <span class="s1">&#39;t_end&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;method&#39;</span><span class="p">,</span> <span class="s1">&#39;pred_method&#39;</span><span class="p">,</span> <span class="s1">&#39;dense_threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="s1">&#39;newton_max_iter&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_newton_tolerance&#39;</span><span class="p">,</span>
         <span class="s1">&#39;vec_jacobian&#39;</span><span class="p">,</span> <span class="s1">&#39;vec_flat_args&#39;</span><span class="p">,</span> <span class="s1">&#39;fused_residual&#39;</span><span class="p">,</span> <span class="s1">&#39;vec_kernels&#39;</span><span class="p">,</span>
         <span class="s1">&#39;_state_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;_algebraic_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;_diff_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;_state_eqs&#39;</span><span class="p">,</span> <span class="s1">&#39;_algebraic_eqs&#39;</span><span class="p">,</span>
         <span class="s1">&#39;sorted_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;_n_state&#39;</span><span class="p">,</span> <span class="s1">&#39;_n_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;_n_diff&#39;</span><span class="p">,</span> <span class="s1">&#39;uid2idx_vars&#39;</span><span class="p">,</span>
@@ -1406,7 +1324,8 @@
                  <span class="n">sparse_solver_backend_provider</span><span class="p">:</span> <span class="n">SparseLinearSolverBackendProvider</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">newton_diag_config</span><span class="p">:</span> <span class="n">NewtonDiagnosticsConfig</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">progress_signal</span><span class="p">:</span> <span class="n">DummySignal</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">cancel_checker</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                 <span class="n">cancel_checker</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">newton_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-6</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param problem: The DAE problem definition.</span>
 <span class="sd">        :param t0: Initial time.</span>
@@ -1417,6 +1336,7 @@
 <span class="sd">        :param dense_threshold: Threshold to switch between dense and sparse linear solvers.</span>
 <span class="sd">        :param verbose: Print compilation and simulation timings.</span>
 <span class="sd">        :param newton_max_iter: Maximum Newton iterations per local EMT substep.</span>
+<span class="sd">        :param newton_tolerance: Absolute infinity-norm tolerance for Newton residual convergence.</span>
 <span class="sd">        :param sparse_solver_backend_provider: Sparse linear solver backend provider.</span>
 <span class="sd">        :type sparse_solver_backend_provider: SparseLinearSolverBackendProvider | None</span>
 <span class="sd">        :param progress_signal: Optional progress signal updated during the simulation loop.</span>
@@ -1431,6 +1351,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">dense_threshold</span> <span class="o">=</span> <span class="n">dense_threshold</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">newton_max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">newton_max_iter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">newton_tolerance</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;newton_tolerance must be finite and greater than zero.&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_newton_diag_config</span> <span class="o">=</span> <span class="n">newton_diag_config</span> <span class="ow">or</span> <span class="n">NewtonDiagnosticsConfig</span><span class="p">(</span>
             <span class="n">compute_dense_cond</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
             <span class="n">enable_fallback</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -1975,7 +1898,7 @@
                         <span class="n">residual_out</span><span class="o">=</span><span class="n">res_global</span><span class="p">,</span>
                     <span class="p">)</span>
 
-                    <span class="k">if</span> <span class="n">res_norm</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">res_norm</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span><span class="p">:</span>
                         <span class="n">substep_converged</span> <span class="o">=</span> <span class="kc">True</span>
                         <span class="k">break</span>
                     <span class="k">else</span><span class="p">:</span>
@@ -2087,7 +2010,16 @@
                         <span class="n">boundary_updater</span><span class="o">=</span><span class="n">boundary_updater</span><span class="p">,</span>
                         <span class="n">accepted</span><span class="o">=</span><span class="n">substep_converged</span><span class="p">,</span>
                         <span class="n">params</span><span class="o">=</span><span class="n">full_params</span><span class="p">,</span>
+                        <span class="n">committed_time</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">t_curr</span><span class="p">),</span>
+                        <span class="n">committed_state</span><span class="o">=</span><span class="n">x_iter</span><span class="p">,</span>
                     <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+                <span class="k">if</span> <span class="n">substep_converged</span> <span class="ow">and</span> <span class="n">state_event_retry_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># A post-acceptance native sample may publish new held</span>
+                    <span class="c1"># outputs. Retain them for the next aligned sub-step.</span>
+                    <span class="n">ev_params</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">full_params</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">ev_params</span><span class="p">)]</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">pass</span>
 

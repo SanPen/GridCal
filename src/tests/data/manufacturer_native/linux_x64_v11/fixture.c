@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../../../VeraGridEngine/IO/manufacturer_native/native_worker/source/adapter_ieee_cigre_v1_1.h"
+#include "../../../../VeraGridEngine/data/native_worker/source/adapter_ieee_cigre_v1_1.h"
 #ifdef _WIN32
 #define VG_OEM_EXPORT __declspec(dllexport)
 #define VG_OEM_CDECL __cdecl

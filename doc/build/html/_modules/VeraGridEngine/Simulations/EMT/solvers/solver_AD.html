@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.solvers.solver_AD &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.solvers.solver_AD &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -69,7 +69,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -110,6 +111,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cProfile</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">profile</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Var</span><span class="p">,</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">BinOp</span><span class="p">,</span> <span class="n">UnOp</span><span class="p">,</span> <span class="n">Func</span>
 
@@ -134,8 +136,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="kn">import</span> <span class="n">csc_matrix</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_safe_njit</span><span class="p">(</span><span class="n">py_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">fastmath</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">signature</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""</span>
-<span class="sd">    Safely wraps a python function with Numba's njit compiler.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Safely wraps a python function with Numba&#39;s njit compiler.</span>
 <span class="sd">    The caller must explicitly pass cache=False if the function is generated via strings.</span>
 
 <span class="sd">    :param py_func: The python function to compile.</span>
@@ -148,7 +150,7 @@
 <span class="sd">    :type signature: Any</span>
 <span class="sd">    :return: The Numba JIT compiled function.</span>
 <span class="sd">    :rtype: Callable[..., Any]</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">signature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">compiled_kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">nb</span><span class="o">.</span><span class="n">jit</span><span class="p">(</span><span class="n">signature</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="n">fastmath</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="n">cache</span><span class="p">)(</span><span class="n">py_func</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -168,9 +170,9 @@
                                   <span class="n">row_idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                   <span class="n">data_idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                                   <span class="n">color_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Scatter a single JVP evaluation into the CSC data array for all columns in a given color.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">k0</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">color_ptr</span><span class="p">[</span><span class="n">color_id</span><span class="p">])</span>
     <span class="n">k1</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">color_ptr</span><span class="p">[</span><span class="n">color_id</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k0</span><span class="p">,</span> <span class="n">k1</span><span class="p">):</span>
@@ -181,7 +183,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_compile_master_jacobian_kernel</span><span class="p">(</span><span class="n">ad_kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">n_colors</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Build the eager sparse Jacobian dispatcher.</span>
 
 <span class="sd">    :param ad_kernel: Generic AD kernel reused across graph colors.</span>
@@ -190,27 +192,27 @@
 <span class="sd">    :type n_colors: int</span>
 <span class="sd">    :return: Jacobian dispatcher.</span>
 <span class="sd">    :rtype: Callable[..., Any]</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">SparseAdMasterJacobianDispatcher</span><span class="p">(</span><span class="n">ad_kernel</span><span class="o">=</span><span class="n">ad_kernel</span><span class="p">,</span> <span class="n">n_colors</span><span class="o">=</span><span class="n">n_colors</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="SparseAdMasterJacobianDispatcher">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.solver_AD.SparseAdMasterJacobianDispatcher">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SparseAdMasterJacobianDispatcher</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Callable dispatcher that executes one generic AD kernel across all colors.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"_ad_kernel"</span><span class="p">,</span> <span class="s2">"_n_colors"</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;_ad_kernel&quot;</span><span class="p">,</span> <span class="s2">&quot;_n_colors&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ad_kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">n_colors</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Store the generic AD kernel and the number of graph colors.</span>
 
 <span class="sd">        :param ad_kernel: Generic AD kernel reused across graph colors.</span>
 <span class="sd">        :param n_colors: Number of graph colors.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ad_kernel</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">ad_kernel</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_n_colors</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">n_colors</span>
 
@@ -228,7 +230,7 @@
                  <span class="n">row_idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">data_idx</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">work_jvp</span><span class="p">:</span> <span class="n">Mat</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Evaluate all color JVPs and scatter them into CSC data storage.</span>
 
 <span class="sd">        :param states: Current Newton iterate.</span>
@@ -245,7 +247,7 @@
 <span class="sd">        :param data_idx: CSC data positions used by the scatter map.</span>
 <span class="sd">        :param work_jvp: Reusable JVP work buffer.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">color_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="k">while</span> <span class="n">color_index</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_colors</span><span class="p">:</span>
@@ -259,7 +261,7 @@
 <div class="viewcode-block" id="greedy_color_columns">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.solver_AD.greedy_color_columns">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">greedy_color_columns</span><span class="p">(</span><span class="n">col_rows</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="n">n_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes a greedy coloring of the column dependency graph to minimize AD sweeps.</span>
 
 <span class="sd">    :param col_rows: List of row indices where each column has non-zeros.</span>
@@ -268,7 +270,7 @@
 <span class="sd">    :type n_rows: int</span>
 <span class="sd">    :return: An array of color IDs per column and the total number of colors.</span>
 <span class="sd">    :rtype: Tuple[np.ndarray, int]</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n_cols</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">col_rows</span><span class="p">)</span>
     <span class="n">row_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_rows</span><span class="p">)]</span>
     <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_cols</span><span class="p">):</span>
@@ -289,7 +291,7 @@
                     <span class="k">pass</span>
 
     <span class="n">degrees</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">adj</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_cols</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
-    <span class="n">order</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">degrees</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">"stable"</span><span class="p">))</span>
+    <span class="n">order</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="o">-</span><span class="n">degrees</span><span class="p">,</span> <span class="n">kind</span><span class="o">=</span><span class="s2">&quot;stable&quot;</span><span class="p">))</span>
     <span class="n">colors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_cols</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
     <span class="n">max_color</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
     <span class="n">used</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_cols</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool_</span><span class="p">)</span>
@@ -329,13 +331,13 @@
         <span class="n">x_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">full_params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Update boundary values and optionally request a shortened retry.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update boundary values and optionally request a shortened retry.</span>
 
 <span class="sd">        :param t: Candidate endpoint time.</span>
 <span class="sd">        :param x_prev: Accepted EMT state vector.</span>
 <span class="sd">        :param full_params: Parameter vector updated in place.</span>
 <span class="sd">        :return: Earlier retry target or ``None``.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
@@ -350,10 +352,10 @@
 <div class="viewcode-block" id="Predictor">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.solver_AD.Predictor">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Predictor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes an explicit predictor for the Newton initial guess x_iter.</span>
-<span class="sd">    """</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'n_states'</span><span class="p">]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;n_states&#39;</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">n_states</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -367,7 +369,7 @@
                 <span class="n">dx_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                 <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                 <span class="n">pred_method</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">DynamicIntegrationMethod</span><span class="o">|</span><span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBackEuler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Apply predictor in-place and return x_iter.</span>
 <span class="sd">        :param x_iter: Array to be written with the predictor guess (in-place).</span>
 <span class="sd">        :param x_prev: Previous full variable vector at time n.</span>
@@ -375,7 +377,7 @@
 <span class="sd">        :param h: Time step.</span>
 <span class="sd">        :param pred_method: Integration method enum/value at the prediction step</span>
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># Default: no-op predictor</span>
         <span class="n">x_iter</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">x_prev</span>
@@ -384,7 +386,7 @@
         <span class="k">if</span> <span class="n">pred_method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">OdeEuler</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_predict_euler_state</span><span class="p">(</span><span class="n">x_iter</span><span class="p">,</span> <span class="n">x_prev</span><span class="p">,</span> <span class="n">dx_prev</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">pred_method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBDF2</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"predictor method </span><span class="si">{</span><span class="n">pred_method</span><span class="si">}</span><span class="s2"> "</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;predictor method </span><span class="si">{</span><span class="n">pred_method</span><span class="si">}</span><span class="s2"> &quot;</span><span class="p">)</span>
 
         <span class="c1"># Otherwise keep default x_iter = x_prev</span>
         <span class="k">return</span> <span class="n">x_iter</span></div>
@@ -398,11 +400,11 @@
                              <span class="n">x_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                              <span class="n">dx_prev</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
                              <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Explicit Euler predictor for the *state* subset:</span>
 <span class="sd">            x_{n+1}^0 = x_n + h * dx_n   (states only)</span>
 <span class="sd">        Algebraics remain at x_prev by default (already set in caller).</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_states</span>
         <span class="n">x_iter</span><span class="p">[:</span><span class="n">ns</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_prev</span><span class="p">[:</span><span class="n">ns</span><span class="p">]</span> <span class="o">+</span> <span class="n">h</span> <span class="o">*</span> <span class="n">dx_prev</span><span class="p">[:</span><span class="n">ns</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">x_iter</span></div>
@@ -412,7 +414,7 @@
 <div class="viewcode-block" id="fill_full_parameter_buffer">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.solver_AD.fill_full_parameter_buffer">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fill_full_parameter_buffer</span><span class="p">(</span><span class="n">runtime_params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">static_params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">full_params_out</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Write runtime and static parameters into one preallocated full buffer.</span>
 
 <span class="sd">    :param runtime_params: Runtime parameter slice.</span>
@@ -423,7 +425,7 @@
 <span class="sd">    :type full_params_out: Vec</span>
 <span class="sd">    :return: None.</span>
 <span class="sd">    :rtype: None</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">n_runtime</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">runtime_params</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">n_static</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">static_params</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -449,7 +451,7 @@
         <span class="n">x_prev2</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">residual_out</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Evaluate all residual batches into a caller-owned buffer.</span>
 
 <span class="sd">    :param kernel_list: Batched residual kernels.</span>
@@ -470,7 +472,7 @@
 <span class="sd">    :type residual_out: Vec</span>
 <span class="sd">    :return: Residual infinity norm.</span>
 <span class="sd">    :rtype: float</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">residual_out</span><span class="p">[:]</span> <span class="o">=</span> <span class="mf">0.0</span>
 
     <span class="c1"># The residual is assembled batch by batch because the symbolic compiler</span>
@@ -485,19 +487,19 @@
 <div class="viewcode-block" id="AdBacktrackingResidualEvaluator">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.solver_AD.AdBacktrackingResidualEvaluator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">AdBacktrackingResidualEvaluator</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Wrapper that evaluates AD residual batches for line-search backtracking.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"_kernel_list"</span><span class="p">,</span> <span class="s2">"_full_params"</span><span class="p">,</span> <span class="s2">"_x_prev"</span><span class="p">,</span> <span class="s2">"_dx_prev"</span><span class="p">,</span> <span class="s2">"_h_eff"</span><span class="p">,</span> <span class="s2">"_x_prev2"</span><span class="p">]</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;_kernel_list&quot;</span><span class="p">,</span> <span class="s2">&quot;_full_params&quot;</span><span class="p">,</span> <span class="s2">&quot;_x_prev&quot;</span><span class="p">,</span> <span class="s2">&quot;_dx_prev&quot;</span><span class="p">,</span> <span class="s2">&quot;_h_eff&quot;</span><span class="p">,</span> <span class="s2">&quot;_x_prev2&quot;</span><span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Build one empty backtracking evaluator.</span>
 
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_full_params</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_x_prev</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -516,7 +518,7 @@
             <span class="n">h_eff</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
             <span class="n">x_prev2</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Store the residual-evaluation context of the current Newton step.</span>
 
 <span class="sd">        :param kernel_list: Batched residual kernels.</span>
@@ -533,7 +535,7 @@
 <span class="sd">        :type x_prev2: Vec</span>
 <span class="sd">        :return: None.</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_list</span> <span class="o">=</span> <span class="n">kernel_list</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_full_params</span> <span class="o">=</span> <span class="n">full_params</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_x_prev</span> <span class="o">=</span> <span class="n">x_prev</span>
@@ -545,7 +547,7 @@
 <div class="viewcode-block" id="AdBacktrackingResidualEvaluator.evaluate">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.solver_AD.AdBacktrackingResidualEvaluator.evaluate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">candidate_x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">out_res</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Evaluate one trial Newton iterate during backtracking.</span>
 
 <span class="sd">        :param candidate_x: Trial iterate.</span>
@@ -554,7 +556,7 @@
 <span class="sd">        :type out_res: Vec</span>
 <span class="sd">        :return: Residual infinity norm.</span>
 <span class="sd">        :rtype: float</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_kernel_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
         <span class="k">else</span><span class="p">:</span>
@@ -581,15 +583,15 @@
 <div class="viewcode-block" id="SparseADJacobian">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.solver_AD.SparseADJacobian">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SparseADJacobian</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sparse Jacobian evaluator with DEBUG TIMING.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s1">'equations'</span><span class="p">,</span> <span class="s1">'variables'</span><span class="p">,</span> <span class="s1">'parameters'</span><span class="p">,</span> <span class="s1">'method'</span><span class="p">,</span> <span class="s1">'use_cse'</span><span class="p">,</span> <span class="s1">'dtype'</span><span class="p">,</span>
-        <span class="s1">'n_rows'</span><span class="p">,</span> <span class="s1">'n_cols'</span><span class="p">,</span> <span class="s1">'var_map'</span><span class="p">,</span> <span class="s1">'param_map'</span><span class="p">,</span> <span class="s1">'col_rows'</span><span class="p">,</span> <span class="s1">'J'</span><span class="p">,</span>
-        <span class="s1">'colors'</span><span class="p">,</span> <span class="s1">'n_colors'</span><span class="p">,</span> <span class="s1">'color_groups'</span><span class="p">,</span> <span class="s1">'color_ptr'</span><span class="p">,</span> <span class="s1">'color_cols'</span><span class="p">,</span>
-        <span class="s1">'col_ptr'</span><span class="p">,</span> <span class="s1">'row_idx'</span><span class="p">,</span> <span class="s1">'data_idx'</span><span class="p">,</span> <span class="s1">'_compiler'</span><span class="p">,</span> <span class="s1">'_ad_kernel'</span><span class="p">,</span> <span class="s1">'_master_dispatcher'</span><span class="p">,</span>
-        <span class="s1">'_seed_matrix'</span><span class="p">,</span> <span class="s1">'_jvp_work_buffer'</span><span class="p">,</span> <span class="s1">'_data_buffer'</span>
+        <span class="s1">&#39;equations&#39;</span><span class="p">,</span> <span class="s1">&#39;variables&#39;</span><span class="p">,</span> <span class="s1">&#39;parameters&#39;</span><span class="p">,</span> <span class="s1">&#39;method&#39;</span><span class="p">,</span> <span class="s1">&#39;use_cse&#39;</span><span class="p">,</span> <span class="s1">&#39;dtype&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;n_rows&#39;</span><span class="p">,</span> <span class="s1">&#39;n_cols&#39;</span><span class="p">,</span> <span class="s1">&#39;var_map&#39;</span><span class="p">,</span> <span class="s1">&#39;param_map&#39;</span><span class="p">,</span> <span class="s1">&#39;col_rows&#39;</span><span class="p">,</span> <span class="s1">&#39;J&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;colors&#39;</span><span class="p">,</span> <span class="s1">&#39;n_colors&#39;</span><span class="p">,</span> <span class="s1">&#39;color_groups&#39;</span><span class="p">,</span> <span class="s1">&#39;color_ptr&#39;</span><span class="p">,</span> <span class="s1">&#39;color_cols&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;col_ptr&#39;</span><span class="p">,</span> <span class="s1">&#39;row_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;data_idx&#39;</span><span class="p">,</span> <span class="s1">&#39;_compiler&#39;</span><span class="p">,</span> <span class="s1">&#39;_ad_kernel&#39;</span><span class="p">,</span> <span class="s1">&#39;_master_dispatcher&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_seed_matrix&#39;</span><span class="p">,</span> <span class="s1">&#39;_jvp_work_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_data_buffer&#39;</span>
     <span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -623,7 +625,7 @@
 
         <span class="n">t_maps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">print_enabled</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [AD-Debug] Maps built in </span><span class="si">{</span><span class="n">t_maps</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_start</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [AD-Debug] Maps built in </span><span class="si">{</span><span class="n">t_maps</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_start</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
 
         <span class="c1"># 1) Sparsity Detection</span>
         <span class="n">col_rows</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="p">)]</span>
@@ -671,7 +673,7 @@
 
         <span class="n">t_sparsity</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">print_enabled</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [AD-Debug] Sparsity Analysis done in </span><span class="si">{</span><span class="n">t_sparsity</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_maps</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s. Edges found: </span><span class="si">{</span><span class="n">count_edges</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [AD-Debug] Sparsity Analysis done in </span><span class="si">{</span><span class="n">t_sparsity</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_maps</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s. Edges found: </span><span class="si">{</span><span class="n">count_edges</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># 2) CSC Structure</span>
         <span class="n">indptr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
@@ -692,7 +694,7 @@
 
         <span class="n">t_csc</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">print_enabled</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [AD-Debug] CSC Matrix built in </span><span class="si">{</span><span class="n">t_csc</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_sparsity</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [AD-Debug] CSC Matrix built in </span><span class="si">{</span><span class="n">t_csc</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_sparsity</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
 
         <span class="c1"># 3) Coloring</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">colors</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_colors</span> <span class="o">=</span> <span class="n">greedy_color_columns</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col_rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="p">)</span>
@@ -703,7 +705,7 @@
 
         <span class="n">t_color</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">print_enabled</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [AD-Debug] Graph Coloring done in </span><span class="si">{</span><span class="n">t_color</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_csc</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s. Colors: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_colors</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [AD-Debug] Graph Coloring done in </span><span class="si">{</span><span class="n">t_color</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_csc</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s. Colors: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_colors</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="c1"># 4) Precompute scatter map</span>
         <span class="n">color_cols</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -739,16 +741,16 @@
 
         <span class="n">t_scatter</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">print_enabled</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [AD-Debug] Scatter Map built in </span><span class="si">{</span><span class="n">t_scatter</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_color</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [AD-Debug] Scatter Map built in </span><span class="si">{</span><span class="n">t_scatter</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_color</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
 
         <span class="c1"># 5) Compile Optimization: one generic eager AD kernel reused across colors.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_compiler</span> <span class="o">=</span> <span class="n">EagerEquationCompiler</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="n">variables</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="n">parameters</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">print_enabled</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [AD-Opt] Compiling one generic AD kernel for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_colors</span><span class="si">}</span><span class="s2"> colors..."</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [AD-Opt] Compiling one generic AD kernel for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_colors</span><span class="si">}</span><span class="s2"> colors...&quot;</span><span class="p">)</span>
         <span class="n">t_comp_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 
-        <span class="n">k_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"ad_step_generic_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">k_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;ad_step_generic_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_rows</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_cols</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">py_ad</span><span class="p">,</span> <span class="n">signature_tpe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compiler</span><span class="o">.</span><span class="n">compile_ad_kernel</span><span class="p">(</span>
             <span class="n">equations</span><span class="p">,</span>
             <span class="n">func_name</span><span class="o">=</span><span class="n">k_name</span><span class="p">,</span>
@@ -768,8 +770,8 @@
 
         <span class="n">t_comp_end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">print_enabled</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [AD-Opt] Generic kernel compiled in </span><span class="si">{</span><span class="n">t_comp_end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_comp_start</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [AD-Debug] Total Init Time: </span><span class="si">{</span><span class="n">t_comp_end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_start</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [AD-Opt] Generic kernel compiled in </span><span class="si">{</span><span class="n">t_comp_end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_comp_start</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [AD-Debug] Total Init Time: </span><span class="si">{</span><span class="n">t_comp_end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_start</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">states</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
@@ -778,7 +780,7 @@
                  <span class="n">d_history</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                  <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">history2</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Evaluates the AD Jacobian.</span>
 
 <span class="sd">        :param states: Current states.</span>
@@ -795,7 +797,7 @@
 <span class="sd">        :type history2: np.ndarray | None</span>
 <span class="sd">        :return: Evaluated sparse matrix.</span>
 <span class="sd">        :rtype: csc_matrix</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_master_dispatcher</span><span class="p">(</span>
             <span class="n">states</span><span class="p">,</span>
@@ -819,13 +821,13 @@
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.solver_AD.JitAdSolver">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">JitAdSolver</span><span class="p">:</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="s1">'problem'</span><span class="p">,</span> <span class="s1">'t0'</span><span class="p">,</span> <span class="s1">'t_end'</span><span class="p">,</span> <span class="s1">'h'</span><span class="p">,</span> <span class="s1">'method'</span><span class="p">,</span> <span class="s1">'pred_method'</span><span class="p">,</span> <span class="s1">'dense_threshold'</span><span class="p">,</span> <span class="s1">'verbose'</span><span class="p">,</span> <span class="s1">'newton_max_iter'</span><span class="p">,</span>
-        <span class="s1">'steps'</span><span class="p">,</span> <span class="s1">'t'</span><span class="p">,</span> <span class="s1">'y'</span><span class="p">,</span> <span class="s1">'dy'</span><span class="p">,</span>  <span class="s1">'jit_kernels_ad'</span><span class="p">,</span> <span class="s1">'jit_jacobian_ad'</span><span class="p">,</span>
-        <span class="s1">'state_vars'</span><span class="p">,</span> <span class="s1">'algebraic_vars'</span><span class="p">,</span> <span class="s1">'state_eqs'</span><span class="p">,</span> <span class="s1">'algebraic_eqs'</span><span class="p">,</span> <span class="s1">'_newton_diag_config'</span><span class="p">,</span>
-        <span class="s1">'_predictor'</span><span class="p">,</span> <span class="s1">'_runtime_param_count'</span><span class="p">,</span> <span class="s1">'_static_parameter_buffer'</span><span class="p">,</span> <span class="s1">'_full_parameter_buffer'</span><span class="p">,</span>
-        <span class="s1">'_residual_buffer'</span><span class="p">,</span> <span class="s1">'_trial_state_buffer'</span><span class="p">,</span> <span class="s1">'_trial_residual_buffer'</span><span class="p">,</span>
-        <span class="s1">'_backend_build_stats'</span><span class="p">,</span> <span class="s1">'_last_runtime_stats'</span><span class="p">,</span> <span class="s1">'_last_sim_loop_time'</span><span class="p">,</span> <span class="s1">'_cancel_checker'</span><span class="p">,</span> <span class="s1">'_progress_signal'</span><span class="p">,</span>
-        <span class="s1">'_newton_tolerance'</span>
+        <span class="s1">&#39;problem&#39;</span><span class="p">,</span> <span class="s1">&#39;t0&#39;</span><span class="p">,</span> <span class="s1">&#39;t_end&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;method&#39;</span><span class="p">,</span> <span class="s1">&#39;pred_method&#39;</span><span class="p">,</span> <span class="s1">&#39;dense_threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;verbose&#39;</span><span class="p">,</span> <span class="s1">&#39;newton_max_iter&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;steps&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="s1">&#39;dy&#39;</span><span class="p">,</span>  <span class="s1">&#39;jit_kernels_ad&#39;</span><span class="p">,</span> <span class="s1">&#39;jit_jacobian_ad&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;state_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;algebraic_vars&#39;</span><span class="p">,</span> <span class="s1">&#39;state_eqs&#39;</span><span class="p">,</span> <span class="s1">&#39;algebraic_eqs&#39;</span><span class="p">,</span> <span class="s1">&#39;_newton_diag_config&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_predictor&#39;</span><span class="p">,</span> <span class="s1">&#39;_runtime_param_count&#39;</span><span class="p">,</span> <span class="s1">&#39;_static_parameter_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_full_parameter_buffer&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_residual_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_trial_state_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_trial_residual_buffer&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_backend_build_stats&#39;</span><span class="p">,</span> <span class="s1">&#39;_last_runtime_stats&#39;</span><span class="p">,</span> <span class="s1">&#39;_last_sim_loop_time&#39;</span><span class="p">,</span> <span class="s1">&#39;_cancel_checker&#39;</span><span class="p">,</span> <span class="s1">&#39;_progress_signal&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_newton_tolerance&#39;</span>
     <span class="p">]</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">problem</span><span class="p">:</span> <span class="n">EmtProblemTemplate</span><span class="p">,</span>
@@ -841,7 +843,7 @@
                  <span class="n">progress_signal</span><span class="p">:</span> <span class="n">DummySignal</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">cancel_checker</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">newton_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-6</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initializes the JIT AD Solver.</span>
 
 <span class="sd">        :param problem: The DAE problem definition.</span>
@@ -866,7 +868,7 @@
 <span class="sd">        :type newton_tolerance: float</span>
 <span class="sd">        :param progress_signal: Optional progress signal updated during the simulation loop.</span>
 <span class="sd">        :type progress_signal: DummySignal | None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">problem</span> <span class="o">=</span> <span class="n">problem</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t0</span> <span class="o">=</span> <span class="n">t0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="n">h</span>
@@ -877,7 +879,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">newton_max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">newton_max_iter</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">newton_tolerance</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"newton_tolerance must be finite and greater than zero."</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;newton_tolerance must be finite and greater than zero.&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t_end</span> <span class="o">=</span> <span class="n">t_end</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_newton_diag_config</span> <span class="o">=</span> <span class="n">newton_diag_config</span> <span class="ow">or</span> <span class="n">NewtonDiagnosticsConfig</span><span class="p">(</span>
             <span class="n">compute_dense_cond</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -929,13 +931,13 @@
 <div class="viewcode-block" id="JitAdSolver.build_jit_ad">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.solver_AD.JitAdSolver.build_jit_ad">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_jit_ad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">only_jacobian</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Compiles the residual kernel using batching and prepares the Sparse AD Jacobian.</span>
 
 <span class="sd">        :param only_jacobian: If True, skips residual compilation (used by Vectorized Engine fallback).</span>
 <span class="sd">        :type only_jacobian: bool</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jit_kernels_ad</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">only_jacobian</span><span class="p">:</span>
             <span class="k">return</span>
         <span class="k">else</span><span class="p">:</span>
@@ -945,7 +947,7 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">"--- [JIT-AD] Compiling </span><span class="si">{</span><span class="s1">'Jacobian ONLY'</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">only_jacobian</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">'Implicit Kernel + AD Jacobian'</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">) ---"</span><span class="p">)</span>
+                <span class="sa">f</span><span class="s2">&quot;--- [JIT-AD] Compiling </span><span class="si">{</span><span class="s1">&#39;Jacobian ONLY&#39;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="n">only_jacobian</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="s1">&#39;Implicit Kernel + AD Jacobian&#39;</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">) ---&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -960,7 +962,7 @@
         <span class="n">equations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Expr</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">rhs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_eqs</span><span class="p">):</span>
             <span class="n">sv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_vars</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-            <span class="n">d_term</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"d_</span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">sv</span><span class="p">)</span>
+            <span class="n">d_term</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;d_</span><span class="si">{</span><span class="n">sv</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">sv</span><span class="p">)</span>
             <span class="n">equations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d_term</span> <span class="o">-</span> <span class="n">rhs</span><span class="p">)</span>
         <span class="n">equations</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">algebraic_eqs</span><span class="p">)</span>
 
@@ -972,25 +974,25 @@
             <span class="n">batched_kernels</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [JIT-AD] Splitting </span><span class="si">{</span><span class="n">n_eqs</span><span class="si">}</span><span class="s2"> residual eqs into </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_eqs</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">BATCH_SIZE</span><span class="p">))</span><span class="si">}</span><span class="s2"> batches..."</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [JIT-AD] Splitting </span><span class="si">{</span><span class="n">n_eqs</span><span class="si">}</span><span class="s2"> residual eqs into </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">n_eqs</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">BATCH_SIZE</span><span class="p">))</span><span class="si">}</span><span class="s2"> batches...&quot;</span><span class="p">)</span>
             <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
 
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_eqs</span><span class="p">,</span> <span class="n">BATCH_SIZE</span><span class="p">):</span>
                 <span class="n">chunk</span> <span class="o">=</span> <span class="n">equations</span><span class="p">[</span><span class="n">i</span><span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">BATCH_SIZE</span><span class="p">]</span>
-                <span class="n">fname</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"jit_step_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">_ad_part_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;jit_step_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="si">}</span><span class="s2">_ad_part_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="n">py_func</span> <span class="o">=</span> <span class="n">compiler</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">chunk</span><span class="p">,</span> <span class="n">func_name</span><span class="o">=</span><span class="n">fname</span><span class="p">,</span> <span class="n">use_cse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="n">jit_func</span> <span class="o">=</span> <span class="n">_safe_njit</span><span class="p">(</span><span class="n">py_func</span><span class="p">,</span> <span class="n">cache</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fastmath</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="n">batched_kernels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">jit_func</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"   [JIT-AD] Residual Batches compiled in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   [JIT-AD] Residual Batches compiled in </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">jit_kernels_ad</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">]</span> <span class="o">=</span> <span class="n">batched_kernels</span>
             <span class="n">residual_elapsed_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'residual_compile_s'</span><span class="p">]</span> <span class="o">+=</span> <span class="n">residual_elapsed_s</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'residual_batches'</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batched_kernels</span><span class="p">))</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'total_s'</span><span class="p">]</span> <span class="o">+=</span> <span class="n">residual_elapsed_s</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;residual_compile_s&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">residual_elapsed_s</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;residual_batches&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batched_kernels</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;total_s&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">residual_elapsed_s</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -1001,14 +1003,14 @@
                                    <span class="n">method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">,</span> <span class="n">use_cse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">jit_jacobian_ad</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">method</span><span class="p">]</span> <span class="o">=</span> <span class="n">jac</span>
             <span class="n">jacobian_elapsed_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">jacobian_t0</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'jacobian_compile_s'</span><span class="p">]</span> <span class="o">+=</span> <span class="n">jacobian_elapsed_s</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'jacobian_builds'</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">1.0</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'total_s'</span><span class="p">]</span> <span class="o">+=</span> <span class="n">jacobian_elapsed_s</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;jacobian_compile_s&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">jacobian_elapsed_s</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;jacobian_builds&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">1.0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;total_s&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">jacobian_elapsed_s</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
         <span class="n">total_elapsed_s</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t_total_start</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'total_s'</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">'total_s'</span><span class="p">],</span> <span class="n">total_elapsed_s</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;total_s&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">[</span><span class="s1">&#39;total_s&#39;</span><span class="p">],</span> <span class="n">total_elapsed_s</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="JitAdSolver.simulate">
@@ -1018,7 +1020,7 @@
                  <span class="n">dx0</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">params0</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">boundary_updater</span><span class="p">:</span> <span class="n">EmtBoundaryUpdateProtocol</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Main JIT simulation loop using the Automatic Differentiation (AD) backend.</span>
 
 <span class="sd">        :param x0: Initial state vector.</span>
@@ -1026,7 +1028,7 @@
 <span class="sd">        :param params0: Initial event parameters.</span>
 <span class="sd">        :param boundary_updater: Optional override for the problem boundary updater.</span>
 <span class="sd">        :return: A tuple containing the time vector and state trajectory matrix.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">t_start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
         <span class="n">method</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">method</span>
 
@@ -1045,6 +1047,10 @@
         <span class="n">n_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_states_number</span><span class="p">()</span>
 
         <span class="n">use_dense_solver</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_eqs</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dense_threshold</span><span class="p">)</span>
+
+        <span class="n">pr</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">Profile</span><span class="p">()</span>
+        <span class="n">pr</span><span class="o">.</span><span class="n">disable</span><span class="p">()</span>
+        <span class="n">pr</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
 
         <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">t_end</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">t</span>
@@ -1109,14 +1115,14 @@
                 <span class="n">fallback_solve</span><span class="o">=</span><span class="n">dense_lstsq_fallback</span><span class="p">,</span>
                 <span class="n">collector</span><span class="o">=</span><span class="n">trace_collector</span><span class="p">,</span>
                 <span class="n">config</span><span class="o">=</span><span class="n">diag_cfg</span><span class="p">,</span>
-                <span class="n">solver_name</span><span class="o">=</span><span class="s2">"dense"</span><span class="p">,</span>
+                <span class="n">solver_name</span><span class="o">=</span><span class="s2">&quot;dense&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">sparse_solve</span> <span class="o">=</span> <span class="n">with_newton_diagnostics</span><span class="p">(</span>
                 <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">spsolve</span><span class="p">,</span>
                 <span class="n">fallback_solve</span><span class="o">=</span><span class="n">sparse_lsqr_fallback</span><span class="p">,</span>
                 <span class="n">collector</span><span class="o">=</span><span class="n">trace_collector</span><span class="p">,</span>
                 <span class="n">config</span><span class="o">=</span><span class="n">diag_cfg</span><span class="p">,</span>
-                <span class="n">solver_name</span><span class="o">=</span><span class="s2">"sparse"</span><span class="p">,</span>
+                <span class="n">solver_name</span><span class="o">=</span><span class="s2">&quot;sparse&quot;</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
@@ -1124,7 +1130,7 @@
         <span class="n">backtracking_residual_evaluator</span> <span class="o">=</span> <span class="n">AdBacktrackingResidualEvaluator</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"-&gt; Starting JIT (AD) Simulation (</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="si">}</span><span class="s2"> steps)..."</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;-&gt; Starting JIT (AD) Simulation (</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="si">}</span><span class="s2"> steps)...&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -1174,7 +1180,7 @@
 
                 <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBDF2</span> <span class="ow">and</span> <span class="n">is_aligned_substep</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                        <span class="s2">"force_step_alignment is not implemented for DaeBDF2 in JitAdSolver."</span>
+                        <span class="s2">&quot;force_step_alignment is not implemented for DaeBDF2 in JitAdSolver.&quot;</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">pass</span>
@@ -1224,7 +1230,7 @@
                         <span class="n">t</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">t_curr</span><span class="p">),</span>
                         <span class="n">step_idx</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">),</span>
                         <span class="n">newton_iter</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">),</span>
-                        <span class="n">phase</span><span class="o">=</span><span class="s2">"jit_ad"</span><span class="p">,</span>
+                        <span class="n">phase</span><span class="o">=</span><span class="s2">&quot;jit_ad&quot;</span><span class="p">,</span>
                         <span class="n">method</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">method</span><span class="p">),</span>
                     <span class="p">)</span>
 
@@ -1356,46 +1362,48 @@
         <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"JIT (AD) Finished: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_start</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;JIT (AD) Finished: </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_start</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
+        <span class="n">pr</span><span class="o">.</span><span class="n">disable</span><span class="p">()</span>
+        <span class="n">pr</span><span class="o">.</span><span class="n">dump_stats</span><span class="p">(</span><span class="s2">&quot;profile_grid_for_loads_jac_batching_10_seconds.pstat&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dy</span><span class="p">,</span> <span class="n">well_initialized</span><span class="p">,</span> <span class="n">converged</span></div>
 
 
 <div class="viewcode-block" id="JitAdSolver.get_backend_build_stats">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.solver_AD.JitAdSolver.get_backend_build_stats">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_backend_build_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return setup timings collected during backend compilation.</span>
 
 <span class="sd">        :return: Backend build statistics.</span>
 <span class="sd">        :rtype: Dict[str, float]</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_backend_build_stats</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="JitAdSolver.get_last_runtime_stats">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.solver_AD.JitAdSolver.get_last_runtime_stats">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_last_runtime_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return runtime statistics collected during the latest simulation.</span>
 
 <span class="sd">        :return: Runtime statistics.</span>
 <span class="sd">        :rtype: Dict[str, float]</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_last_runtime_stats</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="JitAdSolver.get_last_sim_loop_time">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.solvers.html#VeraGridEngine.Simulations.EMT.solvers.solver_AD.JitAdSolver.get_last_sim_loop_time">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_last_sim_loop_time</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the latest integration-loop wall time.</span>
 
 <span class="sd">        :return: Latest loop time in seconds.</span>
 <span class="sd">        :rtype: float</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_last_sim_loop_time</span></div>
 </div>
 

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>⏱️ RMS simulations &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>⏱️ RMS simulations &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -92,12 +92,14 @@
 <li class="toctree-l3"><a class="reference internal" href="dynamic_simulations.html#small-signal-stability">Small-signal stability</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-editor-and-model-construction">2. Dynamic editor and model construction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-model-library">3. Dynamic model library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#benchmarking-against-other-software">2. Benchmarking against other software</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-editor-and-model-construction">3. Dynamic editor and model construction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-model-library">4. Dynamic model library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#recommended-reading-paths">Recommended reading paths</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#end-to-end-workflow">End-to-end workflow</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
@@ -149,6 +151,8 @@
 <li><p>system-wide studies where computational efficiency matters.</p></li>
 </ul>
 <p>Use <a class="reference internal" href="emt_simulations.html"><span class="std std-doc">EMT simulation</span></a> when instantaneous phase waveforms, switching detail, or fast inner-control interactions are required. The shared DAE and initialization concepts are described in <a class="reference internal" href="dynamic_theory.html"><span class="std std-doc">Dynamic simulation theory</span></a>.</p>
+<p>Cross-software validation of RMS trajectories and modal results is collected in
+<a class="reference internal" href="dynamic_benchmarks.html"><span class="std std-doc">Dynamic simulation benchmarks</span></a>.</p>
 </section>
 <section id="rms-workflow">
 <h2>RMS workflow<a class="headerlink" href="#rms-workflow" title="Link to this heading"></a></h2>
@@ -266,8 +270,8 @@
 
 <span class="n">grid</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">MultiCircuit</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">MultiCircuit</span><span class="p">(</span><span class="n">Sbase</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">fbase</span><span class="o">=</span><span class="mf">50.0</span><span class="p">)</span>
 
-<span class="n">bus0</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">=</span> <span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Bus0"</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">is_slack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">bus1</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">=</span> <span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Bus1"</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="n">bus0</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">=</span> <span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Bus0&quot;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">is_slack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">bus1</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">=</span> <span class="n">Bus</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Bus1&quot;</span><span class="p">,</span> <span class="n">Vnom</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">bus0</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_bus</span><span class="p">(</span><span class="n">bus1</span><span class="p">)</span>
 
@@ -276,7 +280,7 @@
     <span class="n">initialize_bus_rms</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus</span><span class="p">,</span> <span class="n">vf</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span>
 
 <span class="n">line</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">Line</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">"Line 0-1"</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Line 0-1&quot;</span><span class="p">,</span>
     <span class="n">bus_from</span><span class="o">=</span><span class="n">bus0</span><span class="p">,</span>
     <span class="n">bus_to</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span>
     <span class="n">r</span><span class="o">=</span><span class="mf">0.029585</span><span class="p">,</span>
@@ -286,11 +290,11 @@
 <span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
 
-<span class="n">load</span><span class="p">:</span> <span class="n">Load</span> <span class="o">=</span> <span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Load1"</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">9.999999</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">0.999999</span><span class="p">)</span>
+<span class="n">load</span><span class="p">:</span> <span class="n">Load</span> <span class="o">=</span> <span class="n">Load</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Load1&quot;</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="mf">9.999999</span><span class="p">,</span> <span class="n">Q</span><span class="o">=</span><span class="mf">0.999999</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_load</span><span class="p">(</span><span class="n">bus</span><span class="o">=</span><span class="n">bus1</span><span class="p">,</span> <span class="n">api_obj</span><span class="o">=</span><span class="n">load</span><span class="p">)</span>
 
 <span class="n">generator</span><span class="p">:</span> <span class="n">Generator</span> <span class="o">=</span> <span class="n">Generator</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">"Gen0"</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Gen0&quot;</span><span class="p">,</span>
     <span class="n">P</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
     <span class="n">vset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
     <span class="n">Snom</span><span class="o">=</span><span class="mf">900.0</span><span class="p">,</span>
@@ -308,7 +312,7 @@
 <span class="n">set_rms_model</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">line</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">line_model</span><span class="p">,</span> <span class="n">var_factory</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span>
 <span class="n">set_rms_model</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">load</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">load_model</span><span class="p">,</span> <span class="n">var_factory</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="p">)</span>
 
-<span class="n">base_case</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">RmsEventsGroup</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">RmsEventsGroup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Base case"</span><span class="p">)</span>
+<span class="n">base_case</span><span class="p">:</span> <span class="n">vg</span><span class="o">.</span><span class="n">RmsEventsGroup</span> <span class="o">=</span> <span class="n">vg</span><span class="o">.</span><span class="n">RmsEventsGroup</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Base case&quot;</span><span class="p">)</span>
 <span class="n">grid</span><span class="o">.</span><span class="n">add_rms_events_group</span><span class="p">(</span><span class="n">base_case</span><span class="p">)</span>
 
 <span class="n">power_flow_options</span><span class="p">:</span> <span class="n">PowerFlowOptions</span> <span class="o">=</span> <span class="n">PowerFlowOptions</span><span class="p">(</span>
@@ -344,9 +348,9 @@
         <span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="o">.</span><span class="n">well_initialized</span><span class="p">[</span><span class="n">group_index</span><span class="p">])</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">scenario_values</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">"The base-case scenario did not produce results."</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The base-case scenario did not produce results.&quot;</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"The RMS driver did not create a result object."</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The RMS driver did not create a result object.&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The example shows the complete driver contract but is not a substitute for model-specific parameterization and validation. To add disturbances, create <code class="docutils literal notranslate"><span class="pre">RmsEvent</span></code> objects or use the RMS Events page instead of changing the model’s stored base parameters.</p>

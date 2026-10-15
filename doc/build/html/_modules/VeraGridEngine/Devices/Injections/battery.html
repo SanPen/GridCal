@@ -5,16 +5,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Injections.battery &mdash; VeraGrid 6.4.4 documentation</title>
+  <title>VeraGridEngine.Devices.Injections.battery &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
-      <link rel="stylesheet" type="text/css" href="../../../../_static/style.css?v=b3745da1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/style.css?v=ba3a54df" />
 
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=f2c0b4ab"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -44,6 +44,7 @@
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/installation.html">💽 Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/user_interface.html">📊 User interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/veragrid_scripting_guide.html">📑 VeraGrid scripting guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/grid_analysis.html">🔎 Grid analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/structure.html">🌁 Structure of VeraGrid</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/modelling.html">📐 Grid Modelling</a></li>
@@ -59,6 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/short_circuit.html">⚡ Short-Circuit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/stochastic_power_flow.html">🎲 Stochastic power flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/continuation_power_flow.html">➿ Continuation power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/sigma_analysis.html">🌘 Sigma analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/solar_wizard.html">☀️ Solar power wizard</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/contingency_analysis.html">💥 Contingency analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/investment_optimization.html">🏦 Investment optimization</a></li>
@@ -68,13 +70,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/rms_simulations.html">📝 RMS simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/small_signal_stability.html">Small-Signal Stability Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/emt_simulations.html">🔬 EMT simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../rst_source/change_log.html">Change log</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/data_models.html">Data Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../rst_source/api/auto/modules.html">VeraGrid</a></li>
 </ul>
@@ -110,10 +109,14 @@
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Parents.editable_device</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceType</span><span class="p">,</span> <span class="n">GCProp</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrpCat</span><span class="p">,</span> <span class="n">GeneratorControlMode</span><span class="p">,</span> <span class="n">ParamPowerFlowReferenceType</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Parents.editable_device</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceType</span><span class="p">,</span> <span class="n">GCProp</span><span class="p">,</span> <span class="n">get_at</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Profiles</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProfileEnum</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">PrpCat</span><span class="p">,</span> <span class="n">GeneratorControlMode</span><span class="p">,</span> <span class="n">ParamPowerFlowReferenceType</span><span class="p">,</span>
+                                         <span class="n">BatteryDispatchMode</span><span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Injections.generator</span><span class="w"> </span><span class="kn">import</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">BuildStatus</span>
 
 
@@ -134,6 +137,8 @@
         <span class="s1">&#39;_discharge_per_cycle&#39;</span><span class="p">,</span>
         <span class="s1">&#39;_Enom&#39;</span><span class="p">,</span>
         <span class="s1">&#39;_soc_0&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_dispatch_mode&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_dispatch_mode_prof&#39;</span><span class="p">,</span>
         <span class="s1">&#39;soc&#39;</span><span class="p">,</span>
         <span class="s1">&#39;min_energy&#39;</span><span class="p">,</span>
         <span class="s1">&#39;energy&#39;</span><span class="p">,</span>
@@ -196,6 +201,14 @@
             <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
             <span class="n">dyn_ref</span><span class="o">=</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">battery_discharge_per_cycle_pu</span><span class="p">,</span>
         <span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;dispatch_mode&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">tpe</span><span class="o">=</span><span class="n">BatteryDispatchMode</span><span class="p">,</span>
+            <span class="n">profile_name</span><span class="o">=</span><span class="s1">&#39;dispatch_mode_prof&#39;</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Battery dispatch behaviour.&#39;</span><span class="p">,</span>
+            <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">],</span>
+        <span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -227,7 +240,8 @@
                  <span class="n">r2</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">,</span> <span class="n">x2</span><span class="o">=</span><span class="mf">1e-20</span><span class="p">,</span>
                  <span class="n">capex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">opex</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                  <span class="n">srap_enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-                 <span class="n">build_status</span><span class="p">:</span> <span class="n">BuildStatus</span> <span class="o">=</span> <span class="n">BuildStatus</span><span class="o">.</span><span class="n">Commissioned</span><span class="p">):</span>
+                 <span class="n">build_status</span><span class="p">:</span> <span class="n">BuildStatus</span> <span class="o">=</span> <span class="n">BuildStatus</span><span class="o">.</span><span class="n">Commissioned</span><span class="p">,</span>
+                 <span class="n">dispatch_mode</span><span class="p">:</span> <span class="n">BatteryDispatchMode</span> <span class="o">=</span> <span class="n">BatteryDispatchMode</span><span class="o">.</span><span class="n">Grid</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :ref:`Battery&lt;battery&gt;` (voltage controlled and dispatchable).</span>
 <span class="sd">        :param name: Name of the battery</span>
@@ -255,6 +269,7 @@
 <span class="sd">        :param soc: Current state of charge</span>
 <span class="sd">        :param charge_per_cycle: Per unit of power to take per cycle when charging</span>
 <span class="sd">        :param discharge_per_cycle: Per unit of power to deliver per cycle when discharging</span>
+<span class="sd">        :param dispatch_mode: Battery dispatch behaviour</span>
 <span class="sd">        :param r1:</span>
 <span class="sd">        :param x1:</span>
 <span class="sd">        :param r0:</span>
@@ -316,6 +331,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Enom</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">soc</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_mode</span><span class="p">:</span> <span class="n">BatteryDispatchMode</span> <span class="o">=</span> <span class="n">dispatch_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_mode_prof</span><span class="p">:</span> <span class="n">ProfileEnum</span> <span class="o">=</span> <span class="n">ProfileEnum</span><span class="p">(</span><span class="n">default_value</span><span class="o">=</span><span class="n">dispatch_mode</span><span class="p">,</span>
+                                                              <span class="n">enum_type</span><span class="o">=</span><span class="n">BatteryDispatchMode</span><span class="p">)</span>
+
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Battery&quot;</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -324,6 +343,61 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__iadd__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Enom</span> <span class="o">+=</span> <span class="n">other</span><span class="o">.</span><span class="n">Enom</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dispatch_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BatteryDispatchMode</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the battery dispatch mode.</span>
+
+<span class="sd">        :return: Battery dispatch mode.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_mode</span>
+
+    <span class="nd">@dispatch_mode</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dispatch_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">BatteryDispatchMode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the battery dispatch mode.</span>
+
+<span class="sd">        :param val: Battery dispatch mode.</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_mode</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dispatch_mode_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProfileEnum</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the battery dispatch mode profile.</span>
+
+<span class="sd">        :return: Battery dispatch mode profile.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_mode_prof</span>
+
+    <span class="nd">@dispatch_mode_prof</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dispatch_mode_prof</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">ProfileEnum</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the battery dispatch mode profile.</span>
+
+<span class="sd">        :param val: Enum profile or array of enum values.</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">ProfileEnum</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_mode_prof</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dispatch_mode_prof</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">arr</span><span class="o">=</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported battery dispatch mode profile: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">val</span><span class="p">)</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Battery.get_dispatch_mode_prof_at">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Injections.html#VeraGridEngine.Devices.Injections.battery.Battery.get_dispatch_mode_prof_at">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_dispatch_mode_prof_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BatteryDispatchMode</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the battery dispatch mode at one time index.</span>
+
+<span class="sd">        :param t: Time index, or ``None`` for the scalar value.</span>
+<span class="sd">        :return: Battery dispatch mode at the requested time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">get_at</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dispatch_mode</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dispatch_mode_prof</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
+
 
     <span class="c1"># Scalar property accessors coerce assignments to the declared schema types.</span>
 

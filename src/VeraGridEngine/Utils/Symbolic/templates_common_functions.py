@@ -713,6 +713,79 @@ def _rebuild_saved_branch_root_contract_from_live_sides(device: Any,
     _normalize_saved_branch_root_contract_from_live_sides(device=device)
 
 
+def _restore_legacy_saved_branch_interface_references(device: Any) -> None:
+    """
+    Restore missing root-IO references from a legacy external mapping.
+
+    Historical symbolic archives stored the semantic terminal reference only
+    in ``Block.external_mapping``. Their root ``in_vars`` and ``out_vars`` can
+    therefore contain the correct equation variables with ``ref=None``. The
+    topology reconciliation must recover those references before clearing the
+    saved mapping; otherwise it creates replacement terminal variables which
+    are disconnected from the archived equations.
+
+    Only variables already owned by the matching root-IO list are repaired.
+    Stale mappings to other variables are deliberately ignored so a topology
+    change cannot import an unrelated symbolic variable into the live contract.
+
+    :param device: Branch-like device whose legacy root references are repaired.
+    :return: None.
+    """
+    model: Block = device.emt_model
+    mapping_ref: VarPowerFlowReferenceType
+    mapping_var: Var | None
+    io_var: Var
+
+    if model.empty():
+        return
+    else:
+        pass
+
+    for mapping_ref in list([
+        VarPowerFlowReferenceType.vf_N,
+        VarPowerFlowReferenceType.vf_A,
+        VarPowerFlowReferenceType.vf_B,
+        VarPowerFlowReferenceType.vf_C,
+        VarPowerFlowReferenceType.Vf_dc,
+        VarPowerFlowReferenceType.vt_N,
+        VarPowerFlowReferenceType.vt_A,
+        VarPowerFlowReferenceType.vt_B,
+        VarPowerFlowReferenceType.vt_C,
+        VarPowerFlowReferenceType.Vt_dc,
+    ]):
+        mapping_var = model.external_mapping.get(mapping_ref, None)
+        if mapping_var is None:
+            pass
+        else:
+            for io_var in model.in_vars:
+                if io_var is mapping_var and io_var.ref is None:
+                    io_var.ref = mapping_ref
+                else:
+                    pass
+
+    for mapping_ref in list([
+        VarPowerFlowReferenceType.if_N,
+        VarPowerFlowReferenceType.if_A,
+        VarPowerFlowReferenceType.if_B,
+        VarPowerFlowReferenceType.if_C,
+        VarPowerFlowReferenceType.If_dc,
+        VarPowerFlowReferenceType.it_N,
+        VarPowerFlowReferenceType.it_A,
+        VarPowerFlowReferenceType.it_B,
+        VarPowerFlowReferenceType.it_C,
+        VarPowerFlowReferenceType.It_dc,
+    ]):
+        mapping_var = model.external_mapping.get(mapping_ref, None)
+        if mapping_var is None:
+            pass
+        else:
+            for io_var in model.out_vars:
+                if io_var is mapping_var and io_var.ref is None:
+                    io_var.ref = mapping_ref
+                else:
+                    pass
+
+
 def _clear_saved_branch_root_external_mapping(device: Any) -> None:
     """
     Clear every branch root external-mapping entry before rebuilding the live contract.
@@ -1204,6 +1277,10 @@ def reconcile_saved_emt_model_against_current_topology(device: Any,
                                                 device_to_skip=device)
         else:
             pass
+        # Legacy archives keep terminal semantics in external_mapping only.
+        # Recover them before the mapping is cleared and rebuilt from live bus
+        # phases, so the original equation variables remain authoritative.
+        _restore_legacy_saved_branch_interface_references(device=device)
         _clear_saved_branch_root_external_mapping(device=device)
         _rebuild_saved_branch_root_contract_from_live_sides(device=device,
                                                             var_factory=var_factory)

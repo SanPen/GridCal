@@ -129,7 +129,7 @@ def _normalize_inverse_lookup_points(x_points: Sequence[float], y_points: Sequen
 
 def _validate_lookup_matrix(x_points: Sequence[float], y_points: Sequence[float], z_matrix: Sequence[Sequence[float]]) -> None:
     """
-    Validate one bilinear lookup matrix before building its symbolic block.
+    Validate one two-dimensional lookup table before building its symbolic block.
 
     :param x_points: Strictly increasing x-axis values.
     :param y_points: Strictly increasing y-axis values.
@@ -137,15 +137,39 @@ def _validate_lookup_matrix(x_points: Sequence[float], y_points: Sequence[float]
     :return: None.
     :raises ValueError: If the lookup matrix is not valid.
     """
+    x_count: int = len(x_points)
+    y_count: int = len(y_points)
+    point_index: int
     row_index: int
 
-    if len(z_matrix) == len(y_points):
+    # Bilinear and bicubic interpolation both require at least one interval on
+    # each axis. Checking this explicitly produces an actionable error instead
+    # of a later indexing or linear-algebra failure.
+    if x_count >= 2 and y_count >= 2:
+        pass
+    else:
+        raise ValueError("Lookup matrix requires at least two points on each axis")
+
+    # Repeated or descending coordinates make interval selection ambiguous and
+    # can introduce divisions by zero in the interpolation equations.
+    for point_index in range(x_count - 1):
+        if float(x_points[point_index + 1]) > float(x_points[point_index]):
+            pass
+        else:
+            raise ValueError("Lookup matrix x-axis values must be strictly increasing")
+    for point_index in range(y_count - 1):
+        if float(y_points[point_index + 1]) > float(y_points[point_index]):
+            pass
+        else:
+            raise ValueError("Lookup matrix y-axis values must be strictly increasing")
+
+    if len(z_matrix) == y_count:
         pass
     else:
         raise ValueError("Lookup matrix row count must match the y-axis size")
 
     for row_index in range(len(z_matrix)):
-        if len(z_matrix[row_index]) == len(x_points):
+        if len(z_matrix[row_index]) == x_count:
             pass
         else:
             raise ValueError("Lookup matrix column count must match the x-axis size")
@@ -287,9 +311,17 @@ def _build_cubic_spline_piecewise_expression(
     """
     point_count: int = len(axis_vars)
     segment_count: int = point_count - 1
+    # Clamp the lower exterior region to the first table value. Keeping this
+    # region explicit avoids extending the first cubic segment beyond the data.
     result_expr: Expr = sample_values[0] * _build_lookup_comparison(coord_expr, CmpOp.LT, axis_vars[0])
     segment_index: int
-    segment_weights = _compute_natural_cubic_segment_weights(tuple(float(value) for value in axis_points))
+    segment_weights: tuple[tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray], ...] = (
+        _compute_natural_cubic_segment_weights(tuple(float(value) for value in axis_points))
+    )
+    a_weights: np.ndarray
+    b_weights: np.ndarray
+    c_weights: np.ndarray
+    d_weights: np.ndarray
 
     for segment_index in range(segment_count):
         a_weights, b_weights, c_weights, d_weights = segment_weights[segment_index]
@@ -299,14 +331,22 @@ def _build_cubic_spline_piecewise_expression(
         segment_expr = segment_expr + _build_linear_combination(sample_values, c_weights) * dx_expr * dx_expr
         segment_expr = segment_expr + _build_linear_combination(sample_values, d_weights) * dx_expr * dx_expr * dx_expr
 
-        if segment_index == segment_count - 1:
-            upper_axis_var: Var | None = None
-        else:
-            upper_axis_var = axis_vars[segment_index + 1]
-
-        selector_expr: Expr = _build_interval_selector(coord_expr, axis_vars[segment_index], upper_axis_var)
+        # Every cubic segment is active only inside its two breakpoints. The
+        # former open-ended final segment extrapolated above the table even
+        # though this helper's contract specifies clipping.
+        selector_expr: Expr = _build_interval_selector(
+            coord_expr,
+            axis_vars[segment_index],
+            axis_vars[segment_index + 1],
+        )
         result_expr = result_expr + segment_expr * selector_expr
 
+    # Clamp the upper exterior region symmetrically to the final sample.
+    result_expr = result_expr + sample_values[point_count - 1] * _build_lookup_comparison(
+        coord_expr,
+        CmpOp.GE,
+        axis_vars[point_count - 1],
+    )
     return result_expr
 
 
@@ -572,7 +612,14 @@ def build_lookup_array_linear_runtime_template(
     y_vars: list[Var] = list()
     parameter_var: Var
     lookup_expr: Expr
+    clipped_lookup_expr: Expr
+    extrapolated_lookup_expr: Expr
+    clip_mode_var: Var
     template: EmtModelTemplate = EmtModelTemplate()
+
+    # Reject malformed tables before allocating equations that contain invalid
+    # intervals or divisions by zero.
+    _validate_lookup_points(x_points=x_points, y_points=y_points)
 
     if name is None:
         if clip:
@@ -597,10 +644,15 @@ def build_lookup_array_linear_runtime_template(
         template.block.event_dict[parameter_var] = vf.add_const(float(y_points[point_index]), name="arr_y" + str(point_index + 1))
         y_vars.append(parameter_var)
 
-    if clip:
-        lookup_expr = _build_clipped_lookup_expression(yi_var=yi_var, x_vars=x_vars, y_vars=y_vars)
-    else:
-        lookup_expr = _build_unclipped_lookup_expression(yi_var=yi_var, x_vars=x_vars, y_vars=y_vars)
+    # Retain the boundary rule as an ordinary mode parameter so reopening
+    # General Options can recover it after a save/load round trip.
+    clipped_lookup_expr = _build_clipped_lookup_expression(yi_var=yi_var, x_vars=x_vars, y_vars=y_vars)
+    extrapolated_lookup_expr = _build_unclipped_lookup_expression(yi_var=yi_var, x_vars=x_vars, y_vars=y_vars)
+    clip_mode_var = vf.add_var("lookup_clip_" + template_name)
+    lookup_expr = (
+        clip_mode_var * clipped_lookup_expr
+        + (Const(1.0) - clip_mode_var) * extrapolated_lookup_expr
+    )
 
     template.block = Block(
         algebraic_vars=list([yo_var]),
@@ -608,6 +660,139 @@ def build_lookup_array_linear_runtime_template(
         in_vars=list([yi_var]),
         out_vars=list([yo_var]),
         event_dict=template.block.event_dict,
+        mode_dict=dict(((clip_mode_var, vf.add_const(1.0 if clip else 0.0, name="clip")),)),
+        name=template_name,
+    )
+    return template
+
+
+class LookupArrayLinearVariableRuntimeTemplate(TemplateDefinition):
+    """Build a linear lookup whose tabulated coordinates are signal inputs."""
+
+    __slots__ = ()
+
+    def __init__(self, vf: VarFactory) -> None:
+        """Create the configurable dynamic-table builder.
+
+        :param vf: Variable factory used to allocate the symbolic interface.
+        :return: None.
+        """
+        TemplateDefinition.__init__(
+            self,
+            vf,
+            params=list((
+                TemplateProp(
+                    name="point_count",
+                    units="",
+                    descr="Number of signal-driven (x, y) points in the table.",
+                    tpe=int,
+                    value=3,
+                ),
+                TemplateProp(
+                    name="clip",
+                    units="",
+                    descr="Clip outside the table instead of extrapolating linearly.",
+                    tpe=bool,
+                    value=True,
+                ),
+                TemplateProp(
+                    name="name",
+                    units="",
+                    descr="Optional explicit runtime template name.",
+                    tpe=str,
+                    value="lookup_array_linear_variable_runtime",
+                ),
+            )),
+        )
+
+    def eval(self) -> EmtModelTemplate:
+        """Materialize the dynamic lookup using the selected structure.
+
+        :return: EMT template whose breakpoints and samples are input ports.
+        """
+        point_count: int = self.get_value("point_count")
+        clip: bool = self.get_value("clip")
+        name: str = self.get_value("name")
+        return build_lookup_array_linear_variable_runtime_template(
+            vf=self.vf,
+            point_count=point_count,
+            clip=clip,
+            name=name,
+        )
+
+
+def build_lookup_array_linear_variable_runtime_template(
+    vf: VarFactory,
+    point_count: int,
+    clip: bool,
+    name: str | None = None,
+) -> EmtModelTemplate:
+    """Build a linear lookup whose complete table is supplied by signals.
+
+    The first port is the lookup coordinate, followed by every x breakpoint
+    and then every y sample. A stable positional naming scheme allows General
+    Options to increase or decrease the point count while retaining surviving
+    diagram connections.
+
+    :param vf: Variable factory used to allocate symbolic objects.
+    :param point_count: Number of dynamic table points; at least two are required.
+    :param clip: Whether values outside the table are clipped or extrapolated.
+    :param name: Optional explicit runtime template name.
+    :return: Materialized EMT template with signal-driven table coordinates.
+    :raises ValueError: If fewer than two points are requested.
+    """
+    template_name: str
+    if point_count >= 2:
+        pass
+    else:
+        raise ValueError("Dynamic lookup table requires at least two points")
+
+    if name is None:
+        template_name = "lookup_array_linear_variable_" + str(point_count) + "pt"
+    else:
+        template_name = name
+
+    # Allocate the lookup coordinate and stable table-input groups separately
+    # so their port order matches the imported variable-table blocks.
+    lookup_input: Var = vf.add_var("yi_" + template_name)
+    output_variable: Var = vf.add_var("yo_" + template_name)
+    x_variables: list[Var] = list()
+    y_variables: list[Var] = list()
+    point_index: int
+    for point_index in range(point_count):
+        x_variables.append(vf.add_var("arr_x" + str(point_index + 1) + "_" + template_name))
+    for point_index in range(point_count):
+        y_variables.append(vf.add_var("arr_y" + str(point_index + 1) + "_" + template_name))
+
+    # Store the boundary choice in the symbolic model so General Options can
+    # reconstruct it after persistence without relying on Python-only state.
+    clipped_lookup_expression: Expr = _build_clipped_lookup_expression(
+        yi_var=lookup_input,
+        x_vars=x_variables,
+        y_vars=y_variables,
+    )
+    extrapolated_lookup_expression: Expr = _build_unclipped_lookup_expression(
+        yi_var=lookup_input,
+        x_vars=x_variables,
+        y_vars=y_variables,
+    )
+    clip_mode_variable: Var = vf.add_var("lookup_clip_" + template_name)
+    lookup_expression: Expr = (
+        clip_mode_variable * clipped_lookup_expression
+        + (Const(1.0) - clip_mode_variable) * extrapolated_lookup_expression
+    )
+
+    input_variables: list[Var] = list((lookup_input,))
+    input_variables.extend(x_variables)
+    input_variables.extend(y_variables)
+    template: EmtModelTemplate = EmtModelTemplate(name=template_name)
+    template.tpe = DeviceType.NoDevice
+    template.block = Block(
+        algebraic_vars=list((output_variable,)),
+        algebraic_eqs=list((output_variable - lookup_expression,)),
+        in_vars=input_variables,
+        out_vars=list((output_variable,)),
+        mode_dict=dict(((clip_mode_variable, vf.add_const(1.0 if clip else 0.0, name="clip")),)),
         name=template_name,
     )
     return template
@@ -621,7 +806,13 @@ class InverseLookupArrayLinearRuntimeTemplate(TemplateDefinition):
         super().__init__(
             vf,
             params=[
-                TemplateProp(name="points", units="", descr="Strictly increasing x breakpoints.", tpe=X_Y_SequenceType, value=((0.0, 0.0), (0.02, 1), (0.04, 0.0))),
+                TemplateProp(
+                    name="points",
+                    units="",
+                    descr="Points with strictly monotonic y values so the table can be inverted.",
+                    tpe=X_Y_SequenceType,
+                    value=((0.0, 0.0), (0.02, 0.5), (0.04, 1.0)),
+                ),
                 TemplateProp(name="name", units="", descr="Name of the runtime template.", tpe=str, value="inverse_lookup_array_linear_runtime"),
             ]
         )
@@ -666,6 +857,10 @@ def build_inverse_lookup_array_linear_runtime_template(
     parameter_var: Var
     lookup_expr: Expr
     template: EmtModelTemplate = EmtModelTemplate()
+
+    # Validate the x table as well as the driven y axis normalized below. This
+    # keeps the inverse relation deterministic in both directions.
+    _validate_lookup_points(x_points=x_points, y_points=y_points)
     normalized_x_points: list[float]
     normalized_y_points: list[float]
 
@@ -876,6 +1071,9 @@ def build_lookup_array_spline_runtime_template(
     parameter_var: Var
     lookup_expr: Expr
     template: EmtModelTemplate = EmtModelTemplate()
+
+    # Spline coefficient construction assumes a valid ordered point table.
+    _validate_lookup_points(x_points=x_points, y_points=y_points)
 
     if name is None:
         template_name = f"lookup_array_spline_{point_count}pt"

@@ -419,7 +419,7 @@ Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pmin`, `Pmax`, 
 |Cost                    |float                    |e/MWh  |False    |         |Cost of not served energy. Used in OPF.                                                           |True       |       |
 |facility                |Facility                 |       |False    |         |Facility where this is located                                                                    |False      |       |
 |technologies            |AssociationsList         |p.u.   |False    |         |Technologies associations to injections                                                           |False      |       |
-|scalable                |bool                     |       |False    |         |Is the injection scalable?                                                                        |False      |       |
+|scalable                |bool                     |       |False    |         |Is the injection scalable? (only for data compatibility)                                          |False      |       |
 |shift_key               |float                    |       |False    |         |Shift key for net transfer capacity                                                               |True       |       |
 |longitude               |float                    |deg    |False    |         |longitude of the injection.                                                                       |False      |       |
 |latitude                |float                    |deg    |False    |         |latitude of the injection.                                                                        |False      |       |
@@ -479,7 +479,7 @@ A `Battery` extends generator-style injection modelling with energy-capacity and
 This device connects to a bus and contributes power, current, or admittance to the solved network model.
 
 ### Registered properties
-Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pmin`, `Pmax`, `Q`, `Qmin`, `Qmax`, `control_mode`, `Pf`, `Vset`, `Cost2`, `Cost0`, `enabled_dispatch`, `must_run`, `srap_enabled`.
+Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pmin`, `Pmax`, `Q`, `Qmin`, `Qmax`, `control_mode`, `Pf`, `Vset`, `Cost2`, `Cost0`, `enabled_dispatch`, `must_run`, `srap_enabled`, `dispatch_mode`.
 
 |          name          |       class_type        | unit  |mandatory|max_chars|                                           descriptions                                           |has_profile|comment|
 |------------------------|-------------------------|-------|---------|---------|--------------------------------------------------------------------------------------------------|-----------|-------|
@@ -516,7 +516,7 @@ Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pmin`, `Pmax`, 
 |Cost                    |float                    |e/MWh  |False    |         |Cost of not served energy. Used in OPF.                                                           |True       |       |
 |facility                |Facility                 |       |False    |         |Facility where this is located                                                                    |False      |       |
 |technologies            |AssociationsList         |p.u.   |False    |         |Technologies associations to injections                                                           |False      |       |
-|scalable                |bool                     |       |False    |         |Is the injection scalable?                                                                        |False      |       |
+|scalable                |bool                     |       |False    |         |Is the injection scalable? (only for data compatibility)                                          |False      |       |
 |shift_key               |float                    |       |False    |         |Shift key for net transfer capacity                                                               |True       |       |
 |longitude               |float                    |deg    |False    |         |longitude of the injection.                                                                       |False      |       |
 |latitude                |float                    |deg    |False    |         |latitude of the injection.                                                                        |False      |       |
@@ -575,6 +575,7 @@ Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pmin`, `Pmax`, 
 |charge_efficiency       |float                    |p.u.   |False    |         |Charging efficiency.                                                                              |False      |       |
 |discharge_efficiency    |float                    |p.u.   |False    |         |Discharge efficiency.                                                                             |False      |       |
 |discharge_per_cycle     |float                    |p.u.   |False    |         |                                                                                                  |False      |       |
+|dispatch_mode           |enum BatteryDispatchMode |       |False    |         |Battery dispatch behaviour.                                                                       |True       |       |
 
 ## Load
 
@@ -1032,7 +1033,7 @@ Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pa`, `Pb`, `Pc`
 |Cost                    |float                   |e/MWh|False    |         |Cost of not served energy. Used in OPF.                                         |True       |       |
 |facility                |Facility                |     |False    |         |Facility where this is located                                                  |False      |       |
 |technologies            |AssociationsList        |p.u. |False    |         |Technologies associations to injections                                         |False      |       |
-|scalable                |bool                    |     |False    |         |Is the injection scalable?                                                      |False      |       |
+|scalable                |bool                    |     |False    |         |Is the injection scalable? (only for data compatibility)                        |False      |       |
 |shift_key               |float                   |     |False    |         |Shift key for net transfer capacity                                             |True       |       |
 |longitude               |float                   |deg  |False    |         |longitude of the injection.                                                     |False      |       |
 |latitude                |float                   |deg  |False    |         |latitude of the injection.                                                      |False      |       |
@@ -1315,7 +1316,7 @@ Profile-enabled properties: `active`, `Cost`, `shift_key`, `G`, `G0`, `Ga`, `Gb`
 |Cost                    |float                   |e/MWh|False    |         |Cost of not served energy. Used in OPF.                                         |True       |       |
 |facility                |Facility                |     |False    |         |Facility where this is located                                                  |False      |       |
 |technologies            |AssociationsList        |p.u. |False    |         |Technologies associations to injections                                         |False      |       |
-|scalable                |bool                    |     |False    |         |Is the injection scalable?                                                      |False      |       |
+|scalable                |bool                    |     |False    |         |Is the injection scalable? (only for data compatibility)                        |False      |       |
 |shift_key               |float                   |     |False    |         |Shift key for net transfer capacity                                             |True       |       |
 |longitude               |float                   |deg  |False    |         |longitude of the injection.                                                     |False      |       |
 |latitude                |float                   |deg  |False    |         |latitude of the injection.                                                      |False      |       |
@@ -1432,7 +1433,7 @@ Profile-enabled properties: `active`, `Cost`, `shift_key`, `G`, `G0`, `Ga`, `Gb`
 |Cost                    |float                   |e/MWh       |False    |         |Cost of not served energy. Used in OPF.                                         |True       |       |
 |facility                |Facility                |            |False    |         |Facility where this is located                                                  |False      |       |
 |technologies            |AssociationsList        |p.u.        |False    |         |Technologies associations to injections                                         |False      |       |
-|scalable                |bool                    |            |False    |         |Is the injection scalable?                                                      |False      |       |
+|scalable                |bool                    |            |False    |         |Is the injection scalable? (only for data compatibility)                        |False      |       |
 |shift_key               |float                   |            |False    |         |Shift key for net transfer capacity                                             |True       |       |
 |longitude               |float                   |deg         |False    |         |longitude of the injection.                                                     |False      |       |
 |latitude                |float                   |deg         |False    |         |latitude of the injection.                                                      |False      |       |
@@ -1512,7 +1513,7 @@ Profile-enabled properties: `active`, `Cost`, `shift_key`, `Ir`, `Ir1`, `Ir2`, `
 |Cost                    |float                   |e/MWh|False    |         |Cost of not served energy. Used in OPF.                                         |True       |       |
 |facility                |Facility                |     |False    |         |Facility where this is located                                                  |False      |       |
 |technologies            |AssociationsList        |p.u. |False    |         |Technologies associations to injections                                         |False      |       |
-|scalable                |bool                    |     |False    |         |Is the injection scalable?                                                      |False      |       |
+|scalable                |bool                    |     |False    |         |Is the injection scalable? (only for data compatibility)                        |False      |       |
 |shift_key               |float                   |     |False    |         |Shift key for net transfer capacity                                             |True       |       |
 |longitude               |float                   |deg  |False    |         |longitude of the injection.                                                     |False      |       |
 |latitude                |float                   |deg  |False    |         |latitude of the injection.                                                      |False      |       |
@@ -1668,7 +1669,7 @@ Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pa`, `Pb`, `Pc`
 |Cost                    |float                          |e/MWh|False    |         |Cost of not served energy. Used in OPF.                                             |True       |       |
 |facility                |Facility                       |     |False    |         |Facility where this is located                                                      |False      |       |
 |technologies            |AssociationsList               |p.u. |False    |         |Technologies associations to injections                                             |False      |       |
-|scalable                |bool                           |     |False    |         |Is the injection scalable?                                                          |False      |       |
+|scalable                |bool                           |     |False    |         |Is the injection scalable? (only for data compatibility)                            |False      |       |
 |shift_key               |float                          |     |False    |         |Shift key for net transfer capacity                                                 |True       |       |
 |longitude               |float                          |deg  |False    |         |longitude of the injection.                                                         |False      |       |
 |latitude                |float                          |deg  |False    |         |latitude of the injection.                                                          |False      |       |
@@ -1742,7 +1743,7 @@ Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pa`, `Pb`, `Pc`
 |Cost                    |float                   |e/MWh  |False    |         |Cost of not served energy. Used in OPF.                                         |True       |       |
 |facility                |Facility                |       |False    |         |Facility where this is located                                                  |False      |       |
 |technologies            |AssociationsList        |p.u.   |False    |         |Technologies associations to injections                                         |False      |       |
-|scalable                |bool                    |       |False    |         |Is the injection scalable?                                                      |False      |       |
+|scalable                |bool                    |       |False    |         |Is the injection scalable? (only for data compatibility)                        |False      |       |
 |shift_key               |float                   |       |False    |         |Shift key for net transfer capacity                                             |True       |       |
 |longitude               |float                   |deg    |False    |         |longitude of the injection.                                                     |False      |       |
 |latitude                |float                   |deg    |False    |         |latitude of the injection.                                                      |False      |       |
@@ -3171,7 +3172,7 @@ forming the star equivalent. DGS export reconstructs these pairwise tests from
 the winding `R0`/`X0` values. DGS has no independent negative-sequence test here;
 the imported passive model uses `Z2 = Z1`.
 
-See [DGS conversion assumptions](../file_operations.md#dgs) for the export workflow.
+See [DGS conversion assumptions](file_operations.md#dgs) for the export workflow.
 
 ### Registered properties
 Profile-enabled properties: `active`.
@@ -3849,23 +3850,24 @@ This device stores reusable equipment data that can be applied to physical netwo
 ### Registered properties
 Profile-enabled properties: none.
 
-|      name       |   class_type   | unit |mandatory|max_chars|                      descriptions                      |has_profile|comment|
-|-----------------|----------------|------|---------|---------|--------------------------------------------------------|-----------|-------|
-|idtag            |str             |      |False    |         |Unique ID                                               |False      |       |
-|name             |str             |      |False    |         |Name of the device.                                     |False      |       |
-|code             |str             |      |False    |         |Secondary ID                                            |False      |       |
-|rdfid            |str             |      |False    |         |RDF ID for further compatibility                        |False      |       |
-|action           |enum ActionType |      |False    |         |Object action to perform. Only used for model merging.  |False      |       |
-|selected_to_merge|bool            |      |False    |         |Whether this object should be applied during diff merge.|False      |       |
-|comment          |str             |      |False    |         |User comment                                            |False      |       |
-|diff_changes     |MergeInformation|      |False    |         |                                                        |False      |       |
-|R                |float           |Ohm/km|False    |         |resistance of the conductor                             |False      |       |
-|diameter         |float           |mm    |False    |         |Diameter of wire                                        |False      |       |
-|diameter_internal|float           |mm    |False    |         |Internal radius of the conductor                        |False      |       |
-|is_tube          |bool            |      |False    |         |Is it a tubular conductor?                              |False      |       |
-|max_current      |float           |kA    |False    |         |Maximum current of the conductor                        |False      |       |
-|stranding        |str             |      |False    |         |Stranding of wire                                       |False      |       |
-|material         |str             |      |False    |         |Material of wire                                        |False      |       |
+|      name       |   class_type   | unit |mandatory|max_chars|                                                                             descriptions                                                                             |has_profile|comment|
+|-----------------|----------------|------|---------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|-------|
+|idtag            |str             |      |False    |         |Unique ID                                                                                                                                                             |False      |       |
+|name             |str             |      |False    |         |Name of the device.                                                                                                                                                   |False      |       |
+|code             |str             |      |False    |         |Secondary ID                                                                                                                                                          |False      |       |
+|rdfid            |str             |      |False    |         |RDF ID for further compatibility                                                                                                                                      |False      |       |
+|action           |enum ActionType |      |False    |         |Object action to perform. Only used for model merging.                                                                                                                |False      |       |
+|selected_to_merge|bool            |      |False    |         |Whether this object should be applied during diff merge.                                                                                                              |False      |       |
+|comment          |str             |      |False    |         |User comment                                                                                                                                                          |False      |       |
+|diff_changes     |MergeInformation|      |False    |         |                                                                                                                                                                      |False      |       |
+|R                |float           |Ohm/km|False    |         |resistance of the conductor                                                                                                                                           |False      |       |
+|diameter         |float           |mm    |False    |         |Diameter of wire                                                                                                                                                      |False      |       |
+|gmr              |float           |mm    |False    |         |Geometric mean radius in mm for series impedance. 0 = automatic from conductor geometry; positive = specified GMR. The physical diameter still determines capacitance.|False      |       |
+|diameter_internal|float           |mm    |False    |         |Internal radius of the conductor                                                                                                                                      |False      |       |
+|is_tube          |bool            |      |False    |         |Is it a tubular conductor?                                                                                                                                            |False      |       |
+|max_current      |float           |kA    |False    |         |Maximum current of the conductor                                                                                                                                      |False      |       |
+|stranding        |str             |      |False    |         |Stranding of wire                                                                                                                                                     |False      |       |
+|material         |str             |      |False    |         |Material of wire                                                                                                                                                      |False      |       |
 
 ## OverheadLineType
 
@@ -4600,18 +4602,21 @@ This device defines study events, outages, switching actions, or remedial action
 ### Registered properties
 Profile-enabled properties: none.
 
-|      name       |   class_type    |unit|mandatory|max_chars|                      descriptions                      |has_profile|comment|
-|-----------------|-----------------|----|---------|---------|--------------------------------------------------------|-----------|-------|
-|idtag            |str              |    |False    |         |Unique ID                                               |False      |       |
-|name             |str              |    |False    |         |Name of the device.                                     |False      |       |
-|code             |str              |    |False    |         |Secondary ID                                            |False      |       |
-|rdfid            |str              |    |False    |         |RDF ID for further compatibility                        |False      |       |
-|action           |enum ActionType  |    |False    |         |Object action to perform. Only used for model merging.  |False      |       |
-|selected_to_merge|bool             |    |False    |         |Whether this object should be applied during diff merge.|False      |       |
-|comment          |str              |    |False    |         |User comment                                            |False      |       |
-|diff_changes     |MergeInformation |    |False    |         |                                                        |False      |       |
-|category         |str              |    |False    |         |Some tag to category the contingency group              |False      |       |
-|conn_group       |Contingency Group|    |False    |         |Contingency group                                       |False      |       |
+|      name       |          class_type           |unit|mandatory|max_chars|                       descriptions                        |has_profile|comment|
+|-----------------|-------------------------------|----|---------|---------|-----------------------------------------------------------|-----------|-------|
+|idtag            |str                            |    |False    |         |Unique ID                                                  |False      |       |
+|name             |str                            |    |False    |         |Name of the device.                                        |False      |       |
+|code             |str                            |    |False    |         |Secondary ID                                               |False      |       |
+|rdfid            |str                            |    |False    |         |RDF ID for further compatibility                           |False      |       |
+|action           |enum ActionType                |    |False    |         |Object action to perform. Only used for model merging.     |False      |       |
+|selected_to_merge|bool                           |    |False    |         |Whether this object should be applied during diff merge.   |False      |       |
+|comment          |str                            |    |False    |         |User comment                                               |False      |       |
+|diff_changes     |MergeInformation               |    |False    |         |                                                           |False      |       |
+|category         |str                            |    |False    |         |Some tag to category the contingency group                 |False      |       |
+|conn_group       |Contingency Group              |    |False    |         |Optional contingency scenario associated with this group   |False      |       |
+|prev_ra          |Remedial action Group          |    |False    |         |Optional remedial action group that must precede this group|False      |       |
+|monitored_device |PhysicalDeviceType             |    |False    |         |Physical model element whose result is monitored           |False      |       |
+|property_type    |enum RemedialActionPropertyEnum|    |False    |         |Limit of the monitored device used by the condition        |False      |       |
 
 ## RemedialAction
 

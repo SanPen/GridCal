@@ -1,0 +1,51 @@
+# Conservative defaults for static scientific figures.
+# Applied only by the task-owned plotting script.
+
+figure.figsize: 7.2, 4.4
+figure.dpi: 120
+figure.constrained_layout.use: True
+
+font.family: sans-serif
+font.sans-serif: DejaVu Sans
+font.size: 9
+font.weight: normal
+
+axes.titlesize: 10
+axes.titleweight: normal
+axes.labelsize: 9
+axes.labelweight: normal
+axes.linewidth: 0.8
+axes.grid: False
+axes.axisbelow: True
+axes.prop_cycle: cycler('color', ['black', 'tab:blue', 'tab:orange', 'tab:green']) + cycler('linestyle', ['-', '--', '-.', ':'])
+
+lines.linewidth: 1.2
+lines.markersize: 3.5
+
+xtick.labelsize: 8
+ytick.labelsize: 8
+xtick.direction: out
+ytick.direction: out
+xtick.major.width: 0.7
+ytick.major.width: 0.7
+xtick.minor.visible: False
+ytick.minor.visible: False
+
+grid.color: 0.82
+grid.linewidth: 0.5
+grid.alpha: 0.6
+
+legend.fontsize: 8
+legend.frameon: False
+legend.borderaxespad: 0.3
+legend.handlelength: 2.4
+
+savefig.dpi: 300
+savefig.bbox: tight
+savefig.pad_inches: 0.04
+savefig.facecolor: white
+savefig.transparent: False
+
+pdf.fonttype: 42
+ps.fonttype: 42
+svg.fonttype: none

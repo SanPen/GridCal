@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Rms.numerical.pseudo_transient &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.Rms.numerical.pseudo_transient &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -695,28 +696,6 @@
 
         <span class="k">return</span> <span class="n">debug_items</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_debug_check_x_new</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_new</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">step_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tries</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dtau</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug_check_x_new</span><span class="p">:</span>
-            <span class="k">return</span>
-
-        <span class="n">bad_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x_new</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">bad_idx</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">bad_vals</span> <span class="o">=</span> <span class="n">x_new</span><span class="p">[</span><span class="n">bad_idx</span><span class="p">]</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;NaN or Inf in x_new&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot; (step=</span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">, try=</span><span class="si">{</span><span class="n">tries</span><span class="si">}</span><span class="s2">, dtau=</span><span class="si">{</span><span class="n">dtau</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;bad_idx=</span><span class="si">{</span><span class="n">bad_idx</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">, bad_vals=</span><span class="si">{</span><span class="n">bad_vals</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">)&quot;</span>
-            <span class="p">)</span>
-
-        <span class="n">large_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x_new</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug_x_new_abs_max</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">large_idx</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">large_vals</span> <span class="o">=</span> <span class="n">x_new</span><span class="p">[</span><span class="n">large_idx</span><span class="p">]</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;x_new magnitude too large&quot;</span>
-                <span class="sa">f</span><span class="s2">&quot; (step=</span><span class="si">{</span><span class="n">step_idx</span><span class="si">}</span><span class="s2">, try=</span><span class="si">{</span><span class="n">tries</span><span class="si">}</span><span class="s2">, dtau=</span><span class="si">{</span><span class="n">dtau</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, abs_max=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">debug_x_new_abs_max</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;large_idx=</span><span class="si">{</span><span class="n">large_idx</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">, large_vals=</span><span class="si">{</span><span class="n">large_vals</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">)&quot;</span>
-            <span class="p">)</span>
-
     <span class="k">def</span><span class="w"> </span><span class="nf">_problem_algebraic_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="p">,</span> <span class="n">RmsProblemDae</span><span class="p">):</span>
             <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">algebraic_vars</span><span class="p">)</span>
@@ -734,15 +713,6 @@
                 <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">state_vars</span><span class="p">())</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">_state_vars</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_problem_diff_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="p">,</span> <span class="n">RmsProblemDae</span><span class="p">):</span>
-            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_diff_vars</span><span class="p">())</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="p">,</span> <span class="n">RmsProblemTemplate</span><span class="p">):</span>
-                <span class="k">return</span> <span class="nb">list</span><span class="p">()</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">_diff_vars</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_artificial_algebraic_mass_diag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -776,58 +746,11 @@
 
         <span class="k">return</span> <span class="n">sp</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">offsets</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">n_cols</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_find_reference_pin_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="nb">list</span><span class="p">()</span>
-
     <span class="k">def</span><span class="w"> </span><span class="nf">_var_index_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="n">vars_all</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_problem_state_vars</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_problem_algebraic_vars</span><span class="p">()</span>
         <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">vars_all</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">vars_all</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
         <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;x[</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">]&quot;</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_report_selected_var_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">vars_all</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_problem_state_vars</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_problem_algebraic_vars</span><span class="p">()</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">vars_all</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span>
-
-        <span class="n">matches</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">used_idx</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">labels</span><span class="p">:</span>
-            <span class="n">token_l</span> <span class="o">=</span> <span class="n">token</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-            <span class="n">hit_idx</span> <span class="o">=</span> <span class="kc">None</span>
-
-            <span class="c1"># Prefer exact/canonical prefix match before falling back to substring matches.</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vars_all</span><span class="p">):</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-                <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">used_idx</span><span class="p">:</span>
-                    <span class="k">continue</span>
-                <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">token_l</span><span class="p">):</span>
-                    <span class="n">hit_idx</span> <span class="o">=</span> <span class="n">i</span>
-                    <span class="k">break</span>
-
-            <span class="c1"># Fallback: contains token when prefix is unavailable.</span>
-            <span class="k">if</span> <span class="n">hit_idx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vars_all</span><span class="p">):</span>
-                    <span class="n">name</span> <span class="o">=</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
-                    <span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">used_idx</span><span class="p">:</span>
-                        <span class="k">continue</span>
-                    <span class="k">if</span> <span class="n">token_l</span> <span class="ow">in</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-                        <span class="n">hit_idx</span> <span class="o">=</span> <span class="n">i</span>
-                        <span class="k">break</span>
-
-            <span class="k">if</span> <span class="n">hit_idx</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">used_idx</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">hit_idx</span><span class="p">)</span>
-                <span class="n">name</span> <span class="o">=</span> <span class="n">vars_all</span><span class="p">[</span><span class="n">hit_idx</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
-                <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">hit_idx</span><span class="p">])</span> <span class="k">if</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">hit_idx</span> <span class="o">&lt;</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;nan&quot;</span><span class="p">)</span>
-                <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">val</span><span class="si">:</span><span class="s2">+.6e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">=&lt;not found&gt;&quot;</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;[PseudoTransient][Singular] selected vars: </span><span class="si">{</span><span class="n">matches</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
-            <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_report_piecewise_activity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rhs</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">rhs</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">rhs</span><span class="p">)):</span>
@@ -1050,68 +973,6 @@
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
             <span class="n">emit</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[SVD] </span><span class="si">{</span><span class="n">context</span><span class="si">}</span><span class="s2">: diagnostics failed (</span><span class="si">{</span><span class="n">exc</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_rhs_implicit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                      <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
-                      <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
-                      <span class="n">xn</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
-                      <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Return 𝑑x/dt given the current *state* vector.</span>
-<span class="sd">        :param x: get the right-hand-side give a state vector</span>
-<span class="sd">        :param dx:</span>
-<span class="sd">        :param xn:</span>
-<span class="sd">        :return f_state_update or f_algeb</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">f_algeb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">rhs_algebraic</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_states_number</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">f_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">rhs_state</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
-            <span class="n">f_state_update</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_states_number</span><span class="p">()]</span> <span class="o">-</span> <span class="n">xn</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_states_number</span><span class="p">()]</span> <span class="o">-</span> <span class="n">h</span> <span class="o">*</span> <span class="n">f_state</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="n">f_state_update</span><span class="p">,</span> <span class="n">f_algeb</span><span class="p">]</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">f_algeb</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_jacobian_implicit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
-                           <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
-                           <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
-                           <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        :param x: vector or variables&#39; values</span>
-<span class="sd">        :param dx: vector of diff values</span>
-<span class="sd">        :param h: step</span>
-<span class="sd">        :return:</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                  state Var    algeb var</span>
-<span class="sd">        state eq |I - h * J11 | - h* J12  |    | ∆ state var|    | ∆ state eq |</span>
-<span class="sd">                 |            |           |    |            |    |            |</span>
-<span class="sd">                 -------------------------- x  |------------|  = |------------|</span>
-<span class="sd">        algeb eq |J21         | J22       |    | ∆ algeb var|    | ∆ algeb eq |</span>
-<span class="sd">                 |            |           |    |            |    |            |</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="c1"># returns only j22 if no states, returns J if states</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_states_number</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">j22</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_j22</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
-            <span class="k">return</span> <span class="n">j22</span>
-
-        <span class="n">j11_val</span><span class="p">:</span> <span class="n">csc_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_j11</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
-        <span class="n">j12_val</span><span class="p">:</span> <span class="n">csc_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_j12</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
-        <span class="n">j21_val</span><span class="p">:</span> <span class="n">csc_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_j21</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
-        <span class="n">j22_val</span><span class="p">:</span> <span class="n">csc_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_j22</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
-
-        <span class="n">I</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">m</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_states_number</span><span class="p">(),</span> <span class="n">n</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_states_number</span><span class="p">())</span>
-        <span class="n">j11</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="p">(</span><span class="n">I</span> <span class="o">-</span> <span class="n">h</span> <span class="o">*</span> <span class="n">j11_val</span><span class="p">)</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
-        <span class="n">j12</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="o">-</span> <span class="n">h</span> <span class="o">*</span> <span class="n">j12_val</span>
-        <span class="n">j21</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="n">j21_val</span>
-        <span class="n">j22</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="n">j22_val</span>
-
-        <span class="n">J</span> <span class="o">=</span> <span class="n">pack_4_by_4_scipy</span><span class="p">(</span><span class="n">j11</span><span class="p">,</span> <span class="n">j12</span><span class="p">,</span> <span class="n">j21</span><span class="p">,</span> <span class="n">j22</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="n">J</span>
-
     <span class="k">def</span><span class="w"> </span><span class="nf">_jacobian_pseudo_transient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Jacobian for pseudo-transient residual:</span>
@@ -1272,51 +1133,6 @@
 
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">delta</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_newton_polish</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-        <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_diff_var_number</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span><span class="p">):</span>
-            <span class="n">rhs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rhs_steady</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">rhs</span><span class="p">)):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_dbg</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;newton polish abort: non-finite rhs at iter=</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">break</span>
-
-            <span class="n">res_inf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span> <span class="k">if</span> <span class="n">rhs</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
-            <span class="k">if</span> <span class="n">res_inf</span> <span class="o">&lt;=</span> <span class="n">tol</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_dbg</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;newton polish converged at iter=</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">, residual_inf=</span><span class="si">{</span><span class="n">res_inf</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">res_inf</span>
-
-            <span class="n">J</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobian_steady</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
-            <span class="n">delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_solve_linear_system</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;newton_polish iter=</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">solved</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">delta</span><span class="p">))</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">solved</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_dbg</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;newton polish abort: linear solve failed at iter=</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">break</span>
-
-            <span class="n">trial_scales</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
-            <span class="n">best_x</span> <span class="o">=</span> <span class="n">x</span>
-            <span class="n">best_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-            <span class="k">for</span> <span class="n">scale</span> <span class="ow">in</span> <span class="n">trial_scales</span><span class="p">:</span>
-                <span class="n">xt</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">delta</span>
-                <span class="n">rt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rhs_steady</span><span class="p">(</span><span class="n">xt</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">rt</span><span class="p">)):</span>
-                    <span class="k">continue</span>
-                <span class="n">rinf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">rt</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span> <span class="k">if</span> <span class="n">rt</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mf">0.0</span>
-                <span class="k">if</span> <span class="n">rinf</span> <span class="o">&lt;</span> <span class="n">best_res</span><span class="p">:</span>
-                    <span class="n">best_res</span> <span class="o">=</span> <span class="n">rinf</span>
-                    <span class="n">best_x</span> <span class="o">=</span> <span class="n">xt</span>
-                <span class="k">if</span> <span class="n">rinf</span> <span class="o">&lt;=</span> <span class="n">res_inf</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1e-4</span> <span class="o">*</span> <span class="n">scale</span><span class="p">):</span>
-                    <span class="k">break</span>
-
-            <span class="n">x</span> <span class="o">=</span> <span class="n">best_x</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_dbg</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;newton polish iter=</span><span class="si">{</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">: residual_inf=</span><span class="si">{</span><span class="n">res_inf</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">-&gt;</span><span class="si">{</span><span class="n">best_res</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">, &quot;</span>
-                <span class="sa">f</span><span class="s2">&quot;|delta|_2=</span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-
-        <span class="n">rhs_final</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rhs_steady</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">)</span>
-        <span class="n">final_inf</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">rhs_final</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">))</span> <span class="k">if</span> <span class="n">rhs_final</span><span class="o">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">rhs_final</span><span class="p">))</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span>
-        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">final_inf</span>
-    
     <span class="k">def</span><span class="w"> </span><span class="nf">_rhs_pseudo_transient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">xn</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return 𝑑x/dt given the current *state* vector.</span>

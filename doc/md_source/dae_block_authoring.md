@@ -140,7 +140,7 @@ These three storage categories serve different purposes. A retained value is not
 | `event_dict` | Runtime-changeable; scheduled events are its normal public writer, and some procedural entries can explicitly target mutable runtime values | set-point, breaker command, disturbance magnitude | **Parameters → Dynamic parameter** |
 | `mode_dict` | Retained across accepted boundaries; normally written by at most one procedural entry, or intentionally left without a writer as retained/external data | latch state, sampled value, delayed signal, operating mode | **Runtime logic → Retained modes** |
 
-For each dictionary, the key is the symbolic variable and the value is its initial expression or constant. `Const(None)` is useful for a dynamic parameter whose initial value must be recovered through `init_eqs`, for example from a solved active-power value. An unchanged unresolved value remains unset in the GUI until initialization supplies it.
+For each dictionary, the key is the symbolic variable and the value is its initial expression or constant. Parameter initialization belongs in `parameters` or `event_dict`, optionally with a device-backed source in `api_obj_mapping`. Do not place parameter targets in `init_eqs`: that collection initializes solved state and algebraic variables, not parameters. `Const(None)` marks a parameter whose value must be supplied by its mapped device source; if that source cannot be resolved, model assembly must report the unresolved parameter.
 
 Do not put every tunable number in `event_dict`. Dynamic parameters occupy the runtime parameter vector and form part of the public event interface. A fixed machine reactance belongs in `parameters`; an active-power reference intended for a step or ramp belongs in `event_dict`. Do not describe or create a retained runtime value as a “mode parameter”: `mode_dict` is the persisted engine field, while **Retained mode** is the current authoring concept.
 
@@ -167,7 +167,6 @@ Good initialization equations should:
 - use power-flow quantities through `external_mapping` where appropriate;
 - reconstruct internal controller and electrical variables from that operating point;
 - provide consistent initial values for continuous states;
-- initialize unresolved `Const(None)` dynamic parameters;
 - avoid contradictory assignments and circular dependencies;
 - use the same sign and per-unit conventions as the time-domain equations.
 
@@ -236,11 +235,27 @@ This is different from `external_mapping`:
 - `external_mapping` identifies operating-point and network-interface variables;
 - `api_obj_mapping` identifies configuration values copied from the associated API device.
 
-The mapping selects the source of the initial value; it does not select the parameter's runtime role. The mapped `Var` must be declared by the same block in exactly one collection: `parameters` for a value that remains fixed, or `event_dict` for a value that scheduled events may change. A mapping-only variable is not registered by either RMS or EMT. New GUI-authored parameters use one explicit source: a concrete local `Const(value)`, or `Const(None)` together with `api_obj_mapping` when the associated grid device supplies the value.
+The mapping selects the source of the initial value; it does not select the parameter's runtime role. The mapped `Var` must be declared by the same block in exactly one collection: `parameters` for a value that remains fixed, or `event_dict` for a value that scheduled events may change. A mapping-only variable is not registered by either RMS or EMT.
+
+Initial-value precedence is the same in RMS and EMT:
+
+1. If `api_obj_mapping` is present and its device value is resolved, that device value is authoritative.
+2. Otherwise, the expression stored in `parameters` or `event_dict` is the authoritative local value.
+3. A scheduled event may subsequently replace an `event_dict` value during the simulation; it does not participate in initial-value source selection.
+
+The supported authoring patterns are therefore:
+
+| Declaration | Mapping | Meaning |
+| --- | --- | --- |
+| Concrete `Const(value)` or expression | absent | The model template owns the value. |
+| `Const(None)` | present | The associated grid device must supply the value. |
+| Concrete `Const(value)` or expression | present | The device value wins when it resolves; the declaration is a fallback and an information diagnostic records a different resolved value. |
+
+The Dynamic Model Editor deliberately keeps the numeric-value control and device-source selector mutually exclusive, so its normal device-backed pattern is `Const(None)` plus `api_obj_mapping`. The concrete-fallback form exists for explicit scripted models and legacy compatibility; authors must not use it when the local value is intended to override the device. In that case, remove the mapping.
 
 Mappings follow block ownership recursively. When a child owns a parameter, declare both its storage entry and its `api_obj_mapping` entry on that child. Do not copy either entry to the root wrapper; the RMS and EMT problem builders traverse the hierarchy. A block flattened with `unify_blocks()` owns the merged declarations after its children have been consumed, so it also does not need a second wrapper copy.
 
-Use one semantic mapping key only once in the effective block hierarchy. The available keys and their intended units are defined by `ParamPowerFlowReferenceType`; use the GUI selector or inspect that enum rather than inventing a string key. The file loader repairs historical mapping-only static targets with `Const(None)` so old `.veragrid` files remain readable, but new templates must always declare the parameter explicitly.
+Use one semantic mapping key only once in the effective block hierarchy. The available keys and their intended units are defined by `ParamPowerFlowReferenceType`; use the GUI selector or inspect that enum rather than inventing a string key. Multiple sources may target one symbolic UID only when they resolve to the same value. VeraGrid keeps the first resolved value and reports a conflict instead of silently overwriting it when a later source differs. The file loader repairs historical mapping-only static targets with `Const(None)` so old `.veragrid` files remain readable, but new templates must always declare the parameter explicitly.
 
 Dynamic parameters may also expose a device initialization mapping in the GUI. The numeric-value control and device-source selector are mutually exclusive. Seeding a variable already owned by `event_dict` does not make it static: RMS and EMT use the mapped value as the pre-event baseline and retain the variable in their runtime parameter vectors. The loader preserves the serialized storage role and never promotes an event target into `parameters` merely because of its mapping key. Controller-specific gains with no corresponding device property should retain their template value; place them in `parameters` unless they are genuine event targets.
 

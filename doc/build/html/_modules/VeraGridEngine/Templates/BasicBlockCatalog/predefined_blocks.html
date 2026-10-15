@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -111,9 +112,11 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">List</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Dynamic.emt_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmtModelTemplate</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Dynamic.var_factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">VarFactory</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.template_definition</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemplateDefinition</span><span class="p">,</span> <span class="n">TemplateProp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.basic_structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vec</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">BlockType</span><span class="p">,</span> <span class="n">DeviceType</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sym</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.block</span><span class="w"> </span><span class="kn">import</span> <span class="n">Block</span>
 
@@ -298,6 +301,181 @@
 
         <span class="k">return</span> <span class="n">product</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vf</span><span class="p">,</span> <span class="n">divident_inputs</span><span class="p">,</span> <span class="n">divisor_inputs</span><span class="p">)</span></div>
 </div>
+
+
+
+<div class="viewcode-block" id="MinimumTemplate">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.MinimumTemplate">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MinimumTemplate</span><span class="p">(</span><span class="n">TemplateDefinition</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Structural definition of a minimum block with configurable arity.&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vf</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a minimum-block definition with two inputs by default.</span>
+
+<span class="sd">        :param vf: Variable factory receiving the generated block variables.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">TemplateDefinition</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">vf</span><span class="p">,</span>
+            <span class="nb">list</span><span class="p">((</span>
+                <span class="n">TemplateProp</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;input_count&quot;</span><span class="p">,</span>
+                    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Number of signals compared by the minimum operation.&quot;</span><span class="p">,</span>
+                    <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)),</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="MinimumTemplate.eval">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.MinimumTemplate.eval">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the minimum block using the configured input count.</span>
+
+<span class="sd">        :return: EMT template containing a minimum block with the requested input count.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">input_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;input_count&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">build_extremum_template</span><span class="p">(</span>
+            <span class="n">var_factory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vf</span><span class="p">,</span>
+            <span class="n">input_count</span><span class="o">=</span><span class="n">input_count</span><span class="p">,</span>
+            <span class="n">block_type</span><span class="o">=</span><span class="n">BlockType</span><span class="o">.</span><span class="n">MIN</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MaximumTemplate">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.MaximumTemplate">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MaximumTemplate</span><span class="p">(</span><span class="n">TemplateDefinition</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Structural definition of a maximum block with configurable arity.&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vf</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a maximum-block definition with two inputs by default.</span>
+
+<span class="sd">        :param vf: Variable factory receiving the generated block variables.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">TemplateDefinition</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">vf</span><span class="p">,</span>
+            <span class="nb">list</span><span class="p">((</span>
+                <span class="n">TemplateProp</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;input_count&quot;</span><span class="p">,</span>
+                    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Number of signals compared by the maximum operation.&quot;</span><span class="p">,</span>
+                    <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)),</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="MaximumTemplate.eval">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.MaximumTemplate.eval">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the maximum block using the configured input count.</span>
+
+<span class="sd">        :return: EMT template containing a maximum block with the requested input count.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">input_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;input_count&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">build_extremum_template</span><span class="p">(</span>
+            <span class="n">var_factory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vf</span><span class="p">,</span>
+            <span class="n">input_count</span><span class="o">=</span><span class="n">input_count</span><span class="p">,</span>
+            <span class="n">block_type</span><span class="o">=</span><span class="n">BlockType</span><span class="o">.</span><span class="n">MAX</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="build_extremum_template">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.build_extremum_template">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">build_extremum_template</span><span class="p">(</span>
+        <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
+        <span class="n">input_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">block_type</span><span class="p">:</span> <span class="n">BlockType</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap a configurable minimum or maximum block in the builder contract.</span>
+
+<span class="sd">    Builder-backed Library entries return model templates so creation,</span>
+<span class="sd">    preflight validation, and structural editing all consume the same type.</span>
+<span class="sd">    The inner block remains an ordinary symbolic block and retains the</span>
+<span class="sd">    configurable ``input_count`` structure.</span>
+
+<span class="sd">    :param var_factory: Variable factory receiving the generated variables.</span>
+<span class="sd">    :param input_count: Number of signals participating in the reduction.</span>
+<span class="sd">    :param block_type: ``BlockType.MIN`` or ``BlockType.MAX``.</span>
+<span class="sd">    :return: EMT template containing the requested extremum block.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">block</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">extremum</span><span class="p">(</span>
+        <span class="n">var_factory</span><span class="o">=</span><span class="n">var_factory</span><span class="p">,</span>
+        <span class="n">input_count</span><span class="o">=</span><span class="n">input_count</span><span class="p">,</span>
+        <span class="n">block_type</span><span class="o">=</span><span class="n">block_type</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">template</span><span class="p">:</span> <span class="n">EmtModelTemplate</span> <span class="o">=</span> <span class="n">EmtModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">block</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">template</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">NoDevice</span>
+    <span class="n">template</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">block</span>
+    <span class="k">return</span> <span class="n">template</span></div>
+
+
+
+<div class="viewcode-block" id="extremum">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.BasicBlockCatalog.html#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.extremum">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">extremum</span><span class="p">(</span><span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">input_count</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">block_type</span><span class="p">:</span> <span class="n">BlockType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Block</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a minimum or maximum reduction over a configurable number of inputs.</span>
+
+<span class="sd">    The operation is represented by ordinary binary symbolic function nodes.</span>
+<span class="sd">    Folding those nodes keeps the model proportional to the number of inputs</span>
+<span class="sd">    instead of expanding every comparison into repeated Heaviside expressions.</span>
+
+<span class="sd">    :param var_factory: Variable factory receiving the generated block variables.</span>
+<span class="sd">    :param input_count: Number of input signals participating in the reduction.</span>
+<span class="sd">    :param block_type: ``BlockType.MIN`` or ``BlockType.MAX``.</span>
+<span class="sd">    :return: Structural minimum or maximum block.</span>
+<span class="sd">    :raises ValueError: If fewer than two inputs or an unsupported block type is requested.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">input_count</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Minimum and maximum blocks require at least two inputs&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">block_type</span> <span class="o">==</span> <span class="n">BlockType</span><span class="o">.</span><span class="n">MIN</span><span class="p">:</span>
+        <span class="n">function_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;min&quot;</span>
+        <span class="n">block_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;minimum&quot;</span>
+    <span class="k">elif</span> <span class="n">block_type</span> <span class="o">==</span> <span class="n">BlockType</span><span class="o">.</span><span class="n">MAX</span><span class="p">:</span>
+        <span class="n">function_name</span> <span class="o">=</span> <span class="s2">&quot;max&quot;</span>
+        <span class="n">block_name</span> <span class="o">=</span> <span class="s2">&quot;maximum&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Extremum blocks support only BlockType.MIN or BlockType.MAX&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Create stable positional names so existing connections survive a later</span>
+    <span class="c1"># increase or decrease of the configured input count.</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">sym</span><span class="o">.</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">input_index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="k">for</span> <span class="n">input_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">input_count</span><span class="p">):</span>
+        <span class="n">inputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;extremum_input_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">input_index</span><span class="p">)))</span>
+
+    <span class="c1"># Reduce the inputs through native symbolic min/max nodes. Each additional</span>
+    <span class="c1"># port contributes exactly one comparison node to the symbolic model.</span>
+    <span class="n">expression</span><span class="p">:</span> <span class="n">sym</span><span class="o">.</span><span class="n">Expr</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">input_variable</span><span class="p">:</span> <span class="n">sym</span><span class="o">.</span><span class="n">Var</span>
+    <span class="k">for</span> <span class="n">input_variable</span> <span class="ow">in</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="n">expression</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">Func2</span><span class="p">(</span><span class="n">function_name</span><span class="p">,</span> <span class="n">expression</span><span class="p">,</span> <span class="n">input_variable</span><span class="p">)</span>
+
+    <span class="n">output_variable</span><span class="p">:</span> <span class="n">sym</span><span class="o">.</span><span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;extremum_output_&quot;</span><span class="p">)</span>
+    <span class="n">block</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
+        <span class="n">algebraic_vars</span><span class="o">=</span><span class="nb">list</span><span class="p">((</span><span class="n">output_variable</span><span class="p">,)),</span>
+        <span class="n">algebraic_eqs</span><span class="o">=</span><span class="nb">list</span><span class="p">((</span><span class="n">output_variable</span> <span class="o">-</span> <span class="n">expression</span><span class="p">,)),</span>
+        <span class="n">in_vars</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+        <span class="n">out_vars</span><span class="o">=</span><span class="nb">list</span><span class="p">((</span><span class="n">output_variable</span><span class="p">,)),</span>
+        <span class="n">name</span><span class="o">=</span><span class="n">block_name</span><span class="p">,</span>
+        <span class="n">is_decomposable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">block</span></div>
 
 
 <div class="viewcode-block" id="product">

@@ -8512,17 +8512,7 @@ def dgs_to_circuit(path: str,
                     templates_by_root_dgs_id=rms_templates_by_root_dgs_id,
                     logger=logger,
                 )
-                # Bind native meters on the registered controller before its
-                # sole runtime instance is duplicated into a physical owner.
-                bind_dgs_rms_measurements(
-                    circuit=grid,
-                    dgs_circuit=dgs_grid,
-                    templates_by_root_dgs_id=templates_by_root_dgs_id,
-                    child_blocks_by_root_and_slot_id=(
-                        conversion_result.child_blocks_by_root_and_slot_id
-                    ),
-                    logger=logger,
-                )
+
                 bound_actuator_count: int = bind_dgs_logical_actuator_runtime(
                     circuit=grid,
                     templates_by_root_dgs_id=rms_templates_by_root_dgs_id,

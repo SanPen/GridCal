@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
-from VeraGridEngine.Simulations.Rms.initialization_rms import run_rms_native_initialization
+from VeraGridEngine.Simulations.Rms.initialization_rms import run_rms_consistent_initialization
 from VeraGridEngine.Simulations.Rms.rms_options import RmsOptions
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
+from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.enumerations import RmsInitializationMethod
 
 
@@ -117,6 +119,24 @@ class _MissingStateInitializationProblem(_ScalarRmsInitializationProblem):
         return np.asarray([0.0], dtype=np.float64)
 
 
+class _NonConvergingRmsInitializationProblem(_ScalarRmsInitializationProblem):
+    """Scalar initialization problem with an unsatisfiable residual."""
+
+    __slots__ = ()
+
+    def __init__(self) -> None:
+        """
+        Replace the solvable residual with a non-zero constant equation.
+
+        :return: None.
+        """
+        super().__init__()
+
+        # A constant non-zero residual cannot be reduced by changing the only
+        # unknown, so it provides a deterministic non-convergence scenario.
+        self.algebraic_eqs = [Const(1.0)]
+
+
 def test_consistent_newton_is_an_rms_initialization_option() -> None:
     """Expose the global solver as an RMS initialization choice.
 
@@ -130,12 +150,18 @@ def test_consistent_newton_solves_initialized_algebraic_variables() -> None:
 
     :return: None.
     """
-    problem = _ScalarRmsInitializationProblem()
+    problem: _ScalarRmsInitializationProblem = _ScalarRmsInitializationProblem()
+    logger: Logger = Logger()
 
-    converged = run_rms_native_initialization(problem, problem.options)
+    converged: bool = run_rms_consistent_initialization(
+        problem=problem,
+        options=problem.options,
+        logger=logger,
+    )
 
     assert converged
     assert np.isclose(problem.init_guess[problem.y.uid], 2.0, atol=1.0e-10)
+    assert len(logger.entries) == 0
 
 
 def test_consistent_newton_uses_equilibrium_for_state_without_init_eq() -> None:
@@ -143,9 +169,59 @@ def test_consistent_newton_uses_equilibrium_for_state_without_init_eq() -> None:
 
     :return: None.
     """
-    problem = _MissingStateInitializationProblem()
+    problem: _MissingStateInitializationProblem = _MissingStateInitializationProblem()
 
-    converged = run_rms_native_initialization(problem, problem.options)
+    converged: bool = run_rms_consistent_initialization(
+        problem=problem,
+        options=problem.options,
+        logger=None,
+    )
 
     assert converged
     assert np.isclose(problem.init_guess[problem.x.uid], 3.0, atol=1.0e-10)
+
+
+def test_auto_non_convergence_adds_one_warning() -> None:
+    """
+    Report one warning when Auto keeps a non-converged initialization candidate.
+
+    :return: None.
+    """
+    problem: _NonConvergingRmsInitializationProblem = _NonConvergingRmsInitializationProblem()
+    problem.options.initialization_method = RmsInitializationMethod.Auto
+    logger: Logger = Logger()
+
+    converged: bool = run_rms_consistent_initialization(
+        problem=problem,
+        options=problem.options,
+        logger=logger,
+    )
+
+    assert converged is False
+    assert logger.warning_count() == 1
+    assert logger.error_count() == 0
+    assert logger.entries[0].device_class == "RMS"
+    assert logger.entries[0].device_property == "initialization"
+    assert "Auto mode is continuing" in logger.entries[0].msg
+
+
+def test_consistent_newton_non_convergence_logs_error_before_raising() -> None:
+    """
+    Record one error before strict consistent initialization stops construction.
+
+    :return: None.
+    """
+    problem: _NonConvergingRmsInitializationProblem = _NonConvergingRmsInitializationProblem()
+    logger: Logger = Logger()
+
+    with pytest.raises(RuntimeError, match="simulation construction is stopping"):
+        run_rms_consistent_initialization(
+            problem=problem,
+            options=problem.options,
+            logger=logger,
+        )
+
+    assert logger.warning_count() == 0
+    assert logger.error_count() == 1
+    assert logger.entries[0].device_class == "RMS"
+    assert logger.entries[0].device_property == "initialization"

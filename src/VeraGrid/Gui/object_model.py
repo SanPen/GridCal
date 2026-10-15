@@ -17,12 +17,13 @@ from VeraGrid.Gui.gui_functions import (BoolCheckboxDelegate, IntDelegate, Combo
                                         ComplexDelegate, LineLocationsDelegate, DateTimeDelegate)
 from VeraGrid.Gui.Icons.icon_associations import device_type_icons
 from VeraGrid.Gui.wrappable_table_model import WrappableTableModel
-from VeraGridEngine.Devices import Bus, ContingencyGroup
+from VeraGridEngine.Devices import Bus, ContingencyGroup, RemedialActionGroup
 from VeraGridEngine.Devices.Parents.editable_device import EditableDevice, GCProp, GCPROP_TYPES
+from VeraGridEngine.Devices.Parents.physical_device import PhysicalDevice
 from VeraGridEngine.Devices.Parents.pointer_device_parent import PointerDeviceParent
 from VeraGridEngine.Devices.Branches.line_locations import LineLocations
 from VeraGridEngine.Devices.types import ALL_DEV_TYPES
-from VeraGridEngine.enumerations import DeviceType, PrpCat, SubObjectType
+from VeraGridEngine.enumerations import DeviceType, PrpCat, RemedialActionPropertyEnum, SubObjectType
 
 
 class DeviceSelectorDelegate(QtWidgets.QItemDelegate):
@@ -199,6 +200,136 @@ class DeviceSelectorDelegate(QtWidgets.QItemDelegate):
                 editor.setGeometry(QtCore.QRect(cell_bottom_left, size))
 
 
+class RemedialActionPropertyDelegate(QtWidgets.QItemDelegate):
+    """
+    Edit remedial-action limits using the monitored device in the same row.
+    """
+
+    def __init__(self,
+                 parent: QtWidgets.QTableView,
+                 monitored_attribute_index: int,
+                 transposed: bool) -> None:
+        """
+        Create a device-aware remedial-action property delegate.
+
+        :param parent: Parent table view.
+        :param monitored_attribute_index: Position of ``monitored_device`` in the model.
+        :param transposed: Whether properties are represented as rows.
+        """
+        QtWidgets.QItemDelegate.__init__(self, parent)
+        self.monitored_attribute_index: int = monitored_attribute_index
+        self.transposed: bool = transposed
+
+    @QtCore.Slot()
+    def current_index_changed(self) -> None:
+        """
+        Commit a newly selected property.
+
+        :return: None.
+        """
+        editor: QtCore.QObject | None = self.sender()
+        if isinstance(editor, QtWidgets.QWidget):
+            self.commitData.emit(editor)
+        else:
+            pass
+
+    def get_monitored_device(self, index: QtCore.QModelIndex) -> PhysicalDevice | None:
+        """
+        Return the monitored device associated with the edited property cell.
+
+        :param index: Edited property cell.
+        :return: Selected physical device, or None.
+        """
+        model: QtCore.QAbstractItemModel = index.model()
+        if self.transposed:
+            monitored_index: QtCore.QModelIndex = model.index(
+                self.monitored_attribute_index,
+                index.column(),
+            )
+        else:
+            monitored_index = model.index(
+                index.row(),
+                self.monitored_attribute_index,
+            )
+
+        monitored_value: object = model.data(
+            monitored_index,
+            role=QtCore.Qt.ItemDataRole.EditRole,
+        )
+        if isinstance(monitored_value, PhysicalDevice):
+            return monitored_value
+        else:
+            return None
+
+    def createEditor(self,
+                     parent: QtWidgets.QWidget,
+                     option: QtWidgets.QStyleOptionViewItem,
+                     index: QtCore.QModelIndex) -> QtWidgets.QComboBox:
+        """
+        Create a combo containing only limits applicable to the selected device.
+
+        :param parent: Parent widget.
+        :param option: Editor style option.
+        :param index: Edited property cell.
+        :return: Device-specific property combo.
+        """
+        del option
+        monitored_device: PhysicalDevice | None = self.get_monitored_device(index=index)
+        property_types: List[RemedialActionPropertyEnum] = (
+            RemedialActionGroup.get_allowed_property_types_for_device(
+                monitored_device=monitored_device,
+            )
+        )
+        editor: QtWidgets.QComboBox = QtWidgets.QComboBox(parent)
+        property_type: RemedialActionPropertyEnum
+        for property_type in property_types:
+            editor.addItem(property_type.value, property_type)
+        editor.currentIndexChanged.connect(self.current_index_changed)
+        return editor
+
+    def setEditorData(self,
+                      editor: QtWidgets.QComboBox,
+                      index: QtCore.QModelIndex) -> None:
+        """
+        Select the property's current value in the editor.
+
+        :param editor: Property combo.
+        :param index: Edited property cell.
+        :return: None.
+        """
+        current_value: object = index.model().data(
+            index,
+            role=QtCore.Qt.ItemDataRole.EditRole,
+        )
+        editor.blockSignals(True)
+        item_index: int
+        for item_index in range(editor.count()):
+            if editor.itemData(item_index) == current_value:
+                editor.setCurrentIndex(item_index)
+                break
+            else:
+                pass
+        editor.blockSignals(False)
+
+    def setModelData(self,
+                     editor: QtWidgets.QComboBox,
+                     model: QtCore.QAbstractItemModel,
+                     index: QtCore.QModelIndex) -> None:
+        """
+        Store the selected limit enum in the model.
+
+        :param editor: Property combo.
+        :param model: Edited model.
+        :param index: Edited property cell.
+        :return: None.
+        """
+        selected_property: object = editor.currentData()
+        if isinstance(selected_property, RemedialActionPropertyEnum):
+            model.setData(index, selected_property)
+        else:
+            pass
+
+
 class ObjectsModel(WrappableTableModel):
     """
     Class to populate a Qt table view with the properties of objects
@@ -369,6 +500,17 @@ class ObjectsModel(WrappableTableModel):
                     if len(self.non_editable_attributes) == 0:
                         self.non_editable_attributes.append(self.attributes[i])
 
+                elif (tpe is RemedialActionPropertyEnum
+                      and self.attributes[i] == 'property_type'
+                      and 'monitored_device' in self.attributes):
+                    monitored_attribute_index: int = self.attributes.index('monitored_device')
+                    delegate = RemedialActionPropertyDelegate(
+                        parent=self.parent,
+                        monitored_attribute_index=monitored_attribute_index,
+                        transposed=self.transposed,
+                    )
+                    F(i, delegate)
+
                 elif isinstance(tpe, EnumMeta):
                     objects = list(tpe)
                     values = [x.value for x in objects]
@@ -513,6 +655,21 @@ class ObjectsModel(WrappableTableModel):
                         pass
 
             return False, devices_by_type
+
+        elif prop_name == 'monitored_device' and tpe == DeviceType.PhysicalDeviceType:
+            allowed_device_types: Tuple[DeviceType, ...] = (
+                DeviceType.BusDevice,
+                DeviceType.LineDevice,
+                DeviceType.Transformer2WDevice,
+            )
+            devices_by_type = dict()
+            for device_type in allowed_device_types:
+                devices: List[ALL_DEV_TYPES] | None = self.dictionary_of_lists.get(device_type, None)
+                if devices is not None:
+                    devices_by_type[device_type] = devices
+                else:
+                    pass
+            return len(devices_by_type) == 0, devices_by_type
 
         else:
 

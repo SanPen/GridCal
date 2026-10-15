@@ -176,11 +176,28 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
             self.results.worst_contingency_flow[t_idx, :] = opf_vars.branch_vars.worst_contingency_flow[0, :]
             self.results.worst_contingency_loading[t_idx, :] = opf_vars.branch_vars.worst_contingency_loading[0, :]
             self.results.alpha_n1_worst[t_idx, :] = opf_vars.branch_vars.alpha_n1_worst[0, :]
+            # keep only the ties of rows the report can show
+            for tie in opf_vars.branch_vars.worst_contingency_ties:
+                tie_branch: int = tie[0]
+                row_loading_pct: float = 100.0 * max(
+                    float(opf_vars.branch_vars.worst_contingency_loading[0, tie_branch]),
+                    abs(float(opf_vars.branch_vars.loading[0, tie_branch])))
+                if (opf_vars.branch_vars.monitor_logic[0, tie_branch]
+                        and row_loading_pct >= self.options.loading_threshold_to_report):
+                    self.results.worst_contingency_ties.append((t_idx,) + tie)
+                else:
+                    pass  # the report never displays this branch
 
-            # the snapshot LP always runs at its internal t = 0, so re-stamp every report
-            # entry with the time series step index before accumulating
-            for report_entry in opf_vars.branch_vars.contingency_flow_data:
-                self.results.contingency_flows_list.append((t_idx,) + tuple(report_entry[1:]))
+            # The time series only reads the relaxed rows back (total slack per step). Keeping every
+            # admitted N-1 row instead grows the memory.
+            if not self.options.strict_formulation:
+                for report_entry in opf_vars.branch_vars.contingency_flow_data:
+                    if abs(report_entry[4]) + abs(report_entry[5]) > 0.0:
+                        self.results.contingency_flows_list.append((t_idx,) + tuple(report_entry[1:]))
+                    else:
+                        pass  # the limit held without relaxation
+            else:
+                pass  # the strict formulation has no contingency slacks to accumulate
 
             self.results.hvdc_Pf[t_idx, :] = opf_vars.hvdc_vars.flows[0, :]
             self.results.hvdc_loading[t_idx, :] = opf_vars.hvdc_vars.loading[0, :]
@@ -190,6 +207,10 @@ class OptimalNetTransferCapacityTimeSeriesDriver(TimeSeriesDriverTemplate):
 
             self.results.converged[t_idx] = opf_vars.acceptable_solution
             self.results.inter_area_flows[t_idx] = opf_vars.inter_area_flows[0]
+
+            # The step results are copied, so release this step LP (several GB on national grids
+            # with N-1) now; otherwise it stays alive while the next step builds its own
+            del opf_vars, model
 
             # update progress bar
             self.report_progress2(t_idx, len(self.time_indices))

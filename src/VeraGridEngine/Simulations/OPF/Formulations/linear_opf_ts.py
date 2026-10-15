@@ -11,11 +11,12 @@ That means that solves the OPF problem for a complete time series at once
 from __future__ import annotations
 import os
 import numpy as np
-from typing import List, Union, Tuple, Callable
+from typing import Dict, List, Union, Tuple, Callable
 from scipy.sparse import csc_matrix
 
 from VeraGridEngine.IO.file_system import opf_file_path
-from VeraGridEngine.Devices.multi_circuit import MultiCircuit
+from VeraGridEngine.Devices.multi_circuit import MultiCircuit, FacilityDispatchGroup
+from VeraGridEngine.Devices.Aggregation.facility import Facility
 from VeraGridEngine.Devices.Aggregation.inter_aggregation_info import InterAggregationInfo
 from VeraGridEngine.Devices.Events.contingency_group import ContingencyGroup
 from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
@@ -36,7 +37,7 @@ from VeraGridEngine.DataStructures.fluid_p2x_data import FluidP2XData
 from VeraGridEngine.basic_structures import Logger, Vec, IntVec, DateVec, Mat
 from VeraGridEngine.Utils.MIP.selected_interface import LpExp, LpVar, LpModel, lpDot, join, get_model_instance
 from VeraGridEngine.enumerations import (HvdcControlType, ZonalGrouping, MIPSolvers, TapPhaseControl,
-                                         ConverterControlType, MIPFramework, OpfDispatchMode)
+                                         ConverterControlType, MIPFramework, OpfDispatchMode, BatteryDispatchMode)
 from VeraGridEngine.Simulations.LinearFactors.linear_analysis import (LinearAnalysis, LinearMultiContingency,
                                                                       LinearMultiContingencies)
 
@@ -310,6 +311,8 @@ class BatteryVars(GenerationVars):
 
     __slots__ = (
         'e',
+        'charge',
+        'discharge',
     )
 
     def __init__(self, nt: int, n_elm: int):
@@ -320,6 +323,8 @@ class BatteryVars(GenerationVars):
         """
         GenerationVars.__init__(self, nt=nt, n_elm=n_elm)
         self.e = np.zeros((nt, n_elm), dtype=object)
+        self.charge: np.ndarray = np.zeros((nt, n_elm), dtype=object)
+        self.discharge: np.ndarray = np.zeros((nt, n_elm), dtype=object)
 
     def get_values(self, Sbase: float, model: LpModel,
                    gen_emissions_rates_matrix: csc_matrix = None,  # not needed but included for compatibiliy
@@ -336,6 +341,8 @@ class BatteryVars(GenerationVars):
             for i in range(n_elm):
                 data.p[t, i] = model.get_value(self.p[t, i]) * Sbase
                 data.e[t, i] = model.get_value(self.e[t, i]) * Sbase
+                data.charge[t, i] = model.get_value(self.charge[t, i]) * Sbase
+                data.discharge[t, i] = model.get_value(self.discharge[t, i]) * Sbase
                 data.shedding[t, i] = model.get_value(self.shedding[t, i]) * Sbase
                 data.producing[t, i] = model.get_value(self.producing[t, i])
                 data.starting_up[t, i] = model.get_value(self.starting_up[t, i])
@@ -346,6 +353,8 @@ class BatteryVars(GenerationVars):
             # format the arrays appropriately
             data.p = data.p.astype(float, copy=False)
             data.e = data.e.astype(float, copy=False)
+            data.charge = data.charge.astype(float, copy=False)
+            data.discharge = data.discharge.astype(float, copy=False)
             data.shedding = data.shedding.astype(float, copy=False)
             data.producing = data.producing.astype(int, copy=False)
             data.starting_up = data.starting_up.astype(int, copy=False)
@@ -1994,6 +2003,8 @@ def add_linear_battery_formulation(t: Union[int, None],
             p_pos = prob.add_var(0, 1e20, join("batt_ppos_", [t, k], "_"))
             p_neg = prob.add_var(0, 1e20, join("batt_pneg_", [t, k], "_"))
             batt_vars.p[t, k] = p_pos - p_neg
+            batt_vars.charge[t, k] = p_neg
+            batt_vars.discharge[t, k] = p_pos
 
             # The battery energy recurrence is shared by both dispatchable and fixed-power
             # operation modes, so compute the modeled interval once before the dispatchability
@@ -2178,6 +2189,104 @@ def add_linear_battery_formulation(t: Union[int, None],
             batt_vars.p[t, k] = 0.0
 
     return f_obj
+
+
+def add_facility_battery_constraints(t: int,
+                                     global_t: int | None,
+                                     facility_groups: Dict[Facility, FacilityDispatchGroup],
+                                     nc: NumericalCircuit,
+                                     mip_vars: OpfVars,
+                                     prob: LpModel,
+                                     skip_generation_limits: bool) -> None:
+    """Limit restricted battery flows to their facility's actual production and demand.
+
+    Budgets use gross generation and served demand, without prioritizing local
+    consumption over charging. Grid-mode batteries do not consume these budgets.
+
+    :param t: Local optimization time index.
+    :param global_t: Profile time index, or None for snapshot values.
+    :param facility_groups: Precomputed device references and compiled indices per facility.
+    :param nc: Compiled circuit at the profile time index.
+    :param mip_vars: Optimization variables, in per unit.
+    :param prob: Optimization model.
+    :param skip_generation_limits: Whether generator power bounds are disabled.
+    :return: None.
+    """
+    # Devices without a facility opt out and do not appear in these groups.
+    for facility, group in facility_groups.items():
+        label: str = facility.idtag
+        charge: LpExp | float = 0.0
+        discharge: LpExp | float = 0.0
+        generation: LpExp | float = 0.0
+        demand: LpExp | float = 0.0
+        restricted: bool = False
+        local_discharge: bool = False
+        for battery, k in group.batteries.items():
+            mode: BatteryDispatchMode = battery.get_dispatch_mode_prof_at(global_t)
+            if (nc.battery_data.active[k] and nc.battery_data.bus_idx[k] >= 0
+                    and mode != BatteryDispatchMode.Grid):
+                restricted = True
+                charge += mip_vars.batt_vars.charge[t, k]
+                if mode == BatteryDispatchMode.PlantChargeAndDisCharge:
+                    discharge += mip_vars.batt_vars.discharge[t, k]
+                    local_discharge = True
+                else:
+                    pass
+            else:
+                pass
+
+        # Skip resource devices entirely when this facility has no restricted batteries.
+        if restricted:
+            for generator, k in group.generators.items():
+                if nc.generator_data.active[k] and nc.generator_data.bus_idx[k] >= 0:
+                    p: LpExp | LpVar | float = mip_vars.gen_vars.p[t, k]
+                    lower: float = min(0.0, nc.generator_data.p[k]) / nc.Sbase
+                    upper: float = max(0.0, nc.generator_data.p[k]) / nc.Sbase
+                    if nc.generator_data.dispatchable[k]:
+                        lower = min(0.0, nc.generator_data.pmin[k]) / nc.Sbase
+                        upper = max(0.0, nc.generator_data.pmax[k]) / nc.Sbase
+                        if skip_generation_limits:
+                            lower = -1e20
+                            upper = 1e20
+                        else:
+                            pass
+                    else:
+                        pass
+                    if lower < 0.0 < upper:
+                        # Reversible generators must not invent production while consuming power.
+                        producing: LpVar = prob.add_int(0, 1, f"facility_gen_direction_{t}_{k}")
+                        positive: LpVar = prob.add_var(0, upper, f"facility_gen_supply_{t}_{k}")
+                        negative: LpVar = prob.add_var(0, -lower, f"facility_gen_demand_{t}_{k}")
+                        prob.add_cst(positive - negative == p, name=f"facility_gen_split_{t}_{k}")
+                        prob.add_cst(positive <= upper * producing, name=f"facility_gen_positive_{t}_{k}")
+                        prob.add_cst(negative <= -lower * (1 - producing), name=f"facility_gen_negative_{t}_{k}")
+                        generation += positive
+                        demand += negative
+                    elif upper > 0.0:
+                        generation += p
+                    else:
+                        demand -= p
+                else:
+                    pass
+
+            # Static generation is negative load; shedding reduces served demand.
+            for device, k in group.loads.items():
+                if nc.load_data.active[k] and nc.load_data.bus_idx[k] >= 0:
+                    if nc.load_data.S[k].real < 0.0:
+                        generation -= mip_vars.load_vars.p[t, k]
+                    else:
+                        demand += mip_vars.load_vars.p[t, k]
+                else:
+                    pass
+
+            # Each facility spends its generation and demand allowances only once.
+            prob.add_cst(charge <= generation, name=f"facility_battery_charge_{t}_{label}")
+            if local_discharge:
+                prob.add_cst(discharge <= demand, name=f"facility_battery_discharge_{t}_{label}")
+            else:
+                pass
+        else:
+            pass
 
 
 def add_nodal_capacity_formulation(t: Union[int, None],
@@ -3086,6 +3195,9 @@ def run_linear_opf_ts(grid: MultiCircuit,
     logger.add_info(f"MIP Framework", value=lp_model.name)
     logger.add_info(f"MIP Solver", value=solver_type.value)
 
+    # Facility membership is static across all modeled time steps.
+    facility_groups: Dict[Facility, FacilityDispatchGroup] = grid.build_facility_dispatch_groups()
+
     # objective function
     f_obj: Union[LpExp, float] = 0.0
 
@@ -3363,6 +3475,14 @@ def run_linear_opf_ts(grid: MultiCircuit,
             )
         else:
             raise ValueError(f"dispatch mode not supported {dispatch_mode}")
+
+        add_facility_battery_constraints(t=local_t_idx,
+                                         global_t=global_t_idx,
+                                         facility_groups=facility_groups,
+                                         nc=nc,
+                                         mip_vars=mip_vars,
+                                         prob=lp_model,
+                                         skip_generation_limits=skip_generation_limits)
 
         # formulate nodal capacity -------------------------------------------------------------------------------------
         if dispatch_mode == OpfDispatchMode.NodalCapacity:

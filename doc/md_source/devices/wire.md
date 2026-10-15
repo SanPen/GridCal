@@ -9,20 +9,21 @@ This device stores reusable equipment data that can be applied to physical netwo
 ### Registered properties
 Profile-enabled properties: none.
 
-|      name       |   class_type   | unit |mandatory|max_chars|                      descriptions                      |has_profile|comment|
-|-----------------|----------------|------|---------|---------|--------------------------------------------------------|-----------|-------|
-|idtag            |str             |      |False    |         |Unique ID                                               |False      |       |
-|name             |str             |      |False    |         |Name of the device.                                     |False      |       |
-|code             |str             |      |False    |         |Secondary ID                                            |False      |       |
-|rdfid            |str             |      |False    |         |RDF ID for further compatibility                        |False      |       |
-|action           |enum ActionType |      |False    |         |Object action to perform. Only used for model merging.  |False      |       |
-|selected_to_merge|bool            |      |False    |         |Whether this object should be applied during diff merge.|False      |       |
-|comment          |str             |      |False    |         |User comment                                            |False      |       |
-|diff_changes     |MergeInformation|      |False    |         |                                                        |False      |       |
-|R                |float           |Ohm/km|False    |         |resistance of the conductor                             |False      |       |
-|diameter         |float           |mm    |False    |         |Diameter of wire                                        |False      |       |
-|diameter_internal|float           |mm    |False    |         |Internal radius of the conductor                        |False      |       |
-|is_tube          |bool            |      |False    |         |Is it a tubular conductor?                              |False      |       |
-|max_current      |float           |kA    |False    |         |Maximum current of the conductor                        |False      |       |
-|stranding        |str             |      |False    |         |Stranding of wire                                       |False      |       |
-|material         |str             |      |False    |         |Material of wire                                        |False      |       |
+|      name       |   class_type   | unit |mandatory|max_chars|                                                                             descriptions                                                                             |has_profile|comment|
+|-----------------|----------------|------|---------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|-------|
+|idtag            |str             |      |False    |         |Unique ID                                                                                                                                                             |False      |       |
+|name             |str             |      |False    |         |Name of the device.                                                                                                                                                   |False      |       |
+|code             |str             |      |False    |         |Secondary ID                                                                                                                                                          |False      |       |
+|rdfid            |str             |      |False    |         |RDF ID for further compatibility                                                                                                                                      |False      |       |
+|action           |enum ActionType |      |False    |         |Object action to perform. Only used for model merging.                                                                                                                |False      |       |
+|selected_to_merge|bool            |      |False    |         |Whether this object should be applied during diff merge.                                                                                                              |False      |       |
+|comment          |str             |      |False    |         |User comment                                                                                                                                                          |False      |       |
+|diff_changes     |MergeInformation|      |False    |         |                                                                                                                                                                      |False      |       |
+|R                |float           |Ohm/km|False    |         |resistance of the conductor                                                                                                                                           |False      |       |
+|diameter         |float           |mm    |False    |         |Diameter of wire                                                                                                                                                      |False      |       |
+|gmr              |float           |mm    |False    |         |Geometric mean radius in mm for series impedance. 0 = automatic from conductor geometry; positive = specified GMR. The physical diameter still determines capacitance.|False      |       |
+|diameter_internal|float           |mm    |False    |         |Internal radius of the conductor                                                                                                                                      |False      |       |
+|is_tube          |bool            |      |False    |         |Is it a tubular conductor?                                                                                                                                            |False      |       |
+|max_current      |float           |kA    |False    |         |Maximum current of the conductor                                                                                                                                      |False      |       |
+|stranding        |str             |      |False    |         |Stranding of wire                                                                                                                                                     |False      |       |
+|material         |str             |      |False    |         |Material of wire                                                                                                                                                      |False      |       |

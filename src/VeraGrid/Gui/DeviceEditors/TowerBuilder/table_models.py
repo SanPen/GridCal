@@ -31,11 +31,12 @@ class WiresTable(QtCore.QAbstractTableModel):
 
         QtCore.QAbstractTableModel.__init__(self, parent)
 
-        self.header = ['Name', 'R (Ohm/km)', 'Diameter (mm)', 'max current (kA)']
+        self.header = ['Name', 'R (Ohm/km)', 'Diameter (mm)', 'max current (kA)',
+                       'GMR (mm; 0 = automatic)', 'Effective GMR (mm)']
 
-        self.converter = {0: str, 1: float, 2: float, 3: float}
+        self.converter = {0: str, 1: float, 2: float, 3: float, 4: float, 5: float}
 
-        self.editable = [False, False, False, False]
+        self.editable = [False] * len(self.header)
 
         self.wires: List[Wire] = list()
 
@@ -103,8 +104,15 @@ class WiresTable(QtCore.QAbstractTableModel):
                     return str(wire.diameter)
                 elif index.column() == 3:
                     return str(wire.max_current)
+                elif index.column() == 4:
+                    return str(wire.gmr) if wire.gmr > 0.0 else 'Automatic'
+                elif index.column() == 5:
+                    return str(wire.get_gmr() * 1000.0)
 
                 return ""
+            elif role == QtCore.Qt.ItemDataRole.ToolTipRole and index.column() in (4, 5):
+                return ('Edit gmr in the Wire catalogue: 0 calculates GMR from geometry; '
+                        'a positive value supplies GMR in mm. Diameter remains the physical diameter.')
         return None
 
     def headerData(self,

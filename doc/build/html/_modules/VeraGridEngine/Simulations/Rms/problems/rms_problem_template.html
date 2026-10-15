@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Rms.problems.rms_problem_template &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Simulations.Rms.problems.rms_problem_template &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -69,7 +69,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -133,7 +134,7 @@
         <span class="n">power</span><span class="p">:</span> <span class="nb">complex</span><span class="p">,</span>
         <span class="n">voltage</span><span class="p">:</span> <span class="nb">complex</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert one complex-power operating point to rectangular current.</span>
 
 <span class="sd">    The RMS injection convention is ``S = V * conj(I)``. This helper supplies</span>
@@ -144,7 +145,7 @@
 <span class="sd">    :param power: Complex injected power in per unit.</span>
 <span class="sd">    :param voltage: Complex terminal voltage in per unit.</span>
 <span class="sd">    :return: Real and imaginary current components in per unit.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">voltage_squared</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span>
         <span class="n">voltage</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="n">voltage</span><span class="o">.</span><span class="n">real</span> <span class="o">+</span> <span class="n">voltage</span><span class="o">.</span><span class="n">imag</span> <span class="o">*</span> <span class="n">voltage</span><span class="o">.</span><span class="n">imag</span>
     <span class="p">)</span>
@@ -171,7 +172,7 @@
         <span class="n">residual</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">reference_column</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Solve one RMS Newton system while fixing an explicit gauge coordinate.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solve one RMS Newton system while fixing an explicit gauge coordinate.</span>
 
 <span class="sd">    AC RMS systems can retain one global voltage-angle coordinate while exposing</span>
 <span class="sd">    one fewer independent residual. Appending a zero-correction constraint for</span>
@@ -183,7 +184,7 @@
 <span class="sd">    :param reference_column: Optional Jacobian column of the fixed gauge value.</span>
 <span class="sd">    :return: Finite direct correction when the system is square or has one known</span>
 <span class="sd">        gauge coordinate; otherwise the minimum-norm least-squares correction.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">row_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">jacobian</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">column_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">jacobian</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">correction</span><span class="p">:</span> <span class="n">Vec</span>
@@ -209,7 +210,7 @@
             <span class="p">)</span>
             <span class="n">augmented_jacobian</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span>
                 <span class="p">(</span><span class="n">jacobian</span><span class="p">,</span> <span class="n">reference_row</span><span class="p">),</span>
-                <span class="nb">format</span><span class="o">=</span><span class="s2">"csc"</span><span class="p">,</span>
+                <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">augmented_residual</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
                 <span class="p">(</span><span class="n">residual</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
@@ -224,7 +225,7 @@
             <span class="n">row_magnitudes</span><span class="p">[</span><span class="n">row_magnitudes</span> <span class="o">&lt;</span> <span class="mf">1.0e-14</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
             <span class="n">row_scaling</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">row_magnitudes</span>
             <span class="n">row_scaled_jacobian</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">sp</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">row_scaling</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"csc"</span><span class="p">)</span> <span class="o">@</span> <span class="n">augmented_jacobian</span>
+                <span class="n">sp</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">row_scaling</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">)</span> <span class="o">@</span> <span class="n">augmented_jacobian</span>
             <span class="p">)</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
             <span class="n">column_magnitudes</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
                 <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">row_scaled_jacobian</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span>
@@ -232,7 +233,7 @@
             <span class="n">column_magnitudes</span><span class="p">[</span><span class="n">column_magnitudes</span> <span class="o">&lt;</span> <span class="mf">1.0e-14</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
             <span class="n">column_scaling</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">column_magnitudes</span>
             <span class="n">equilibrated_jacobian</span><span class="p">:</span> <span class="n">sp</span><span class="o">.</span><span class="n">csc_matrix</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">row_scaled_jacobian</span> <span class="o">@</span> <span class="n">sp</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">column_scaling</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"csc"</span><span class="p">)</span>
+                <span class="n">row_scaled_jacobian</span> <span class="o">@</span> <span class="n">sp</span><span class="o">.</span><span class="n">diags</span><span class="p">(</span><span class="n">column_scaling</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">)</span>
             <span class="p">)</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
             <span class="n">equilibrated_residual</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">augmented_residual</span> <span class="o">*</span> <span class="n">row_scaling</span>
             <span class="n">equilibrated_correction</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">spsolve</span><span class="p">(</span>
@@ -250,13 +251,13 @@
 <div class="viewcode-block" id="project_initial_algebraic_state">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.project_initial_algebraic_state">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">project_initial_algebraic_state</span><span class="p">(</span>
-        <span class="n">problem</span><span class="p">:</span> <span class="s2">"RmsProblemTemplate"</span><span class="p">,</span>
+        <span class="n">problem</span><span class="p">:</span> <span class="s2">&quot;RmsProblemTemplate&quot;</span><span class="p">,</span>
         <span class="n">initial_values</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">differential_values</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
         <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Vec</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""Project an RMS initial vector onto its algebraic constraint manifold.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Project an RMS initial vector onto its algebraic constraint manifold.</span>
 
 <span class="sd">    Explicit ``inc(...)`` equations seed controller states, while the remaining</span>
 <span class="sd">    algebraic variables still need a zero-time network solve. Performing that</span>
@@ -269,7 +270,7 @@
 <span class="sd">    :param tolerance: Required infinity norm of the algebraic residual.</span>
 <span class="sd">    :param max_iter: Maximum Newton projection iterations.</span>
 <span class="sd">    :return: Projected vector, convergence flag, and final residual norm.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">projected_values</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">initial_values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">algebraic_offset</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_states_number</span><span class="p">()</span>
     <span class="n">residual</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">problem</span><span class="o">.</span><span class="n">rhs_algebraic</span><span class="p">(</span><span class="n">projected_values</span><span class="p">,</span> <span class="n">differential_values</span><span class="p">)</span>
@@ -345,15 +346,15 @@
 <div class="viewcode-block" id="RmsProblemTemplate">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RmsProblemTemplate</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Abstract base class for RMS dynamic simulation problems.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">"_is_initialized"</span><span class="p">,</span>
-        <span class="s2">"progress_signal"</span><span class="p">,</span>
-        <span class="s2">"progress_text"</span><span class="p">,</span>
-        <span class="s2">"grid"</span><span class="p">,</span>
-        <span class="s2">"power_flow_results"</span><span class="p">,</span>
+        <span class="s2">&quot;_is_initialized&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;progress_signal&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;progress_text&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;grid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;power_flow_results&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -379,7 +380,7 @@
 <div class="viewcode-block" id="RmsProblemTemplate.get_vars_info">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.get_vars_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_vars_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">ALL_DEV_TYPES</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]]:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"get_device_vars_dict"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;get_device_vars_dict&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemTemplate.get_all_vars_number">
@@ -431,95 +432,95 @@
 
 
     <span class="c1"># def get_constant_parameters(self) -&gt; Vec:</span>
-    <span class="c1">#     raise NotImplementedError("get_constant_parameters")</span>
+    <span class="c1">#     raise NotImplementedError(&quot;get_constant_parameters&quot;)</span>
 
 <div class="viewcode-block" id="RmsProblemTemplate.get_x0">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.get_x0">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_x0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"get_x0"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;get_x0&quot;</span><span class="p">)</span></div>
 
 
     <span class="c1"># def compute_event_params(self, parameters: Vec, time_value: float) -&gt; Vec:</span>
-    <span class="c1">#     raise NotImplementedError("compute_event_params")</span>
+    <span class="c1">#     raise NotImplementedError(&quot;compute_event_params&quot;)</span>
 
 <div class="viewcode-block" id="RmsProblemTemplate.update_variable_params">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.update_variable_params">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_variable_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x_snapshot</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"update_variable_params"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;update_variable_params&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemTemplate.get_dx">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.get_dx">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">xn</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"derivative"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;derivative&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemTemplate.rhs_state">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.rhs_state">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rhs_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"rhs_state"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;rhs_state&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemTemplate.rhs_algebraic">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.rhs_algebraic">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rhs_algebraic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">diff_values</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"rhs_algebraic"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;rhs_algebraic&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemTemplate.get_j11">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.get_j11">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_j11</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"get_j11"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;get_j11&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemTemplate.get_j12">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.get_j12">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_j12</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"get_j12"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;get_j12&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemTemplate.get_j21">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.get_j21">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_j21</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"get_j21"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;get_j21&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemTemplate.get_j22">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.get_j22">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_j22</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"get_j22"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;get_j22&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemTemplate.get_E_matrix">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.get_E_matrix">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_E_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span><span class="n">Vec</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span><span class="n">Vec</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"get_E_matrix"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;get_E_matrix&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemTemplate.get_static_state_matrix">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.get_static_state_matrix">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_static_state_matrix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">dx</span><span class="p">:</span> <span class="n">Vec</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"get_static_state_matrix"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;get_static_state_matrix&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemTemplate.get_small_signal_reference_indices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.get_small_signal_reference_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_small_signal_reference_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the augmented-Jacobian row and column used to fix the angle gauge.</span>
 
 <span class="sd">        Problems without an explicit electrical angle reference do not require</span>
 <span class="sd">        a small-signal gauge constraint and return ``None``.</span>
 
 <span class="sd">        :return: Reference row and column, or ``None`` when not applicable.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
     
 <div class="viewcode-block" id="RmsProblemTemplate.get_dt_value">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.get_dt_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dt_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"get_dt_value"</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;get_dt_value&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemTemplate.get_generator_injection_data">
@@ -591,7 +592,10 @@
             <span class="n">bus_index</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="p">]</span>
             <span class="n">Vbus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">power_flow_results</span><span class="o">.</span><span class="n">voltage</span><span class="p">[</span><span class="n">bus_index</span><span class="p">]</span>
             <span class="n">scale</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">use_kw</span> <span class="k">else</span> <span class="mf">1.0</span>
-            <span class="k">return</span> <span class="n">Vbus</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">((</span><span class="n">elm</span><span class="o">.</span><span class="n">get_Y_at</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Sbase</span><span class="p">)</span> <span class="o">*</span> <span class="n">Vbus</span><span class="p">)</span>
+            <span class="c1"># The RMS problem stores power injected into the bus. A shunt</span>
+            <span class="c1"># admittance consumes ``V * conj(Y * V)``, so its network injection</span>
+            <span class="c1"># is the negative of that consumed complex power.</span>
+            <span class="k">return</span> <span class="o">-</span><span class="n">Vbus</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">conj</span><span class="p">((</span><span class="n">elm</span><span class="o">.</span><span class="n">get_Y_at</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">Sbase</span><span class="p">)</span> <span class="o">*</span> <span class="n">Vbus</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="nb">complex</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span></div>
 
@@ -657,14 +661,14 @@
 <div class="viewcode-block" id="RmsProblemTemplate.report_progress">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.report_progress">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">report_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Emit one absolute RMS progress update.</span>
 
 <span class="sd">        :param val: Progress value in percent.</span>
 <span class="sd">        :type val: float</span>
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -674,7 +678,7 @@
 <div class="viewcode-block" id="RmsProblemTemplate.report_progress2">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.report_progress2">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">report_progress2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Emit one RMS progress update from a zero-based iteration index.</span>
 
 <span class="sd">        :param current: Zero-based iteration index.</span>
@@ -683,7 +687,7 @@
 <span class="sd">        :type total: int</span>
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="p">((</span><span class="n">current</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
@@ -694,14 +698,14 @@
 <div class="viewcode-block" id="RmsProblemTemplate.report_text">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_template.RmsProblemTemplate.report_text">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">report_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Emit a textual update describing the current RMS simulation stage.</span>
 
 <span class="sd">        :param text: Human-readable progress message.</span>
 <span class="sd">        :type text: str</span>
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_text</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">progress_text</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>

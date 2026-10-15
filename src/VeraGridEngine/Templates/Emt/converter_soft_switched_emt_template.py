@@ -1010,8 +1010,10 @@ def get_soft_switched_emt_converter(vf: VarFactory, name: str = "switched_conver
         data_vpk,
     ]))
 
+    # Keep the connected child hierarchy intact. The current EMT initializer walks
+    # those blocks to apply the power-flow seeds and block-local initialization
+    # equations; flattening here left the soft converter at the zero fallback.
     templ.block.children.extend(list([data_block, outer_loop_block, plant_block]))
-    templ.block.unify_blocks()
     templ.block.in_vars = list([v_A, v_B, v_C, v_dc_bus])
     templ.block.out_vars = list([
         i_A,

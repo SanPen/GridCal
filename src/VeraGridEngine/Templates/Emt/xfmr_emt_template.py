@@ -202,6 +202,7 @@ def get_xfmr_emt_template(
     # Static parameters mapped from the transformer API object.
     # ------------------------------------------------------------------
     omega_base: Var = vf.add_var(name=f"omega_base")
+    system_sbase: Var = vf.add_var(name="xfmr_system_sbase_mva")
     xfmr_s_rated_mva: Var = vf.add_var(name=f"xfmr_s_rated_mva")
     xfmr_oc_current_pct: Var = vf.add_var(name=f"xfmr_oc_current_pct")
     xfmr_oc_loss_kw: Var = vf.add_var(name=f"xfmr_oc_loss_kw")
@@ -209,12 +210,14 @@ def get_xfmr_emt_template(
     xfmr_sc_loss_kw: Var = vf.add_var(name=f"xfmr_sc_loss_kw")
     xfmr_tap_module: Var = vf.add_var(name=f"xfmr_tap_module")
 
+    block.api_obj_mapping[ParamPowerFlowReferenceType.Sbase] = system_sbase
     # Static API-mapped values belong to the physical transformer. ``None`` is
     # intentional: it keeps each UID visible to the initializer while forcing
     # the EMT assembler to supply the real device value. A numerical fallback
     # here would silently change leakage and magnetizing branches whenever the
     # wrapper mapping was not propagated correctly.
     block.parameters[omega_base] = vf.add_const(None)
+    block.parameters[system_sbase] = vf.add_const(None)
     block.parameters[xfmr_s_rated_mva] = vf.add_const(None)
     block.parameters[xfmr_oc_current_pct] = vf.add_const(None)
     block.parameters[xfmr_oc_loss_kw] = vf.add_const(None)
@@ -345,9 +348,13 @@ def get_xfmr_emt_template(
     # ------------------------------------------------------------------
     block.event_dict[xfmr_sc_resistance_pct] = xfmr_sc_loss_kw / (vf.add_const(10.0) * xfmr_s_rated_mva + c_eps)
 
+    # Terminal currents use the network three-phase base. Nameplate test
+    # quantities are on the transformer rating; convert before injecting them.
+    impedance_base_ratio: Expr = system_sbase / (xfmr_s_rated_mva + c_eps)
+    admittance_base_ratio: Expr = xfmr_s_rated_mva / (system_sbase + c_eps)
     oc_loss_pu: Expr = (xfmr_oc_loss_kw / vf.add_const(1000.0)) / (xfmr_s_rated_mva + c_eps)
     oc_current_pu: Expr = xfmr_oc_current_pct / vf.add_const(100.0)
-    i_mag_pu: Expr = sym.sqrt(oc_current_pu * oc_current_pu - oc_loss_pu * oc_loss_pu + c_eps)
+    i_mag_pu: Expr = sym.sqrt(oc_current_pu * oc_current_pu - oc_loss_pu * oc_loss_pu + c_eps) * admittance_base_ratio
 
     block.event_dict[xfmr_core_linear_l_pu] = c1 / (i_mag_pu + c_eps)
 
@@ -377,8 +384,8 @@ def get_xfmr_emt_template(
     # ------------------------------------------------------------------
     # Leakage-branch parameters.
     # ------------------------------------------------------------------
-    z_sc_pu: Expr = xfmr_sc_voltage_pct / vf.add_const(100.0)
-    r_sc_pu: Expr = xfmr_sc_resistance_pct / vf.add_const(100.0)
+    z_sc_pu: Expr = xfmr_sc_voltage_pct / vf.add_const(100.0) * impedance_base_ratio
+    r_sc_pu: Expr = xfmr_sc_resistance_pct / vf.add_const(100.0) * impedance_base_ratio
     x_sc_pu: Expr = sym.sqrt(z_sc_pu * z_sc_pu - r_sc_pu * r_sc_pu + c_eps)
     l_sigma: Expr = x_sc_pu / (omega_base + c_eps)
     l_inv: Expr = c1 / (l_sigma + c_eps)
@@ -386,8 +393,10 @@ def get_xfmr_emt_template(
     # ------------------------------------------------------------------
     # Core-loss conductance from open-circuit losses.
     # ------------------------------------------------------------------
-    g_core_total: Expr = (xfmr_oc_loss_kw / vf.add_const(1000.0)) / (xfmr_s_rated_mva + c_eps)
-    g_core_leg: Expr = g_core_total / c3
+    g_core_total: Expr = (xfmr_oc_loss_kw / vf.add_const(1000.0)) / (system_sbase + c_eps)
+    # Phase voltage/current bases already use Sbase/3 per phase. At balanced
+    # nominal voltage, sum(v_phase*i_phase)/3 must equal total loss/Sbase.
+    g_core_leg: Expr = g_core_total
 
     # ------------------------------------------------------------------
     # Terminal electrical interface variables in abc frame.
@@ -978,20 +987,20 @@ def get_xfmr_emt_template(
     for k in range(3):
         init_eqs[i_loss_leg[k]] = g_core_leg * v_f_w[k]
 
-    # Leakage-current seed from PF-initialized from-side terminal current.
+    # Balanced fundamental seeds, consistent with the voltage-derived core
+    # flux above: capacitance current is C*dV/dt, not a KCL residual absorbing
+    # the core current. Project terminal current back to the winding frame
+    # and subtract the parallel core and capacitor currents from leakage.
     for k in range(3):
-        init_eqs[i_leak[k]] = if_act[k]
-
-    # Capacitor-current seeds from terminal current balance.  With no terminal
-    # capacitance, q = C v constrains the charge to zero for the complete
-    # simulation and therefore its initial derivative must also be zero.
-    for k in range(3):
-        init_eqs[i_cap_f[k]] = terminal_capacitance_enabled * (
-            if_act[k] - (i_series_from[k] + i_core_from_term[k])
-        )
-        init_eqs[i_cap_t[k]] = terminal_capacitance_enabled * (
-            it_act[k] - (-n_tap * i_series_to[k])
-        )
+        next_phase = (k + 1) % 3
+        previous_phase = (k + 2) % 3
+        init_eqs[i_cap_f[k]] = xfmr_c_term * omega_base * (
+            v_f_term[previous_phase] - v_f_term[next_phase]) * c_inv_sqrt3
+        init_eqs[i_cap_t[k]] = xfmr_c_term * omega_base * (
+            v_t_term[previous_phase] - v_t_term[next_phase]) * c_inv_sqrt3
+        init_eqs[i_leak[k]] = sum(
+            (c_f_expr[j][k] * (if_act[j] - i_cap_f[j]) for j in range(3)), c0
+        ) - i_mag[k] - i_loss_leg[k]
 
     block.init_eqs = init_eqs
 

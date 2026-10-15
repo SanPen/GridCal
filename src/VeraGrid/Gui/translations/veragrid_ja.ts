@@ -211,6 +211,201 @@ li.checked::マーカー { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&
     </message>
 </context>
 <context>
+    <name>AddSymbolDialog</name>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="12"/>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
+        <source>Add block property</source>
+        <translation>ブロックプロパティを追加</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="31"/>
+        <source>Define a new property for the selected block.</source>
+        <translation>選択されたブロックに新しいプロパティを定義します。</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="48"/>
+        <source>Owner block</source>
+        <translation>所有ブロック</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="58"/>
+        <source>Name</source>
+        <translation>名前</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="64"/>
+        <source>Enter a valid symbol name</source>
+        <translation>有効なシンボル名を入力してください</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="70"/>
+        <source>Variable type</source>
+        <translation>変数タイプ</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="80"/>
+        <source>Choose how this symbol participates in the dynamic model.</source>
+        <translation>このシンボルが動的モデルにどのように参加するかを選択してください。</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="98"/>
+        <source>Options</source>
+        <translation>オプション</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="111"/>
+        <source>Expose as output</source>
+        <translation>出力として公開</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="116"/>
+        <source>Create derivative variable</source>
+        <translation>微分変数を作成</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="130"/>
+        <source>Power-flow variable used to initialize this dynamic variable.</source>
+        <translation>この動的変数を初期化するために使用される電力潮流変数。</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="131"/>
+        <source>Power-flow initialization source</source>
+        <translation>潮流計算初期化ソース</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="154"/>
+        <source>Local initial value</source>
+        <translation>ローカル初期値</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="167"/>
+        <source>Device initial value</source>
+        <translation>デバイス初期値</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="186"/>
+        <source>Retained modes preserve discrete state between simulation steps.</source>
+        <translation>保持モードはシミュレーションステップ間で離散状態を保持します。</translation>
+    </message>
+    <message>
+        <source>Add parameter</source>
+        <translation>パラメータを追加</translation>
+    </message>
+    <message>
+        <source>Add retained mode</source>
+        <translation>保持モードを追加</translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation>変数を追加</translation>
+    </message>
+    <message>
+        <source>Algebraic</source>
+        <translation>代数</translation>
+    </message>
+    <message>
+        <source>Declare a configurable value owned by the selected dynamic block.</source>
+        <translation>選択された動的ブロックが所有する設定可能な値を宣言します。</translation>
+    </message>
+    <message>
+        <source>Declare a variable owned by the selected dynamic block.</source>
+        <translation>選択された動的ブロックが所有する変数を宣言します。</translation>
+    </message>
+    <message>
+        <source>Declare discrete state that persists between simulation steps.</source>
+        <translation>シミュレーションステップ間で永続する離散状態を宣言します。</translation>
+    </message>
+    <message>
+        <source>Dynamic parameter</source>
+        <translation>動的パラメータ</translation>
+    </message>
+    <message>
+        <source>Enter a valid Python symbol name.</source>
+        <translation>有効なPythonシンボル名を入力してください。</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>入力</translation>
+    </message>
+    <message>
+        <source>May change during the simulation and can optionally start from a grid-device value.</source>
+        <translation>シミュレーション中に変化する可能性があり、オプションでグリッドデバイスの値から開始できます。</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>なし</translation>
+    </message>
+    <message>
+        <source>Nothing was added: {message}</source>
+        <translation>何も追加されませんでした: {message}</translation>
+    </message>
+    <message>
+        <source>Parameter type</source>
+        <translation>パラメータタイプ</translation>
+    </message>
+    <message>
+        <source>Preserves discrete state between simulation steps.</source>
+        <translation>シミュレーションステップ間で離散状態を保持します。</translation>
+    </message>
+    <message>
+        <source>Receives its value from an incoming block connection.</source>
+        <translation>入力ブロック接続から値を受け取ります。</translation>
+    </message>
+    <message>
+        <source>Remains fixed during the simulation and can optionally start from a grid-device value.</source>
+        <translation>シミュレーション中に固定され、オプションでグリッドデバイスの値から開始できます。</translation>
+    </message>
+    <message>
+        <source>Represents a differential state integrated during the simulation.</source>
+        <translation>シミュレーション中に積分される微分状態を表します。</translation>
+    </message>
+    <message>
+        <source>Represents a value solved by the algebraic equations.</source>
+        <translation>代数方程式によって解かれる値を表します。</translation>
+    </message>
+    <message>
+        <source>Retained mode</source>
+        <translation>保持モード</translation>
+    </message>
+    <message>
+        <source>Search device parameters</source>
+        <translation>デバイスパラメータを検索</translation>
+    </message>
+    <message>
+        <source>Search power-flow variables</source>
+        <translation>潮流計算変数を検索</translation>
+    </message>
+    <message>
+        <source>Select a device initialization source from the list.</source>
+        <translation>リストからデバイス初期化ソースを選択してください。</translation>
+    </message>
+    <message>
+        <source>Select a power-flow initialization source from the list.</source>
+        <translation>リストから潮流計算初期化ソースを選択してください。</translation>
+    </message>
+    <message>
+        <source>Select a valid owner block.</source>
+        <translation>有効な所有ブロックを選択してください。</translation>
+    </message>
+    <message>
+        <source>Select a valid symbol type.</source>
+        <translation>有効なシンボルタイプを選択してください。</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>ステータス</translation>
+    </message>
+    <message>
+        <source>Static parameter</source>
+        <translation>静的パラメータ</translation>
+    </message>
+    <message>
+        <source>Use local numeric value</source>
+        <translation>ローカルの数値を使用</translation>
+    </message>
+</context>
+<context>
     <name>AdmittanceMatrixEditorWidget</name>
     <message>
         <location filename="../DeviceEditors/AdmittanceMatrixEditor/admittance_matrix_editor_gui.ui" line="19"/>
@@ -802,7 +997,7 @@ li.checked::マーカー { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&
     <name>BlockPropertyTreeModel</name>
     <message>
         <source>Missing PF mapping</source>
-        <translation>PFマッピングが不足しています</translation>
+        <translation type="vanished">PFマッピングが不足しています</translation>
     </message>
     <message>
         <source>Name</source>
@@ -818,7 +1013,7 @@ li.checked::マーカー { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&
     </message>
     <message>
         <source>Template issue: static parameters require api_obj_mapping. An independently editable parameter should be in event_dict. This refactor does not migrate templates automatically.</source>
-        <translation>テンプレートの問題：静的パラメータはapi_obj_mappingが必要です。独立して編集可能なパラメータはevent_dictに含まれている必要があります。このリファクタリングではテンプレートは自動的に移行されません。</translation>
+        <translation type="vanished">テンプレートの問題：静的パラメータはapi_obj_mappingが必要です。独立して編集可能なパラメータはevent_dictに含まれている必要があります。このリファクタリングではテンプレートは自動的に移行されません。</translation>
     </message>
     <message>
         <source>Type</source>
@@ -827,6 +1022,14 @@ li.checked::マーカー { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&
     <message>
         <source>Value / PF reference</source>
         <translation>値 / PF参照</translation>
+    </message>
+    <message>
+        <source>Fixed local value. Select a device initialization mapping only when this value must come from the associated grid device.</source>
+        <translation>固定ローカル値。この値が関連するグリッドデバイスから取得する必要がある場合にのみ、デバイス初期化マッピングを選択してください。</translation>
+    </message>
+    <message>
+        <source>Invalid device initialization mapping: the target is not declared in this block's parameters or event_dict.</source>
+        <translation>無効なデバイス初期化マッピング: ターゲットがこのブロックのパラメータまたはevent_dictで宣言されていません。</translation>
     </message>
 </context>
 <context>
@@ -3246,6 +3449,58 @@ Reference: {status}</source>
         <source>Valid</source>
         <translation>有効</translation>
     </message>
+    <message>
+        <source>Equation counts</source>
+        <translation>方程式の数</translation>
+    </message>
+    <message>
+        <source>Repeated variable names</source>
+        <translation>重複した変数名</translation>
+    </message>
+    <message>
+        <source>Static parameter mappings</source>
+        <translation>静的パラメータマッピング</translation>
+    </message>
+    <message>
+        <source>Unnamed block</source>
+        <translation>名前なしブロック</translation>
+    </message>
+    <message>
+        <source>Variable initialization</source>
+        <translation>変数初期化</translation>
+    </message>
+    <message>
+        <source>algebraic variables={variable_count}, algebraic equations={equation_count}</source>
+        <translation>代数変数={variable_count}、代数方程式={equation_count}</translation>
+    </message>
+    <message>
+        <source>derivative variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>初期化または潮流計算ソースが不足している微分変数: {variable_names}</translation>
+    </message>
+    <message>
+        <source>event parameters with no value: {parameter_names}</source>
+        <translation>値がないイベントパラメータ: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>mapping targets not declared as local parameters: {parameter_names}</source>
+        <translation>ローカルパラメータとして宣言されていないマッピングターゲット: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>parameters missing a static mapping: {parameter_names}</source>
+        <translation>静的マッピングが不足しているパラメータ: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>state variables={variable_count}, state equations={equation_count}</source>
+        <translation>状態変数={variable_count}、状態方程式={equation_count}</translation>
+    </message>
+    <message>
+        <source>variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>初期化または潮流計算ソースが不足している変数: {variable_names}</translation>
+    </message>
+    <message>
+        <source>variables: {variable_names}</source>
+        <translation>変数: {variable_names}</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -3354,7 +3609,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Enter a valid Python symbol name.</source>
-        <translation>有効なPythonシンボル名を入力してください。</translation>
+        <translation type="vanished">有効なPythonシンボル名を入力してください。</translation>
     </message>
     <message>
         <source>Equation PDF created: {path}</source>
@@ -3457,7 +3712,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>None</source>
-        <translation>なし</translation>
+        <translation type="vanished">なし</translation>
     </message>
     <message>
         <source>Nothing was applied: {message}</source>
@@ -3489,7 +3744,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Parameter whose value may change during the simulation.</source>
-        <translation>シミュレーション中に値が変化する可能性のあるパラメータ。</translation>
+        <translation type="vanished">シミュレーション中に値が変化する可能性のあるパラメータ。</translation>
     </message>
     <message>
         <source>Parameters</source>
@@ -3538,11 +3793,11 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Select a valid owner block.</source>
-        <translation>有効な所有ブロックを選択してください。</translation>
+        <translation type="vanished">有効な所有ブロックを選択してください。</translation>
     </message>
     <message>
         <source>Select a valid symbol type.</source>
-        <translation>有効なシンボルタイプを選択してください。</translation>
+        <translation type="vanished">有効なシンボルタイプを選択してください。</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="319"/>
@@ -3643,7 +3898,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Retained mode</source>
-        <translation>保持モード</translation>
+        <translation type="vanished">保持モード</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="82"/>
@@ -3698,7 +3953,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Nothing was added: {message}</source>
-        <translation>何も追加されませんでした: {message}</translation>
+        <translation type="vanished">何も追加されませんでした: {message}</translation>
     </message>
     <message>
         <source>Add to plot...</source>
@@ -4955,74 +5210,60 @@ select the expected processing format</source>
 <context>
     <name>Form</name>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="14"/>
         <source>Add block property</source>
-        <translation>ブロックプロパティを追加</translation>
+        <translation type="vanished">ブロックプロパティを追加</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
         <source>Add symbol to selected block</source>
-        <translation>選択されたブロックにシンボルを追加</translation>
+        <translation type="vanished">選択されたブロックにシンボルを追加</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="71"/>
         <source>Output</source>
-        <translation>出力</translation>
+        <translation type="vanished">出力</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="78"/>
         <source>Create derivative variable</source>
-        <translation>微分変数を作成</translation>
+        <translation type="vanished">微分変数を作成</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="144"/>
         <source>New symbol name</source>
-        <translation>新しいシンボル名</translation>
+        <translation type="vanished">新しいシンボル名</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="151"/>
         <source>Symbol category</source>
-        <translation>シンボルカテゴリ</translation>
+        <translation type="vanished">シンボルカテゴリ</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="158"/>
         <source>Owner block</source>
-        <translation>所有ブロック</translation>
+        <translation type="vanished">所有ブロック</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="165"/>
         <source>Type</source>
-        <translation>種類</translation>
+        <translation type="vanished">種類</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="172"/>
         <source>Add symbol</source>
-        <translation>シンボルを追加</translation>
+        <translation type="vanished">シンボルを追加</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="195"/>
         <source>Static device mapping</source>
-        <translation>静的デバイスマッピング</translation>
+        <translation type="vanished">静的デバイスマッピング</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="202"/>
         <source>Power-flow variable used to initialize this dynamic variable.</source>
-        <translation>この動的変数を初期化するために使用される電力潮流変数。</translation>
+        <translation type="vanished">この動的変数を初期化するために使用される電力潮流変数。</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="205"/>
         <source>Power-flow variable</source>
-        <translation>電力潮流変数</translation>
+        <translation type="vanished">電力潮流変数</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="266"/>
         <source>Enter a name</source>
-        <translation>名前を入力</translation>
+        <translation type="vanished">名前を入力</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="273"/>
         <source>Initial numeric value</source>
-        <translation>初期数値</translation>
+        <translation type="vanished">初期数値</translation>
     </message>
 </context>
 <context>
@@ -7717,6 +7958,195 @@ Do you want to continue without a template?</source>
     <message>
         <source>Stability boundary</source>
         <translation>安定性境界</translation>
+    </message>
+</context>
+<context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>両方の宣言はメーカー納入契約の一部であり、資格認定の前に必要です。</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>ブラウズ...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>既存のメーカーバイナリを選択してください。</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>選択されたインターフェースが必要とするメーカー宣言を完了してください。</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>宛先プロバイダー</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>各カンマ区切りの値は、その位置にあるソースの順序に対応する宛先の順序です。例: 1,0 はソース 0 を宛先 1 に、ソース 1 を宛先 0 にマッピングします。</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>例: 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>例: 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>例: 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>メーカーネイティブモデルをインポート</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>入力宛先順序</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>バリアントを検査してアタッチ</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>検査してインポート</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>バイナリを隔離されたワーカーで検査中...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>Linuxライブラリ (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>メーカーバイナリ</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>メーカーインターフェース</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>メーカーネイティブモデルが準備できました</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>メーカーネイティブモデルのバリアント</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>プロバイダーはまだインポートされていません。</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>なし</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>出力宛先順序</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>パラメータ宛先順序</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>プラットフォームバリアント</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>プロバイダー: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>プロバイダー: {provider}
+アタッチされたプラットフォーム: {platform}
+作成されたテンプレート: なし (既存のテンプレートを保持)。</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>プロバイダー: {provider}
+プラットフォーム: {platform}
+作成されたRMSテンプレート: {rms}
+作成されたEMTテンプレート: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>{platform}が資格認定され、アタッチされました: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>{name}が資格認定され、インポートされました。{rms}個のRMSおよび{emt}個のEMTテンプレートが作成されました。</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>既存のテンプレートを再バインド</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>選択したテンプレートを再バインド</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>{consumer}を{provider}に再バインドしました。</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>ソース、宛先、およびテンプレートを選択してください。</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>メーカーライブラリを選択</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>メーカー契約と、その事前コンパイルされたプラットフォームライブラリを選択してください。VeraGridがバイナリを隔離されたワーカーで検証し、実行します。</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>テンプレート</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>メーカーは、すべての変更可能なモデル状態が各インスタンスによって所有されていると宣言します。</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>メーカーは、ライブラリが遅延ネイティブローディングを行わないと宣言します。</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>Windowsライブラリ (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: 見つかりません</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
+    </message>
+    <message>
+        <source>Choose the LLVM bin directory</source>
+        <translation>LLVMのbinディレクトリを選択</translation>
+    </message>
+    <message>
+        <source>Choose the MinGW/UCRT support directory</source>
+        <translation>MinGW/UCRTサポートディレクトリを選択</translation>
+    </message>
+    <message>
+        <source>LLVM selection was cancelled; the manufacturer model was not imported.</source>
+        <translation>LLVMの選択がキャンセルされました。メーカーモデルはインポートされませんでした。</translation>
     </message>
 </context>
 <context>
@@ -10580,6 +11010,10 @@ ML設定でクラスター数を変更してください。</translation>
         <source>The short-circuit worker finished without results.</source>
         <translation>短絡計算ワーカーは結果なしで終了しました。</translation>
     </message>
+    <message>
+        <source>Power flow 3ph failed</source>
+        <translation>3相の潮流計算が失敗しました</translation>
+    </message>
 </context>
 <context>
     <name>SolarPvWizard</name>
@@ -11511,12 +11945,91 @@ You need to load or create a grid!</source>
         <translation type="vanished">このセクションで問題が見つかりました</translation>
     </message>
     <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="20"/>
         <source>Model Consistency Validation</source>
-        <translation type="vanished">モデル整合性検証</translation>
+        <translation>モデル整合性検証</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="31"/>
+        <source>Check the edited model&apos;s equation counts, variable names, parameter mappings, and variable initialization. This report is informational and does not block saving the model.</source>
+        <translation>編集されたモデルの方程式数、変数名、パラメータマッピング、変数初期化を確認してください。このレポートは情報提供のみであり、モデルの保存を妨げるものではありません。</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="53"/>
+        <source>Show:</source>
+        <translation>表示:</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="60"/>
+        <source>Filter validation results by check</source>
+        <translation>チェックごとに検証結果をフィルタリング</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="85"/>
+        <source>No validation results match this filter.</source>
+        <translation>このフィルターに一致する検証結果はありません。</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="95"/>
+        <source>Show issues in the model</source>
+        <translation>モデル内の問題をすべて表示</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="96"/>
+        <source>Show Issues</source>
+        <translation>問題を表示</translation>
     </message>
     <message>
         <source>Run an informational validation of the edited model structure, mappings, initialization, and port connectivity. This check reports issues but does not block saving the model.</source>
         <translation type="vanished">編集されたモデル構造、マッピング、初期化、およびポート接続に関する情報的な検証を実行します。このチェックは問題を報告しますが、モデルの保存をブロックすることはありません。</translation>
+    </message>
+    <message>
+        <source>All checks</source>
+        <translation>すべてのチェック</translation>
+    </message>
+    <message>
+        <source>Block</source>
+        <translation>エラー</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>警告</translation>
+    </message>
+    <message>
+        <source>Details</source>
+        <translation>詳細</translation>
+    </message>
+    <message>
+        <source>Issue</source>
+        <translation>問題</translation>
+    </message>
+    <message>
+        <source>Issues only</source>
+        <translation>問題のみ</translation>
+    </message>
+    <message>
+        <source>No issues found</source>
+        <translation>問題は見つかりませんでした</translation>
+    </message>
+    <message>
+        <source>No issues found.</source>
+        <translation>No issues found.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>わかりました</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>ステータス</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · No issues found</source>
+        <translation>{check_count} 個のチェック · 問題は見つかりませんでした</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · {issue_section_count} checks with issues · {finding_count} findings</source>
+        <translation>{check_count} 個のチェック · {issue_section_count} 個の問題を含むチェック · {finding_count} 個の所見</translation>
     </message>
 </context>
 <context>
@@ -17469,183 +17982,6 @@ You need to load or create a grid!</source>
     <message>
         <source>Question</source>
         <translation>質問</translation>
-    </message>
-</context>
-<context>
-    <name>ManufacturerNativeImporterDialog</name>
-    <message>
-        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
-        <translation>両方の宣言はメーカー納入契約の一部であり、資格認定の前に必要です。</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>ブラウズ...</translation>
-    </message>
-    <message>
-        <source>Choose an existing manufacturer binary.</source>
-        <translation>既存のメーカーバイナリを選択してください。</translation>
-    </message>
-    <message>
-        <source>Complete the manufacturer declarations required by the selected interface.</source>
-        <translation>選択されたインターフェースが必要とするメーカー宣言を完了してください。</translation>
-    </message>
-    <message>
-        <source>Destination provider</source>
-        <translation>宛先プロバイダー</translation>
-    </message>
-    <message>
-        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
-        <translation>各カンマ区切りの値は、その位置にあるソースの順序に対応する宛先の順序です。例: 1,0 はソース 0 を宛先 1 に、ソース 1 を宛先 0 にマッピングします。</translation>
-    </message>
-    <message>
-        <source>Example: 0,1</source>
-        <translation>例: 0,1</translation>
-    </message>
-    <message>
-        <source>Example: 1,0</source>
-        <translation>例: 1,0</translation>
-    </message>
-    <message>
-        <source>Example: 2,0,1</source>
-        <translation>例: 2,0,1</translation>
-    </message>
-    <message>
-        <source>Import manufacturer native model</source>
-        <translation>メーカーネイティブモデルをインポート</translation>
-    </message>
-    <message>
-        <source>Input destination ordinals</source>
-        <translation>入力宛先順序</translation>
-    </message>
-    <message>
-        <source>Inspect and attach variant</source>
-        <translation>バリアントを検査してアタッチ</translation>
-    </message>
-    <message>
-        <source>Inspect and import</source>
-        <translation>検査してインポート</translation>
-    </message>
-    <message>
-        <source>Inspecting the binary in an isolated worker...</source>
-        <translation>バイナリを隔離されたワーカーで検査中...</translation>
-    </message>
-    <message>
-        <source>Linux libraries (*.so)</source>
-        <translation>Linuxライブラリ (*.so)</translation>
-    </message>
-    <message>
-        <source>Manufacturer binary</source>
-        <translation>メーカーバイナリ</translation>
-    </message>
-    <message>
-        <source>Manufacturer interface</source>
-        <translation>メーカーインターフェース</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model ready</source>
-        <translation>メーカーネイティブモデルが準備できました</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model variants</source>
-        <translation>メーカーネイティブモデルのバリアント</translation>
-    </message>
-    <message>
-        <source>No provider has been imported yet.</source>
-        <translation>プロバイダーはまだインポートされていません。</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>なし</translation>
-    </message>
-    <message>
-        <source>Output destination ordinals</source>
-        <translation>出力宛先順序</translation>
-    </message>
-    <message>
-        <source>Parameter destination ordinals</source>
-        <translation>パラメータ宛先順序</translation>
-    </message>
-    <message>
-        <source>Platform variant</source>
-        <translation>プラットフォームバリアント</translation>
-    </message>
-    <message>
-        <source>Provider: {name}</source>
-        <translation>プロバイダー: {name}</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform attached: {platform}
-Templates created: None (existing templates retained).</source>
-        <translation>プロバイダー: {provider}
-アタッチされたプラットフォーム: {platform}
-作成されたテンプレート: なし (既存のテンプレートを保持)。</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform: {platform}
-RMS templates created: {rms}
-EMT templates created: {emt}</source>
-        <translation>プロバイダー: {provider}
-プラットフォーム: {platform}
-作成されたRMSテンプレート: {rms}
-作成されたEMTテンプレート: {emt}</translation>
-    </message>
-    <message>
-        <source>Qualified and attached {platform}: {digest}</source>
-        <translation>{platform}が資格認定され、アタッチされました: {digest}</translation>
-    </message>
-    <message>
-        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
-        <translation>{name}が資格認定され、インポートされました。{rms}個のRMSおよび{emt}個のEMTテンプレートが作成されました。</translation>
-    </message>
-    <message>
-        <source>Rebind an existing template</source>
-        <translation>既存のテンプレートを再バインド</translation>
-    </message>
-    <message>
-        <source>Rebind selected template</source>
-        <translation>選択したテンプレートを再バインド</translation>
-    </message>
-    <message>
-        <source>Rebound {consumer} to {provider}.</source>
-        <translation>{consumer}を{provider}に再バインドしました。</translation>
-    </message>
-    <message>
-        <source>Select a source, destination and template.</source>
-        <translation>ソース、宛先、およびテンプレートを選択してください。</translation>
-    </message>
-    <message>
-        <source>Select manufacturer library</source>
-        <translation>メーカーライブラリを選択</translation>
-    </message>
-    <message>
-        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
-        <translation>メーカー契約と、その事前コンパイルされたプラットフォームライブラリを選択してください。VeraGridがバイナリを隔離されたワーカーで検証し、実行します。</translation>
-    </message>
-    <message>
-        <source>Template</source>
-        <translation>テンプレート</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
-        <translation>メーカーは、すべての変更可能なモデル状態が各インスタンスによって所有されていると宣言します。</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that the library performs no late native loading.</source>
-        <translation>メーカーは、ライブラリが遅延ネイティブローディングを行わないと宣言します。</translation>
-    </message>
-    <message>
-        <source>Windows libraries (*.dll)</source>
-        <translation>Windowsライブラリ (*.dll)</translation>
-    </message>
-    <message>
-        <source>{platform}: missing</source>
-        <translation>{platform}: 見つかりません</translation>
-    </message>
-    <message>
-        <source>{platform}: {status}, SHA-256 {digest}</source>
-        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

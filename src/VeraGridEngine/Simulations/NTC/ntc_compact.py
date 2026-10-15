@@ -1006,7 +1006,6 @@ class CompactContingencies:
         self.monitor: BoolVec = (nc.passive_branch_data.monitor_loading.astype(bool)
                         & (base_vars.branch_vars.monitor_logic[0].astype(bool)
                            | nc.passive_branch_data.dc.astype(bool)))
-        base_vars.branch_vars.contingency_rates[0] = nc.passive_branch_data.contingency_rates
         self.symbolic_base: OperatingPoint = OperatingPoint(q=np.r_[base_vars.vsc_vars.flows[0], base_vars.hvdc_vars.flows[0]],
                                   flow=base_vars.branch_vars.flows[0], inj=base_vars.bus_vars.Pinj[0],
                                   potential=np.where(nc.bus_data.is_dc, base_vars.bus_vars.Vm[0], base_vars.bus_vars.Va[0]))

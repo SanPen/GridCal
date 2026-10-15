@@ -1409,6 +1409,40 @@ def test_block_parser_only_warns_for_broken_optional_mapping_references() -> Non
     }
 
 
+def test_block_update_model_replaces_complete_symbolic_interface() -> None:
+    """Replace one variable consistently across ports, owners and mappings.
+
+    :return: None.
+    """
+    original_var: sym.Var = sym.Var(name="signal")
+    replacement_var: sym.Var = sym.Var(name="measured_signal")
+    child_block: Block = Block(
+        name="consumer",
+        in_vars=list((original_var,)),
+        out_vars=list((original_var,)),
+        algebraic_vars=list((original_var,)),
+        algebraic_eqs=list((original_var - sym.Const(1.0),)),
+    )
+    child_block.var_mapping["signal"] = original_var
+    root_block: Block = Block(
+        name="root",
+        children=list((child_block,)),
+        in_vars=list((original_var,)),
+        out_vars=list((original_var,)),
+    )
+
+    root_block.update_model(old=original_var, new=replacement_var)
+
+    assert root_block.in_vars[0] is replacement_var
+    assert root_block.out_vars[0] is replacement_var
+    assert child_block.in_vars[0] is replacement_var
+    assert child_block.out_vars[0] is replacement_var
+    assert child_block.algebraic_vars[0] is replacement_var
+    assert child_block.var_mapping["signal"] is replacement_var
+    assert original_var not in child_block.algebraic_eqs[0].get_vars()
+    assert replacement_var in child_block.algebraic_eqs[0].get_vars()
+
+
 # -----------------------------------------------------------------------------
 # 9. Immutability checks
 # -----------------------------------------------------------------------------

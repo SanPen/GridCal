@@ -3,11 +3,11 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
-from typing import List, Union, TYPE_CHECKING
+from typing import List, Union, TYPE_CHECKING, Dict
 import numpy as np
 import VeraGridEngine.Devices as dev
 from VeraGridEngine.enumerations import DeviceType
-from VeraGridEngine.Devices.types import BRANCH_TYPES
+from VeraGridEngine.Devices.types import BRANCH_TYPES, INJECTION_DEVICE_TYPES
 from VeraGridEngine.Topology.topology import find_islands, get_adjacency_matrix
 from VeraGridEngine.basic_structures import IntVec
 from scipy.sparse import lil_matrix
@@ -38,7 +38,7 @@ def detect_substations(grid: MultiCircuit, r_x_threshold=1e-3) -> None:
     :param r_x_threshold: sum of r+x under which a line is considered a jumper
     :return: (in-place)
     """
-    buses = grid.get_buses()
+    buses: List[dev.Bus] = grid.get_buses()
 
     # create a connectivity matrix only with transformers and lines with small (r+x)
     branches: List[BRANCH_TYPES] = list()
@@ -125,20 +125,29 @@ def detect_substations(grid: MultiCircuit, r_x_threshold=1e-3) -> None:
             bus.voltage_level = voltages_vl[bus.Vnom]
 
 
-def detect_facilities(grid: MultiCircuit) -> None:
+def detect_facilities(grid: MultiCircuit, clear_plants: bool = True) -> None:
     """
     Create facilities automatically
     In essence is packing all the injections connected to the same bus into a facility object
     :param grid: MultiCircuit
+    :param clear_plants: Clear all facilities and detect new ones
     """
-    dict_bus_inj = grid.get_injection_devices_grouped_by_bus()
+    dict_bus_inj: Dict[dev.Bus, Dict[DeviceType, List[INJECTION_DEVICE_TYPES]]] = (
+        grid.get_injection_devices_grouped_by_bus()
+    )
 
-    for bus, inj_list in dict_bus_inj.items():
+    if clear_plants:
+        grid.facilities.clear()
+        for elm in grid.get_injection_devices_iter():
+            elm.facility = None
 
-        if len(inj_list):
+    for bus, inj_dict in dict_bus_inj.items():
+
+        if len(inj_dict):
             lon, lat = bus.try_to_find_coordinates()
             plant = dev.Facility(name=f"Facility at bus {bus.name}", longitude=lon, latitude=lat)
             grid.add_facility(obj=plant)
 
-            for elm in inj_list:
-                elm.facility = plant
+            for dev_tpe, elm_list in inj_dict.items():
+                for elm in elm_list:
+                    elm.facility = plant

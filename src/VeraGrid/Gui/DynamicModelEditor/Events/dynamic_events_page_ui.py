@@ -27,6 +27,9 @@ class Ui_DynamicEventsPage(object):
         DynamicEventsPage.resize(1000, 600)
         self.actionNewGroup = QAction(DynamicEventsPage)
         self.actionNewGroup.setObjectName(u"actionNewGroup")
+        event_group_icon = QIcon()
+        event_group_icon.addFile(u":/Icons/icons/event_group.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.actionNewGroup.setIcon(event_group_icon)
         self.actionAddEvent = QAction(DynamicEventsPage)
         self.actionAddEvent.setObjectName(u"actionAddEvent")
         add_icon = QIcon()
@@ -45,7 +48,7 @@ class Ui_DynamicEventsPage(object):
         self.eventsToolBar.setObjectName(u"eventsToolBar")
         self.eventsToolBar.setMovable(False)
         self.eventsToolBar.setIconSize(QSize(24, 24))
-        self.eventsToolBar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.eventsToolBar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         self.eventsToolBar.setFloatable(False)
         self.eventsToolBar.addAction(self.actionNewGroup)
         self.eventsToolBar.addSeparator()
@@ -132,7 +135,7 @@ class Ui_DynamicEventsPage(object):
         :return: None.
         """
         DynamicEventsPage.setWindowTitle(QCoreApplication.translate("DynamicEventsPage", u"Dynamic Events", None))
-        self.actionNewGroup.setText(QCoreApplication.translate("DynamicEventsPage", u"Add Events Group", None))
+        self.actionNewGroup.setText("")
         self.actionNewGroup.setToolTip(QCoreApplication.translate("DynamicEventsPage", u"Create an event group", None))
         self.actionAddEvent.setText("")
         self.actionAddEvent.setToolTip(QCoreApplication.translate("DynamicEventsPage", u"Add an event to the selected event group", None))

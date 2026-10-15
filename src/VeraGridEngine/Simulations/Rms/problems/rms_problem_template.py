@@ -387,7 +387,10 @@ class RmsProblemTemplate(ABC):
             bus_index = bus_dict[elm.bus]
             Vbus = self.power_flow_results.voltage[bus_index]
             scale = 1000.0 if elm.use_kw else 1.0
-            return Vbus * np.conj((elm.get_Y_at(None) / scale / self.grid.Sbase) * Vbus)
+            # The RMS problem stores power injected into the bus. A shunt
+            # admittance consumes ``V * conj(Y * V)``, so its network injection
+            # is the negative of that consumed complex power.
+            return -Vbus * np.conj((elm.get_Y_at(None) / scale / self.grid.Sbase) * Vbus)
         else:
             return complex(0.0, 0.0)
 

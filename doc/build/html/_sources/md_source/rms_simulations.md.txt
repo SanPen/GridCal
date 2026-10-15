@@ -20,6 +20,9 @@ RMS is appropriate for:
 
 Use [EMT simulation](emt_simulations.md) when instantaneous phase waveforms, switching detail, or fast inner-control interactions are required. The shared DAE and initialization concepts are described in [Dynamic simulation theory](dynamic_theory.md).
 
+Cross-software validation of RMS trajectories and modal results is collected in
+[Dynamic simulation benchmarks](dynamic_benchmarks.md).
+
 ## RMS workflow
 
 1. Build or import the static network.

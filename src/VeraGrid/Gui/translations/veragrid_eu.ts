@@ -213,6 +213,201 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
 </context>
 <context>
+    <name>AddSymbolDialog</name>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="12"/>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
+        <source>Add block property</source>
+        <translation>Blok eigiaitza gehitu</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="31"/>
+        <source>Define a new property for the selected block.</source>
+        <translation>Hizkuntza-sareko blokea aukeratutakoaren eukariotasun berri bat definitu.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="48"/>
+        <source>Owner block</source>
+        <translation>Jatorri blokea</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="58"/>
+        <source>Name</source>
+        <translation>Izena</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="64"/>
+        <source>Enter a valid symbol name</source>
+        <translation>Simboloaren izen balio bat sartu</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="70"/>
+        <source>Variable type</source>
+        <translation>Bariabea mota</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="80"/>
+        <source>Choose how this symbol participates in the dynamic model.</source>
+        <translation>Hizbolo modeloan jakinarazteko modu bat aukeratu.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="98"/>
+        <source>Options</source>
+        <translation>Opzioak</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="111"/>
+        <source>Expose as output</source>
+        <translation>Irakasterakoak jarri</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="116"/>
+        <source>Create derivative variable</source>
+        <translation>Deribateri variabile sortu</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="130"/>
+        <source>Power-flow variable used to initialize this dynamic variable.</source>
+        <translation>Hau dinamiko variablea lehenesanatzeko erabiltzen den potentzial-uharraldearen variablea.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="131"/>
+        <source>Power-flow initialization source</source>
+        <translation>Potentzial-sarekoaren (Power-flow) inicializazioaren urura</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="154"/>
+        <source>Local initial value</source>
+        <translation>Balio lekuarekoaren iniciala</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="167"/>
+        <source>Device initial value</source>
+        <translation>Aparatuaren inicial balioa</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="186"/>
+        <source>Retained modes preserve discrete state between simulation steps.</source>
+        <translation>Moduak mantenduak simulazio-pausoak bitartean egoera diskretua mantentzen du.</translation>
+    </message>
+    <message>
+        <source>Add parameter</source>
+        <translation>Parametrua gehitu</translation>
+    </message>
+    <message>
+        <source>Add retained mode</source>
+        <translation>Modu mantendua gehitu</translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation>Bariabea gehitu</translation>
+    </message>
+    <message>
+        <source>Algebraic</source>
+        <translation>Algebraikoa</translation>
+    </message>
+    <message>
+        <source>Declare a configurable value owned by the selected dynamic block.</source>
+        <translation>Hizbolo blokea aukeratutakoaren ateko balio konfiguragarri bat hasieratu.</translation>
+    </message>
+    <message>
+        <source>Declare a variable owned by the selected dynamic block.</source>
+        <translation>Hizbolo blokea aukeratutakoaren ateko bariabea bat hasieratu.</translation>
+    </message>
+    <message>
+        <source>Declare discrete state that persists between simulation steps.</source>
+        <translation>Simulazio-pausoak bitartean jarraitzen den egoera diskretua bat hasieratu.</translation>
+    </message>
+    <message>
+        <source>Dynamic parameter</source>
+        <translation>Parametru dinamikoa</translation>
+    </message>
+    <message>
+        <source>Enter a valid Python symbol name.</source>
+        <translation>Python simboloaren izen balio bat sartu.</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>Sartukea</translation>
+    </message>
+    <message>
+        <source>May change during the simulation and can optionally start from a grid-device value.</source>
+        <translation>Simulazioaren ondoren aldatu daiteke eta, aukeratu, sareko-aparatuaren balioetik hasdi daiteke.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Ninguno</translation>
+    </message>
+    <message>
+        <source>Nothing was added: {message}</source>
+        <translation>Zer ez da gehiturra: {message}</translation>
+    </message>
+    <message>
+        <source>Parameter type</source>
+        <translation>Parametru mota</translation>
+    </message>
+    <message>
+        <source>Preserves discrete state between simulation steps.</source>
+        <translation>Simulazio-pausoak bitartean egoera diskretua mantentzen du.</translation>
+    </message>
+    <message>
+        <source>Receives its value from an incoming block connection.</source>
+        <translation>Balioa sartzeko bloke konektzio batekin jasotzen du.</translation>
+    </message>
+    <message>
+        <source>Remains fixed during the simulation and can optionally start from a grid-device value.</source>
+        <translation>Simulazioaren ondoren fiksatu geratzen da eta, aukeratu, sareko-aparatuaren balioetik hasdi daiteke.</translation>
+    </message>
+    <message>
+        <source>Represents a differential state integrated during the simulation.</source>
+        <translation>Simulazioaren ondoren integratutako egoera diferentzial bat adierazten du.</translation>
+    </message>
+    <message>
+        <source>Represents a value solved by the algebraic equations.</source>
+        <translation>Algebraiko mailako ekuazioek çözitako balio bat adierazten du.</translation>
+    </message>
+    <message>
+        <source>Retained mode</source>
+        <translation>Modeu mantendu</translation>
+    </message>
+    <message>
+        <source>Search device parameters</source>
+        <translation>Aparatuaren parametruak bilatu</translation>
+    </message>
+    <message>
+        <source>Search power-flow variables</source>
+        <translation>Potentzial-sarekoaren (Power-flow) bariabeak bilatu</translation>
+    </message>
+    <message>
+        <source>Select a device initialization source from the list.</source>
+        <translation>Aparatuaren inicializazio urura listaetik aukeratu.</translation>
+    </message>
+    <message>
+        <source>Select a power-flow initialization source from the list.</source>
+        <translation>Potentzial-sarekoaren (Power-flow) inicializazio urura listaetik aukeratu.</translation>
+    </message>
+    <message>
+        <source>Select a valid owner block.</source>
+        <translation>Bloke ateko balio bat aukeratu.</translation>
+    </message>
+    <message>
+        <source>Select a valid symbol type.</source>
+        <translation>Simbolo mota balio bat aukeratu.</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>Estatusa</translation>
+    </message>
+    <message>
+        <source>Static parameter</source>
+        <translation>Parametru statikoa</translation>
+    </message>
+    <message>
+        <source>Use local numeric value</source>
+        <translation>Balio numeriko lekuarekoak erabiltu</translation>
+    </message>
+</context>
+<context>
     <name>AdmittanceMatrixEditorWidget</name>
     <message>
         <location filename="../DeviceEditors/AdmittanceMatrixEditor/admittance_matrix_editor_gui.ui" line="19"/>
@@ -804,7 +999,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <name>BlockPropertyTreeModel</name>
     <message>
         <source>Missing PF mapping</source>
-        <translation>PF mapeo falta</translation>
+        <translation type="vanished">PF mapeo falta</translation>
     </message>
     <message>
         <source>Name</source>
@@ -820,7 +1015,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
     <message>
         <source>Template issue: static parameters require api_obj_mapping. An independently editable parameter should be in event_dict. This refactor does not migrate templates automatically.</source>
-        <translation>Template-ko problema: parametro statikoak api_obj_mapping behar dute. Parametro independentean itxiko da event_dict-ean. Refactorizazio honek templateak automatikoki migratatzen ez du.</translation>
+        <translation type="vanished">Template-ko problema: parametro statikoak api_obj_mapping behar dute. Parametro independentean itxiko da event_dict-ean. Refactorizazio honek templateak automatikoki migratatzen ez du.</translation>
     </message>
     <message>
         <source>Type</source>
@@ -829,6 +1024,14 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <message>
         <source>Value / PF reference</source>
         <translation>Balorrak / PF referentzia</translation>
+    </message>
+    <message>
+        <source>Fixed local value. Select a device initialization mapping only when this value must come from the associated grid device.</source>
+        <translation>Balio lekuareko fiksatu. Aparatuaren inicializazio mapeo bat aukeratu, balio hau lotutako sareko aparatuetik etorri behar izanez gero.</translation>
+    </message>
+    <message>
+        <source>Invalid device initialization mapping: the target is not declared in this block's parameters or event_dict.</source>
+        <translation>Aparatuaren inicializazio mapeo balioa: oinarrizkoak blokearen parametruetan edo event_dict-an ez da hasieratu.</translation>
     </message>
 </context>
 <context>
@@ -3248,6 +3451,58 @@ Referentzia: {status}</translation>
         <source>Valid</source>
         <translation>Egokitzegoa</translation>
     </message>
+    <message>
+        <source>Equation counts</source>
+        <translation>Ekuazioen kontua</translation>
+    </message>
+    <message>
+        <source>Repeated variable names</source>
+        <translation>Bariabeen izenak errepikatuak</translation>
+    </message>
+    <message>
+        <source>Static parameter mappings</source>
+        <translation>Parametru statikoen mapeoak</translation>
+    </message>
+    <message>
+        <source>Unnamed block</source>
+        <translation>Blokean izen diarí</translation>
+    </message>
+    <message>
+        <source>Variable initialization</source>
+        <translation>Bariabearen inicializazioa</translation>
+    </message>
+    <message>
+        <source>algebraic variables={variable_count}, algebraic equations={equation_count}</source>
+        <translation>algebraiko bariabeak={variable_count}, algebraiko ekuazioak={equation_count}</translation>
+    </message>
+    <message>
+        <source>derivative variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>deribativa bariabeak inicializazioa edo potentzial-sarekoaren urura falta dute: {variable_names}</translation>
+    </message>
+    <message>
+        <source>event parameters with no value: {parameter_names}</source>
+        <translation>balioa ez lotako egoera parametruak: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>mapping targets not declared as local parameters: {parameter_names}</source>
+        <translation>mapeoaren oinarrizkoak parametru lekuarekoak gisa ez da hasieratu: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>parameters missing a static mapping: {parameter_names}</source>
+        <translation>parametruak mapeo statiko bat falta dute: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>state variables={variable_count}, state equations={equation_count}</source>
+        <translation>egoera bariabeak={variable_count}, egoera ekuazioak={equation_count}</translation>
+    </message>
+    <message>
+        <source>variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>bariabeak inicializazioa edo potentzial-sarekoaren urura falta dute: {variable_names}</translation>
+    </message>
+    <message>
+        <source>variables: {variable_names}</source>
+        <translation>bariabeak: {variable_names}</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -3356,7 +3611,7 @@ Referentzia: {status}</translation>
     </message>
     <message>
         <source>Enter a valid Python symbol name.</source>
-        <translation>Python simbolo balio izena sartu.</translation>
+        <translation type="vanished">Python simbolo balio izena sartu.</translation>
     </message>
     <message>
         <source>Equation PDF created: {path}</source>
@@ -3459,7 +3714,7 @@ Referentzia: {status}</translation>
     </message>
     <message>
         <source>None</source>
-        <translation>Ninguno</translation>
+        <translation type="vanished">Ninguno</translation>
     </message>
     <message>
         <source>Nothing was applied: {message}</source>
@@ -3491,7 +3746,7 @@ Referentzia: {status}</translation>
     </message>
     <message>
         <source>Parameter whose value may change during the simulation.</source>
-        <translation>Parametrua, simulazioaren ondoren balorra aldatu daitekeena.</translation>
+        <translation type="vanished">Parametrua, simulazioaren ondoren balorra aldatu daitekeena.</translation>
     </message>
     <message>
         <source>Parameters</source>
@@ -3540,11 +3795,11 @@ Referentzia: {status}</translation>
     </message>
     <message>
         <source>Select a valid owner block.</source>
-        <translation>Egilea legezko bloke bat aukeratu.</translation>
+        <translation type="vanished">Egilea legezko bloke bat aukeratu.</translation>
     </message>
     <message>
         <source>Select a valid symbol type.</source>
-        <translation>Simbolo mota legezko bat aukeratu.</translation>
+        <translation type="vanished">Simbolo mota legezko bat aukeratu.</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="319"/>
@@ -3645,7 +3900,7 @@ Referentzia: {status}</translation>
     </message>
     <message>
         <source>Retained mode</source>
-        <translation>Modeu mantendu</translation>
+        <translation type="vanished">Modeu mantendu</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="82"/>
@@ -3700,7 +3955,7 @@ Referentzia: {status}</translation>
     </message>
     <message>
         <source>Nothing was added: {message}</source>
-        <translation>Zer ez da gehitua: {message}</translation>
+        <translation type="vanished">Zer ez da gehitua: {message}</translation>
     </message>
     <message>
         <source>Add to plot...</source>
@@ -4957,74 +5212,60 @@ prozesatzeko formatu espero denak aukeratu</translation>
 <context>
     <name>Form</name>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="14"/>
         <source>Add block property</source>
-        <translation>Blok eigiaitza gehitu</translation>
+        <translation type="vanished">Blok eigiaitza gehitu</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
         <source>Add symbol to selected block</source>
-        <translation>Simboloa aukeratutako blokean gehitu</translation>
+        <translation type="vanished">Simboloa aukeratutako blokean gehitu</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="71"/>
         <source>Output</source>
-        <translation>Irau</translation>
+        <translation type="vanished">Irau</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="78"/>
         <source>Create derivative variable</source>
-        <translation>Deribateri variabile sortu</translation>
+        <translation type="vanished">Deribateri variabile sortu</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="144"/>
         <source>New symbol name</source>
-        <translation>Simbolo berri izena</translation>
+        <translation type="vanished">Simbolo berri izena</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="151"/>
         <source>Symbol category</source>
-        <translation>Simbolo kategoriak</translation>
+        <translation type="vanished">Simbolo kategoriak</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="158"/>
         <source>Owner block</source>
-        <translation>Jatorri blokea</translation>
+        <translation type="vanished">Jatorri blokea</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="165"/>
         <source>Type</source>
-        <translation>Tipoa</translation>
+        <translation type="vanished">Tipoa</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="172"/>
         <source>Add symbol</source>
-        <translation>Simbolo gehitu</translation>
+        <translation type="vanished">Simbolo gehitu</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="195"/>
         <source>Static device mapping</source>
-        <translation>Eginak estatikoak mapatu</translation>
+        <translation type="vanished">Eginak estatikoak mapatu</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="202"/>
         <source>Power-flow variable used to initialize this dynamic variable.</source>
-        <translation>Hau dinamiko variablea lehenesanatzeko erabiltzen den potentzial-uharraldearen variablea.</translation>
+        <translation type="vanished">Hau dinamiko variablea lehenesanatzeko erabiltzen den potentzial-uharraldearen variablea.</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="205"/>
         <source>Power-flow variable</source>
-        <translation>Potentzial-uharraldearen variablea</translation>
+        <translation type="vanished">Potentzial-uharraldearen variablea</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="266"/>
         <source>Enter a name</source>
-        <translation>Izena sartu</translation>
+        <translation type="vanished">Izena sartu</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="273"/>
         <source>Initial numeric value</source>
-        <translation>Balio numeriko inguruko</translation>
+        <translation type="vanished">Balio numeriko inguruko</translation>
     </message>
 </context>
 <context>
@@ -7718,6 +7959,195 @@ Please correct the data and try again.</translation>
     <message>
         <source>Stability boundary</source>
         <translation>Estabilitatearen balioketa</translation>
+    </message>
+</context>
+<context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>Deklarazioak biak fabrikako iragarkari-kontraktearen parte bat dira eta kualifikazioa baino lehen beharrezkoak dira.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Arakatu...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>Fabrikan binary beste dagoen bat aukeratu.</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>Interfazak aukeratutakoak eskatako deklarazio fabrikakoak bete.</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>Destinazio provedorea</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>Komakarekin banatutako botoiak da horren pozizioko ordinalkaaren destinazio ordinalkaaren. Adibidez: 1,0-ak urtea 0-atik destinazio 1-era eta urtea 1-etik destinazio 0-era mapatzen du.</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>Adibidea: 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>Adibidea: 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>Adibidea: 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>Fabrikan modelo natiboak importatu</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>Sartu destinazio ordinalkaak</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>Ikusi eta variantea ilakitz</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>Ikusi eta importatu</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>Binarya lanetza izoliatu batean ikusita...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>Linux bibliotekak (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>Binarya fabrikakoa</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>Interfazak fabrikakoa</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>Modelo natibo fabrikakoa prest dago</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>Modelo natibo fabrikakoaren varianteak</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>Provedorea ez dago importatu.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Ninguno</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>Izu destinazio ordinalkaak</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>Parametru destinazio ordinalkaak</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>Plataforma variantea</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>Provedorea: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>Provedorea: {provider}
+Plataforma ilakitz: {platform}
+Templateak sortu: Ez dago (templateak besteak mantendu).</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>Provedorea: {provider}
+Plataforma: {platform}
+RMS templateak sortu: {rms}
+EMT templateak sortu: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>Kualifikatu eta ilakitz {platform}: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>Kualifikatu eta importatu {name}. {rms} RMS eta {emt} EMT template(ak) sortu.</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>Ubiratu beste txartel bateko kopuraketa</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>Ubiratu hautatutako txartelaren kopuraketa</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>Ubiratu {consumer} {provider}ra.</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>Hitzkarri bat, bestelako bestelako bestelako txartel bat hautatu.</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>Fabrika-liburutegia hautatu</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>Hautatu fabrika-kontrakta eta bestelako bestelako bestelako platforma-liburutegia. VeraGrid-ek binary hau egiaztatzen eta lanetako langile batean jarraitzen du.</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>Txantiloia</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>Fabrika-ak dio modu aldatuena modeloaren egoera guztia bako Instance-ra aitortzen dela.</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>Fabrika-ak dio liburutegiak late native loading ez egin duen dela.</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>Windows liburutegiak (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: falta dago</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
+    </message>
+    <message>
+        <source>Choose the LLVM bin directory</source>
+        <translation>Autoregeitu LLVM bin direktorea</translation>
+    </message>
+    <message>
+        <source>Choose the MinGW/UCRT support directory</source>
+        <translation>Autoregeitu MinGW/UCRT arreta direktorea</translation>
+    </message>
+    <message>
+        <source>LLVM selection was cancelled; the manufacturer model was not imported.</source>
+        <translation>LLVM aukeraketaiareta taitecirak; etxeakako modeloa ez da importatu.</translation>
     </message>
 </context>
 <context>
@@ -10602,6 +11032,10 @@ Modifikatzi klasterrak ML ingurukoan.</translation>
         <source>The short-circuit worker finished without results.</source>
         <translation>Kortu-birtsaketa lanilariak emaitzari gabe amaitu da.</translation>
     </message>
+    <message>
+        <source>Power flow 3ph failed</source>
+        <translation>Agian-korrientearen sirkulazioa 3ph-an ezin izan zen</translation>
+    </message>
 </context>
 <context>
     <name>SolarPvWizard</name>
@@ -11533,12 +11967,91 @@ Ekarri edo sortu ekarri-erakunde bat!</translation>
         <translation type="vanished">Hauko seksioan aurkitako arazoak</translation>
     </message>
     <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="20"/>
         <source>Model Consistency Validation</source>
-        <translation type="vanished">Modeloaren Koherenteitatearen Egialdeadara</translation>
+        <translation>Modeloaren Koherenteitatearen Egialdeadara</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="31"/>
+        <source>Check the edited model&apos;s equation counts, variable names, parameter mappings, and variable initialization. This report is informational and does not block saving the model.</source>
+        <translation>Kontsulta modeloan eginikoak: ekuazioen kontua, variabileren izenak, parametroen mapaketa eta variabileren inicializazioa. Raportu hau informaziokoa da eta modeloa itxermekarekin ez da lotuta.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="53"/>
+        <source>Show:</source>
+        <translation>Esei:</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="60"/>
+        <source>Filter validation results by check</source>
+        <translation>Validazio emaitzak kontsulta per biltzeko</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="85"/>
+        <source>No validation results match this filter.</source>
+        <translation>Validazio emaitzak ez dira honek filtrazioa lotzenak.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="95"/>
+        <source>Show issues in the model</source>
+        <translation>Modeloan dagoen egiaztatzeko zailtasunak erakustu</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="96"/>
+        <source>Show Issues</source>
+        <translation>Egiaztatzeko zailtasunak</translation>
     </message>
     <message>
         <source>Run an informational validation of the edited model structure, mappings, initialization, and port connectivity. This check reports issues but does not block saving the model.</source>
         <translation type="vanished">Ekarri modeloaren egituraren, mapaketa, inicializazioa eta porta konektibitatea informazioko egialdeadara aurkako. Kontsekzio hau arazoak baporeatzen du baina modeloa itxaldaritzen ez du.</translation>
+    </message>
+    <message>
+        <source>All checks</source>
+        <translation>Kontsulta guztienak</translation>
+    </message>
+    <message>
+        <source>Block</source>
+        <translation>Biltzea</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Kontsulta</translation>
+    </message>
+    <message>
+        <source>Details</source>
+        <translation>Detaldetalekoa</translation>
+    </message>
+    <message>
+        <source>Issue</source>
+        <translation>Zailtasun</translation>
+    </message>
+    <message>
+        <source>Issues only</source>
+        <translation>Zailtasunak bakarrik</translation>
+    </message>
+    <message>
+        <source>No issues found</source>
+        <translation>Zailtasun gehiarra ez da ingurusi</translation>
+    </message>
+    <message>
+        <source>No issues found.</source>
+        <translation>Zailtasun gehiarra ez da ingurusi.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>Ados</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Status</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · No issues found</source>
+        <translation>{check_count} kontsulta · Zailtasun gehiarra ez da ingurusi</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · {issue_section_count} checks with issues · {finding_count} findings</source>
+        <translation>{check_count} kontsulta · {issue_section_count} kontsulta zailtasunekin · {finding_count} zailtasunak</translation>
     </message>
 </context>
 <context>
@@ -17491,183 +18004,6 @@ Ekarri edo sortu ekarri-erakunde bat!</translation>
     <message>
         <source>Question</source>
         <translation>Galdera</translation>
-    </message>
-</context>
-<context>
-    <name>ManufacturerNativeImporterDialog</name>
-    <message>
-        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
-        <translation>Deklarazioak biak fabrikako iragarkari-kontraktearen parte bat dira eta kualifikazioa baino lehen beharrezkoak dira.</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>Arakatu...</translation>
-    </message>
-    <message>
-        <source>Choose an existing manufacturer binary.</source>
-        <translation>Fabrikan binary beste dagoen bat aukeratu.</translation>
-    </message>
-    <message>
-        <source>Complete the manufacturer declarations required by the selected interface.</source>
-        <translation>Interfazak aukeratutakoak eskatako deklarazio fabrikakoak bete.</translation>
-    </message>
-    <message>
-        <source>Destination provider</source>
-        <translation>Destinazio provedorea</translation>
-    </message>
-    <message>
-        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
-        <translation>Komakarekin banatutako botoiak da horren pozizioko ordinalkaaren destinazio ordinalkaaren. Adibidez: 1,0-ak urtea 0-atik destinazio 1-era eta urtea 1-etik destinazio 0-era mapatzen du.</translation>
-    </message>
-    <message>
-        <source>Example: 0,1</source>
-        <translation>Adibidea: 0,1</translation>
-    </message>
-    <message>
-        <source>Example: 1,0</source>
-        <translation>Adibidea: 1,0</translation>
-    </message>
-    <message>
-        <source>Example: 2,0,1</source>
-        <translation>Adibidea: 2,0,1</translation>
-    </message>
-    <message>
-        <source>Import manufacturer native model</source>
-        <translation>Fabrikan modelo natiboak importatu</translation>
-    </message>
-    <message>
-        <source>Input destination ordinals</source>
-        <translation>Sartu destinazio ordinalkaak</translation>
-    </message>
-    <message>
-        <source>Inspect and attach variant</source>
-        <translation>Ikusi eta variantea ilakitz</translation>
-    </message>
-    <message>
-        <source>Inspect and import</source>
-        <translation>Ikusi eta importatu</translation>
-    </message>
-    <message>
-        <source>Inspecting the binary in an isolated worker...</source>
-        <translation>Binarya lanetza izoliatu batean ikusita...</translation>
-    </message>
-    <message>
-        <source>Linux libraries (*.so)</source>
-        <translation>Linux bibliotekak (*.so)</translation>
-    </message>
-    <message>
-        <source>Manufacturer binary</source>
-        <translation>Binarya fabrikakoa</translation>
-    </message>
-    <message>
-        <source>Manufacturer interface</source>
-        <translation>Interfazak fabrikakoa</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model ready</source>
-        <translation>Modelo natibo fabrikakoa prest dago</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model variants</source>
-        <translation>Modelo natibo fabrikakoaren varianteak</translation>
-    </message>
-    <message>
-        <source>No provider has been imported yet.</source>
-        <translation>Provedorea ez dago importatu.</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Ninguno</translation>
-    </message>
-    <message>
-        <source>Output destination ordinals</source>
-        <translation>Izu destinazio ordinalkaak</translation>
-    </message>
-    <message>
-        <source>Parameter destination ordinals</source>
-        <translation>Parametru destinazio ordinalkaak</translation>
-    </message>
-    <message>
-        <source>Platform variant</source>
-        <translation>Plataforma variantea</translation>
-    </message>
-    <message>
-        <source>Provider: {name}</source>
-        <translation>Provedorea: {name}</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform attached: {platform}
-Templates created: None (existing templates retained).</source>
-        <translation>Provedorea: {provider}
-Plataforma ilakitz: {platform}
-Templateak sortu: Ez dago (templateak besteak mantendu).</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform: {platform}
-RMS templates created: {rms}
-EMT templates created: {emt}</source>
-        <translation>Provedorea: {provider}
-Plataforma: {platform}
-RMS templateak sortu: {rms}
-EMT templateak sortu: {emt}</translation>
-    </message>
-    <message>
-        <source>Qualified and attached {platform}: {digest}</source>
-        <translation>Kualifikatu eta ilakitz {platform}: {digest}</translation>
-    </message>
-    <message>
-        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
-        <translation>Kualifikatu eta importatu {name}. {rms} RMS eta {emt} EMT template(ak) sortu.</translation>
-    </message>
-    <message>
-        <source>Rebind an existing template</source>
-        <translation>Ubiratu beste txartel bateko kopuraketa</translation>
-    </message>
-    <message>
-        <source>Rebind selected template</source>
-        <translation>Ubiratu hautatutako txartelaren kopuraketa</translation>
-    </message>
-    <message>
-        <source>Rebound {consumer} to {provider}.</source>
-        <translation>Ubiratu {consumer} {provider}ra.</translation>
-    </message>
-    <message>
-        <source>Select a source, destination and template.</source>
-        <translation>Hitzkarri bat, bestelako bestelako bestelako txartel bat hautatu.</translation>
-    </message>
-    <message>
-        <source>Select manufacturer library</source>
-        <translation>Fabrika-liburutegia hautatu</translation>
-    </message>
-    <message>
-        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
-        <translation>Hautatu fabrika-kontrakta eta bestelako bestelako bestelako platforma-liburutegia. VeraGrid-ek binary hau egiaztatzen eta lanetako langile batean jarraitzen du.</translation>
-    </message>
-    <message>
-        <source>Template</source>
-        <translation>Txantiloia</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
-        <translation>Fabrika-ak dio modu aldatuena modeloaren egoera guztia bako Instance-ra aitortzen dela.</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that the library performs no late native loading.</source>
-        <translation>Fabrika-ak dio liburutegiak late native loading ez egin duen dela.</translation>
-    </message>
-    <message>
-        <source>Windows libraries (*.dll)</source>
-        <translation>Windows liburutegiak (*.dll)</translation>
-    </message>
-    <message>
-        <source>{platform}: missing</source>
-        <translation>{platform}: falta dago</translation>
-    </message>
-    <message>
-        <source>{platform}: {status}, SHA-256 {digest}</source>
-        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

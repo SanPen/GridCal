@@ -1,0 +1,699 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🧪 Dynamic simulation benchmarks &mdash; VeraGrid 6.7.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/style.css?v=ba3a54df" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Building dynamic models" href="dynamic_modeling.html" />
+    <link rel="prev" title="🧬 EMT Small-Signal stability: Floquet analysis" href="small_signal_stability_emt.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            VeraGrid
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">💽 Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_interface.html">📊 User interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="veragrid_scripting_guide.html">📑 VeraGrid scripting guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="grid_analysis.html">🔎 Grid analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">🌁 Structure of VeraGrid</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modelling.html">📐 Grid Modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_debugging.html">🪲 Model debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="file_operations.html">💾 File loading and saving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="topology.html">🌵 Topology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clustering.html">🎳 Clustering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="grid_reduction.html">👾 Grid Reduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedural_grid.html">🕸️ Procedural Grid Expansion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="power_flow.html">🔥 Power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linear_analysis.html">📏 Linear analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimal_power_flow.html">🏁 Optimal power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="short_circuit.html">⚡ Short-Circuit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stochastic_power_flow.html">🎲 Stochastic power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="continuation_power_flow.html">➿ Continuation power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sigma_analysis.html">🌘 Sigma analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="solar_wizard.html">☀️ Solar power wizard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contingency_analysis.html">💥 Contingency analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="investment_optimization.html">🏦 Investment optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cascading.html">🎢 Cascading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="net_transfer_capacity.html">🚢 Net transfer capacity optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reliability.html">🚧 Reliability</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-simulation-theory">1. Dynamic simulation theory</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dynamic_simulations.html#benchmarking-against-other-software">2. Benchmarking against other software</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">🧪 Dynamic simulation benchmarks</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#benchmark-map">Benchmark map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#how-to-read-the-results">How to read the results</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#andes-comparison">1. ANDES comparison</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#powerfactory-comparison">2. PowerFactory comparison</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stamp-comparison">3. STAMP comparison</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#powersimulationsdynamics-jl-comparison">4. PowerSimulationsDynamics.jl comparison</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-editor-and-model-construction">3. Dynamic editor and model construction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-model-library">4. Dynamic model library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#recommended-reading-paths">Recommended reading paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#end-to-end-workflow">End-to-end workflow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_models.html">Data Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rst_source/api/auto/modules.html">VeraGrid</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">VeraGrid</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+      <li class="breadcrumb-item active">🧪 Dynamic simulation benchmarks</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/md_source/dynamic_benchmarks.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="dynamic-simulation-benchmarks">
+<h1>🧪 Dynamic simulation benchmarks<a class="headerlink" href="#dynamic-simulation-benchmarks" title="Link to this heading"></a></h1>
+<p>This page collects cross-software validation evidence for VeraGrid’s dynamic
+simulation tools. It covers RMS time-domain simulation, RMS small-signal
+stability, and EMT Floquet stability.</p>
+<p>For the formulation and result interfaces themselves, see
+<a class="reference internal" href="rms_simulations.html"><span class="std std-doc">RMS simulations</span></a>, <a class="reference internal" href="emt_simulations.html"><span class="std std-doc">EMT simulations</span></a>,
+<a class="reference internal" href="small_signal_stability_rms.html"><span class="std std-doc">RMS Small-Signal stability</span></a>, and
+<a class="reference internal" href="small_signal_stability_emt.html"><span class="std std-doc">EMT Small-Signal stability</span></a>.</p>
+<p>A benchmark is meaningful only when both programs represent the same physical
+system, start from equivalent operating points, and expose comparable states.
+Visual agreement is useful, but it is not sufficient on its own. The studies
+below therefore combine trajectories or spectra with numerical error metrics
+and an explicit description of the comparison scope.</p>
+<section id="benchmark-map">
+<h2>Benchmark map<a class="headerlink" href="#benchmark-map" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Reference software</p></th>
+<th class="head"><p>VeraGrid study</p></th>
+<th class="head"><p>Main comparison</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ANDES</p></td>
+<td><p>RMS time domain</p></td>
+<td><p>Common physical-state trajectories, with and without an event</p></td>
+</tr>
+<tr class="row-odd"><td><p>ANDES</p></td>
+<td><p>RMS small signal</p></td>
+<td><p>Operating point, state matrix, eigenvalues, and participation factors</p></td>
+</tr>
+<tr class="row-even"><td><p>DIgSILENT PowerFactory</p></td>
+<td><p>RMS time domain</p></td>
+<td><p>Responses of an interconnected system containing standard dynamic models</p></td>
+</tr>
+<tr class="row-odd"><td><p>STAMP</p></td>
+<td><p>RMS small signal</p></td>
+<td><p>Eigenvalues of an equivalent WSCC dynamic model</p></td>
+</tr>
+<tr class="row-even"><td><p>STAMP</p></td>
+<td><p>EMT Floquet</p></td>
+<td><p>Rightmost continuous-time exponents derived from Floquet multipliers</p></td>
+</tr>
+<tr class="row-odd"><td><p>PowerSimulationsDynamics.jl</p></td>
+<td><p>RMS small signal</p></td>
+<td><p>Matched modal spectra for three benchmark networks</p></td>
+</tr>
+</tbody>
+</table>
+<p>The comparisons do not claim that the programs use the same internal
+formulation. They test whether equivalent models produce consistent physical
+results within the stated experiment.</p>
+</section>
+<section id="how-to-read-the-results">
+<h2>How to read the results<a class="headerlink" href="#how-to-read-the-results" title="Link to this heading"></a></h2>
+<p>The following quantities appear throughout this page:</p>
+<ul class="simple">
+<li><p><strong>Maximum absolute error</strong> is the largest absolute difference over all
+compared samples and states.</p></li>
+<li><p><strong>RMSE</strong> is the root-mean-square error over all compared samples and states.</p></li>
+<li><p><strong>Relative state-matrix error</strong> is
+<img class="math" src="../_images/math/fd36899bd360478c23828e9ee5d134c16b9b9581.svg" alt="\lVert A_{VG}-A_{ref}\rVert_F/\lVert A_{ref}\rVert_F"/>.</p></li>
+<li><p><strong>Eigenvalue error</strong> is evaluated after matching the nearest corresponding
+modes. A relative percentage can become misleading for a mode very close to
+zero, so the absolute error and the spectrum plot must also be inspected.</p></li>
+<li><p><strong>Participation-factor error</strong> is meaningful only for non-repeated modes.
+The basis of a repeated eigenspace is not unique.</p></li>
+</ul>
+<p>Timing values are single wall-clock observations from the recorded validation
+runs. They describe those runs and are not general performance guarantees.
+Software version, hardware, linear algebra libraries, compilation caches, and
+the selected solver settings can all change the result.</p>
+</section>
+<section id="andes-comparison">
+<h2>1. ANDES comparison<a class="headerlink" href="#andes-comparison" title="Link to this heading"></a></h2>
+<p>ANDES is an open-source Python framework for power-system dynamic analysis. It
+provides an independent reference implementation for the phasor-domain tests.
+The validation covers five systems of increasing size:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Case</p></th>
+<th class="head text-right"><p>Compared states and modes</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Kundur two-area system without shunts</p></td>
+<td class="text-right"><p>8</p></td>
+</tr>
+<tr class="row-odd"><td><p>IEEE 14-bus system</p></td>
+<td class="text-right"><p>56</p></td>
+</tr>
+<tr class="row-even"><td><p>IEEE 39-bus system</p></td>
+<td class="text-right"><p>130</p></td>
+</tr>
+<tr class="row-odd"><td><p>NPCC 140-bus system</p></td>
+<td class="text-right"><p>334</p></td>
+</tr>
+<tr class="row-even"><td><p>WECC 179-bus system</p></td>
+<td class="text-right"><p>507</p></td>
+</tr>
+</tbody>
+</table>
+<p>The comparisons use every common physical state. State names are mapped
+between the two programs before values are compared. ANDES retains some
+<code class="docutils literal notranslate"><span class="pre">BusFreq</span></code>, zero-time-constant, and limiter auxiliary states that VeraGrid folds
+into algebraic equations. Those implementation-specific states are reported,
+but they are not incorrectly paired with unrelated VeraGrid states.</p>
+<section id="rms-small-signal-stability">
+<h3>1.1 RMS small-signal stability<a class="headerlink" href="#rms-small-signal-stability" title="Link to this heading"></a></h3>
+<p>The RMS small-signal study compares four layers of the calculation:</p>
+<ol class="arabic simple">
+<li><p>the power-flow operating point;</p></li>
+<li><p>the exported state inventory;</p></li>
+<li><p>the linearized state matrix and its eigenvalues;</p></li>
+<li><p>participation factors for non-repeated modes.</p></li>
+</ol>
+<p>All exported eigenvalues are retained. In WECC179, 21 repeated modes are
+included in the eigenvalue comparison and spectrum but excluded from the
+participation-factor norm because their individual eigenvectors can rotate
+within the repeated eigenspace.</p>
+<section id="operating-point-agreement">
+<h4>Operating-point agreement<a class="headerlink" href="#operating-point-agreement" title="Link to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Case</p></th>
+<th class="head text-right"><p>Maximum voltage-magnitude error (pu)</p></th>
+<th class="head text-right"><p>Maximum angle error (rad)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Kundur</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/3ffcd3af587f78957b24dee9dc0bf1932089a42d.svg" alt="2.990\times10^{-7}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/05e4e6c575d3e1e70cdc769bc9d1b171e9815817.svg" alt="3.074\times10^{-7}"/></p></td>
+</tr>
+<tr class="row-odd"><td><p>IEEE14</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/8061327f6ea1dab0c390892b8d7ffc825526f610.svg" alt="5.428\times10^{-9}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/85607ddf33874c619cf3ffd709d289c81a26f1c3.svg" alt="1.408\times10^{-8}"/></p></td>
+</tr>
+<tr class="row-even"><td><p>IEEE39</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/4ec3b314b72d86180c780a65719675bf4da6b8c2.svg" alt="1.724\times10^{-7}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/5a33f24f5d7b0f634dceed0c671f46ab676ddedc.svg" alt="1.744\times10^{-7}"/></p></td>
+</tr>
+<tr class="row-odd"><td><p>NPCC140</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/c4471a1a6966e2a8d9c15160bdaa6f5849a6edcf.svg" alt="9.992\times10^{-16}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/a70f6d4bd60cd4d2b9158e43b732ee8537d3aae6.svg" alt="5.773\times10^{-15}"/></p></td>
+</tr>
+<tr class="row-even"><td><p>WECC179</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/1cea3e76dfc1a16108a49521b9f450ce5ac0ee31.svg" alt="1.785\times10^{-6}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/6e2cfbee40a72409c054577b73bb62aef52ea01a.svg" alt="7.764\times10^{-6}"/></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="linearization-and-modal-agreement">
+<h4>Linearization and modal agreement<a class="headerlink" href="#linearization-and-modal-agreement" title="Link to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Case</p></th>
+<th class="head text-right"><p>Mean eigenvalue error</p></th>
+<th class="head text-right"><p>Maximum eigenvalue error</p></th>
+<th class="head text-right"><p>Relative <img class="math" src="../_images/math/211284f68205c3e66773eaf026f32a0acdd3dfb3.svg" alt="A"/> error</p></th>
+<th class="head text-right"><p>Relative participation-factor error</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Kundur</p></td>
+<td class="text-right"><p>0.000036%</p></td>
+<td class="text-right"><p>0.000070%</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/14f3703bae942da2446e01120c2680e442712728.svg" alt="1.692\times10^{-10}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/741de7510b99a1ef92a4f4c00b3a4db607f27bfa.svg" alt="2.503\times10^{-5}"/></p></td>
+</tr>
+<tr class="row-odd"><td><p>IEEE14</p></td>
+<td class="text-right"><p>0.000001%</p></td>
+<td class="text-right"><p>0.000009%</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/8915047ee32a31ee10aa31d24c9ea7fc16e99352.svg" alt="1.835\times10^{-9}"/></p></td>
+<td class="text-right"><p>0</p></td>
+</tr>
+<tr class="row-even"><td><p>IEEE39</p></td>
+<td class="text-right"><p>0.000012%</p></td>
+<td class="text-right"><p>0.000074%</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/c170bcf4691e5d4fa028f0b4c26dac4e45a54ff3.svg" alt="6.902\times10^{-8}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/f6f210254ddb3bfba3084ac7397962706d4800a6.svg" alt="7.683\times10^{-6}"/></p></td>
+</tr>
+<tr class="row-odd"><td><p>NPCC140</p></td>
+<td class="text-right"><p>&lt;0.000001%</p></td>
+<td class="text-right"><p>0.000008%</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/5019e59ffcd8bc4b05d12c04f27e59b4da686c98.svg" alt="5.658\times10^{-8}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/3b4b188b656c49249a5ee52db00a6e23b6ca5f89.svg" alt="2.249\times10^{-6}"/></p></td>
+</tr>
+<tr class="row-even"><td><p>WECC179</p></td>
+<td class="text-right"><p>0.000040%</p></td>
+<td class="text-right"><p>0.000559%</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/1cba039d151651058b050c3e394fde4d749d0562.svg" alt="6.024\times10^{-7}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/f5d16e24f0f45566a75c6a160165629a545d8f68.svg" alt="3.075\times10^{-5}"/></p></td>
+</tr>
+</tbody>
+</table>
+<p>The mean absolute eigenvalue errors range from
+<img class="math" src="../_images/math/8721f6c6ab6240100a30f39433dfbbdf6f8545ee.svg" alt="2.568\times10^{-8}\ \mathrm{s}^{-1}"/> for NPCC140 to
+<img class="math" src="../_images/math/3636e181226cf2703237fce81d25e49682ecc902.svg" alt="4.376\times10^{-6}\ \mathrm{s}^{-1}"/> for WECC179. The largest absolute
+state-matrix entry difference occurs in WECC179, but the matrix also contains
+entries of approximately 540,000. Its relative Frobenius error is therefore
+the more informative value: <img class="math" src="../_images/math/1cba039d151651058b050c3e394fde4d749d0562.svg" alt="6.024\times10^{-7}"/>.</p>
+</section>
+<section id="eigenvalue-spectra">
+<h4>Eigenvalue spectra<a class="headerlink" href="#eigenvalue-spectra" title="Link to this heading"></a></h4>
+<p><img alt="Kundur eigenvalue comparison between ANDES and VeraGrid" src="../_images/sdomain_eigenvalues_kundur_andes_veragrid.png" /></p>
+<p><em>Kundur two-area system. The ANDES circles and VeraGrid crosses overlap at the
+resolution of the complete spectrum.</em></p>
+<p><img alt="IEEE14 eigenvalue comparison between ANDES and VeraGrid" src="../_images/sdomain_eigenvalues_IEEE14_andes_veragrid.png" /></p>
+<p><em>IEEE14 complete eigenvalue spectrum.</em></p>
+<p><img alt="IEEE39 eigenvalue comparison between ANDES and VeraGrid" src="../_images/sdomain_eigenvalues_IEEE13_Andes_veragrid.png" /></p>
+<p><em>IEEE39 complete eigenvalue spectrum.</em></p>
+<p><img alt="NPCC140 eigenvalue comparison between ANDES and VeraGrid" src="../_images/sdomain_eigenvalues_npcc140_andes_veragrid.png" /></p>
+<p><em>NPCC140 complete eigenvalue spectrum.</em></p>
+<p><img alt="WECC179 eigenvalue comparison between ANDES and VeraGrid" src="../_images/sdomain_eigenvalues_wecc179_andes_veragrid.png" /></p>
+<p><em>WECC179 complete eigenvalue spectrum, including the repeated modes retained in
+the eigenvalue comparison.</em></p>
+<p>The complete spectra show the global modal agreement, while the numerical
+errors in the table provide the corresponding quantitative comparison near the
+stability boundary.</p>
+<p>Participation-factor agreement is summarized by the relative errors in the
+table. Repeated WECC179 modes are excluded from this metric because their
+individual eigenvector bases are not unique.</p>
+</section>
+<section id="recorded-small-signal-timings">
+<h4>Recorded small-signal timings<a class="headerlink" href="#recorded-small-signal-timings" title="Link to this heading"></a></h4>
+<p>The complete measured workflow includes case loading or construction,
+power flow, dynamic preparation, numerical small-signal analysis, and result
+export. The production kernel isolates the numerical small-signal calculation.</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Case</p></th>
+<th class="head text-right"><p>ANDES total (s)</p></th>
+<th class="head text-right"><p>VeraGrid total (s)</p></th>
+<th class="head text-right"><p>ANDES kernel (s)</p></th>
+<th class="head text-right"><p>VeraGrid kernel (s)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Kundur</p></td>
+<td class="text-right"><p>0.647732</p></td>
+<td class="text-right"><p>1.829239</p></td>
+<td class="text-right"><p>0.013852</p></td>
+<td class="text-right"><p>0.030901</p></td>
+</tr>
+<tr class="row-odd"><td><p>IEEE14</p></td>
+<td class="text-right"><p>0.614612</p></td>
+<td class="text-right"><p>3.086192</p></td>
+<td class="text-right"><p>0.002962</p></td>
+<td class="text-right"><p>0.042896</p></td>
+</tr>
+<tr class="row-even"><td><p>IEEE39</p></td>
+<td class="text-right"><p>0.779038</p></td>
+<td class="text-right"><p>3.437096</p></td>
+<td class="text-right"><p>0.125438</p></td>
+<td class="text-right"><p>0.055578</p></td>
+</tr>
+<tr class="row-odd"><td><p>NPCC140</p></td>
+<td class="text-right"><p>2.544027</p></td>
+<td class="text-right"><p>5.203009</p></td>
+<td class="text-right"><p>0.342250</p></td>
+<td class="text-right"><p>0.162901</p></td>
+</tr>
+<tr class="row-even"><td><p>WECC179</p></td>
+<td class="text-right"><p>1.927876</p></td>
+<td class="text-right"><p>6.184687</p></td>
+<td class="text-right"><p>0.376404</p></td>
+<td class="text-right"><p>0.281134</p></td>
+</tr>
+</tbody>
+</table>
+<p>ANDES is faster for the complete recorded workflow in all five runs. VeraGrid’s
+small-signal kernel is faster for IEEE39, NPCC140, and WECC179, while its
+dynamic-model preparation and symbolic compilation dominate the complete
+workflow. These single runs identify where time was spent; they should be
+read as illustrative measurements rather than a general performance ordering.</p>
+</section>
+</section>
+<section id="rms-time-domain-simulation">
+<h3>1.2 RMS time-domain simulation<a class="headerlink" href="#rms-time-domain-simulation" title="Link to this heading"></a></h3>
+<p>Two time-domain scenarios were compared with the fixed-step Backward Euler
+method and a nonlinear tolerance of <img class="math" src="../_images/math/7e21945d9e6e712189e545e2144022340947d5fa.svg" alt="10^{-6}"/>:</p>
+<ul class="simple">
+<li><p><strong>Base response:</strong> 1 ms step, 1 s horizon, and the same
+<img class="math" src="../_images/math/2f8284280aa5d505194fe17f815afc3ce1ac605c.svg" alt="10^{-4}"/> pu initial rotor-speed perturbation on the same machine.</p></li>
+<li><p><strong>Event response:</strong> 1 ms step, 2 s horizon, initially unperturbed equilibrium,
+and an additive <img class="math" src="../_images/math/2f8284280aa5d505194fe17f815afc3ce1ac605c.svg" alt="10^{-4}"/> pu rotor-speed-state step at <img class="math" src="../_images/math/0d9bc22091a6f8dff979cb492b83f10dbd88e010.svg" alt="t=0.2"/> s.</p></li>
+</ul>
+<p>The event cases contain the complete requested 2,001-point time grid. No
+adaptive time-step reduction was accepted. Both programs solve the power flow
+twice: the first cold solve is a warm-up diagnostic, while the second warm solve
+initializes RMS and is included in the analyzed timing. File export is excluded.</p>
+<section id="common-state-trajectory-agreement">
+<h4>Common-state trajectory agreement<a class="headerlink" href="#common-state-trajectory-agreement" title="Link to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Case</p></th>
+<th class="head text-right"><p>Base maximum error</p></th>
+<th class="head text-right"><p>Base RMSE</p></th>
+<th class="head text-right"><p>Event maximum error</p></th>
+<th class="head text-right"><p>Event RMSE</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Kundur</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/8706ab6cbf90dc791204df741f67b4656e59c37c.svg" alt="4.614090\times10^{-7}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/44d201482de79779d64895c97b27421cf76e57f1.svg" alt="1.634077\times10^{-7}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/8706ab6cbf90dc791204df741f67b4656e59c37c.svg" alt="4.614090\times10^{-7}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/5b78cd809d62f733174b7e059281f4b0bb31bbe0.svg" alt="1.622421\times10^{-7}"/></p></td>
+</tr>
+<tr class="row-odd"><td><p>IEEE14</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/eb944908cc38157c815abd8ab5c44681cd8c588e.svg" alt="1.169621\times10^{-4}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/0117431990f676d885b975d9a593febb64b9cf70.svg" alt="1.189528\times10^{-5}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/eb944908cc38157c815abd8ab5c44681cd8c588e.svg" alt="1.169621\times10^{-4}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/92e101491f0293a2e614648e2df3e19ee48b2a72.svg" alt="8.522151\times10^{-6}"/></p></td>
+</tr>
+<tr class="row-even"><td><p>IEEE39</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/78b77719e5c7b05d71fd0ea68a6d5caf8ba32c84.svg" alt="5.694527\times10^{-6}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/2539801e6b4501809cce76859e434d75861e9e9f.svg" alt="7.339261\times10^{-7}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/70bd2c7bde48934f353264b8266c65b47083e927.svg" alt="5.694640\times10^{-6}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/6c644be6aa21cf734414a901ca313113586a655b.svg" alt="7.339084\times10^{-7}"/></p></td>
+</tr>
+<tr class="row-odd"><td><p>NPCC140</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/082412da0a6c1d4624e08050702a2f0ab23ccf06.svg" alt="4.780440\times10^{-7}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/b19da7f7f97150523dbf2110def0a45c07f157ca.svg" alt="6.554596\times10^{-8}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/082412da0a6c1d4624e08050702a2f0ab23ccf06.svg" alt="4.780440\times10^{-7}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/6543eb840ffa39e7e9dac73900b249d2abde1016.svg" alt="6.554454\times10^{-8}"/></p></td>
+</tr>
+<tr class="row-even"><td><p>WECC179</p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/f5f5c679d7e0f2317c6235e5803ef551a52ba4db.svg" alt="1.535531\times10^{-3}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/ce2efe1e5ce251db52b3e625b50891433d38207b.svg" alt="4.515396\times10^{-5}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/f5f5c679d7e0f2317c6235e5803ef551a52ba4db.svg" alt="1.535531\times10^{-3}"/></p></td>
+<td class="text-right"><p><img class="math" src="../_images/math/50d0a6a215f1f2faa53e56d765b6401bcc881b64.svg" alt="3.827806\times10^{-5}"/></p></td>
+</tr>
+</tbody>
+</table>
+<p>The case-level diagnostics are important for interpreting the largest number:</p>
+<ul class="simple">
+<li><p><strong>Kundur:</strong> the remaining difference is almost entirely a sub-microradian
+rotor-angle offset; rotor-speed differences are about <img class="math" src="../_images/math/f092e869a30411f4de5d46081ba085678e5f20cf.svg" alt="10^{-11}"/> pu.</p></li>
+<li><p><strong>IEEE14:</strong> the maximum residue is localized in zero-time-constant ESST3A
+<code class="docutils literal notranslate"><span class="pre">LAW2</span></code> states. The tested TGOV1 lower-limit transition agrees to
+<img class="math" src="../_images/math/d18844c484f81addd47b4c6b24f2b9e7323423d7.svg" alt="7.61\times10^{-10}"/>.</p></li>
+<li><p><strong>IEEE39:</strong> the largest differences are nearly constant micro-scale offsets
+in governor and exciter states. They do not grow through the trajectory.</p></li>
+<li><p><strong>NPCC140:</strong> every common trajectory remains below
+<img class="math" src="../_images/math/eeb928461bf8e7b3e0dd9ba8894d7505c148a9c6.svg" alt="5\times10^{-7}"/> absolute error.</p></li>
+<li><p><strong>WECC179:</strong> the largest difference is localized in ESST3A <code class="docutils literal notranslate"><span class="pre">LAW2</span></code> and the
+IEEEG1 limiter chain. VeraGrid’s IEEEG1 template represents the normal
+interior-limiter regime and omits the ANDES valve-rate and anti-windup
+branches. The two models are therefore not globally equivalent after a
+limiter changes branch.</p></li>
+</ul>
+<p>The close state matrices demonstrate local equivalence in the selected
+linearization branch. They do not, by themselves, prove nonlinear equivalence
+for every event or limiter regime.</p>
+</section>
+<section id="representative-base-trajectories">
+<h4>Representative base trajectories<a class="headerlink" href="#representative-base-trajectories" title="Link to this heading"></a></h4>
+<p><img alt="Kundur representative RMS state trajectories" src="../_images/representative_state_trajectories_kundur_andes_veragrid.png" /></p>
+<p><em>Kundur representative physical states for the 1 s base response.</em></p>
+<p><img alt="IEEE14 representative RMS state trajectories" src="../_images/representative_state_trajectories_ieee14_andes_veragrid.png" /></p>
+<p><em>IEEE14 representative physical states. The visible ESST3A <code class="docutils literal notranslate"><span class="pre">LAW2</span></code> differences
+are consistent with the case diagnostics above.</em></p>
+<p><img alt="IEEE39 representative RMS state trajectories" src="../_images/representative_state_trajectories_ieee39_andes_veragrid.png" /></p>
+<p><em>IEEE39 representative physical states. The small, nearly constant offsets do
+not develop into a growing trajectory divergence.</em></p>
+<p><img alt="NPCC140 representative RMS state trajectories" src="../_images/representative_state_trajectories_npcc140_andes_veragrid.png" /></p>
+<p><em>NPCC140 representative physical states.</em></p>
+<p>The base-case maximum errors and RMSE values are reported in the common-state
+agreement table. The figures are therefore used to show the physical
+trajectories and their agreement, while the table provides the error scale
+without duplicating one additional error plot per system.</p>
+</section>
+<section id="representative-event-trajectory">
+<h4>Representative event trajectory<a class="headerlink" href="#representative-event-trajectory" title="Link to this heading"></a></h4>
+<p><img alt="WECC179 RMS event trajectories at 0.2 s" src="../_images/representative_state_trajectories_wecc179_andes_veragrid.png" /></p>
+<p><em>WECC179 response to the event at <img class="math" src="../_images/math/0d9bc22091a6f8dff979cb492b83f10dbd88e010.svg" alt="t=0.2"/> s. The selected states expose the
+documented ESST3A and IEEEG1 limiter-chain differences.</em></p>
+<p>The event marker and the four most informative physical trajectories are shown
+directly in the figure. Their aggregate maximum error and RMSE are given in the
+table above, and the case-level discussion identifies the states and model
+branches responsible for the difference.</p>
+</section>
+<section id="recorded-rms-timings">
+<h4>Recorded RMS timings<a class="headerlink" href="#recorded-rms-timings" title="Link to this heading"></a></h4>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Case</p></th>
+<th class="head text-right"><p>Base ANDES (s)</p></th>
+<th class="head text-right"><p>Base VeraGrid (s)</p></th>
+<th class="head text-right"><p>Event ANDES (s)</p></th>
+<th class="head text-right"><p>Event VeraGrid (s)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Kundur</p></td>
+<td class="text-right"><p>4.535880</p></td>
+<td class="text-right"><p>5.057498</p></td>
+<td class="text-right"><p>4.870898</p></td>
+<td class="text-right"><p>5.445997</p></td>
+</tr>
+<tr class="row-odd"><td><p>IEEE14</p></td>
+<td class="text-right"><p>9.597229</p></td>
+<td class="text-right"><p>4.081667</p></td>
+<td class="text-right"><p>25.810310</p></td>
+<td class="text-right"><p>9.504345</p></td>
+</tr>
+<tr class="row-even"><td><p>IEEE39</p></td>
+<td class="text-right"><p>8.543582</p></td>
+<td class="text-right"><p>9.962002</p></td>
+<td class="text-right"><p>11.345670</p></td>
+<td class="text-right"><p>31.876980</p></td>
+</tr>
+<tr class="row-odd"><td><p>NPCC140</p></td>
+<td class="text-right"><p>14.851950</p></td>
+<td class="text-right"><p>31.331610</p></td>
+<td class="text-right"><p>20.462640</p></td>
+<td class="text-right"><p>61.169760</p></td>
+</tr>
+<tr class="row-even"><td><p>WECC179</p></td>
+<td class="text-right"><p>13.882940</p></td>
+<td class="text-right"><p>49.423460</p></td>
+<td class="text-right"><p>58.890590</p></td>
+<td class="text-right"><p>89.751240</p></td>
+</tr>
+</tbody>
+</table>
+<p>These analyzed totals contain model setup, the warm power flow, dynamic
+initialization and numerical preparation, and integration. The cold power flow
+and result export are excluded. The winner changes with the network and
+scenario because total DAE dimension, Jacobian sparsity and fill-in, nonlinear
+iterations, factorization reuse, and model preparation all contribute.</p>
+</section>
+</section>
+</section>
+<section id="powerfactory-comparison">
+<h2>2. PowerFactory comparison<a class="headerlink" href="#powerfactory-comparison" title="Link to this heading"></a></h2>
+<section id="rms-time-domain-comparison">
+<h3>2.1 RMS time-domain comparison<a class="headerlink" href="#rms-time-domain-comparison" title="Link to this heading"></a></h3>
+<p>The RMS validation uses an interconnected system containing international
+standard dynamic models. Multiple events are applied and equivalent output
+signals from VeraGrid and DIgSILENT PowerFactory are overlaid. The recorded
+study reports relative errors on the order of <img class="math" src="../_images/math/7b4e7f585c3645d15b2ebe5e0a9edab411e65a1e.svg" alt="10^{-5}"/> for the compared
+responses.</p>
+<p>This comparison exercises the complete workflow rather than an isolated block:
+network solution, model initialization, event processing, DAE integration, and
+result extraction.</p>
+<p><img alt="PowerFactory and VeraGrid HVDC current-reference responses" src="../_images/comparison_powerfactory_hvdc.png" /></p>
+<p><em>PowerFactory and VeraGrid master/slave <img class="math" src="../_images/math/badad346f6fbe2e237af99bfbd9a93a4da53a3da.svg" alt="d"/>- and <img class="math" src="../_images/math/a5fa84b363f309ebc8fe7db38304541732c7de9a.svg" alt="q"/>-axis current-reference
+responses. The shaded intervals identify the applied active-power,
+reactive-power, and DC-voltage events.</em></p>
+</section>
+<section id="powerfactory-dgs-import-coverage">
+<h3>2.2 PowerFactory DGS import coverage<a class="headerlink" href="#powerfactory-dgs-import-coverage" title="Link to this heading"></a></h3>
+<p>The PowerFactory DGS parser was tested with approximately twelve example
+networks, up to 240 buses, and a scope of 56 device types. The tested cases
+imported successfully. This is an interoperability result rather than a
+dynamic-solver benchmark: it shows the range of PowerFactory network data that
+can be transferred into VeraGrid before carrying out a study.</p>
+</section>
+</section>
+<section id="stamp-comparison">
+<h2>3. STAMP comparison<a class="headerlink" href="#stamp-comparison" title="Link to this heading"></a></h2>
+<p>STAMP provides a second independent implementation for modal validation. The
+comparison covers both an RMS equilibrium and an EMT periodic orbit.</p>
+<section id="rms-small-signal-comparison">
+<h3>3.1 RMS small-signal comparison<a class="headerlink" href="#rms-small-signal-comparison" title="Link to this heading"></a></h3>
+<p>The RMS benchmark uses a WSCC system with equivalent components, network data,
+operating point, and dynamic equations. VeraGrid’s native grid models are
+replaced by fully dynamic models containing the states required for the STAMP
+comparison. The corresponding eigenvalue spectra coincide.</p>
+<p>This replacement is important: comparing a native algebraic network model with
+a fully dynamic network realization would mix formulation differences with
+solver differences. The benchmark instead aligns the mathematical model before
+matching the modes.</p>
+<p><img alt="STAMP and VeraGrid WSCC eigenvalue comparison" src="../_images/WSCC_SG_GFOR_GFOL_eigenvalue_comparison.png" /></p>
+<p><em>STAMP and VeraGrid WSCC spectra for a fully dynamic network, dynamic lines
+only, and a fully algebraic network. Circles and crosses overlap at the plotted
+resolution in all three matched formulations.</em></p>
+</section>
+<section id="emt-floquet-comparison">
+<h3>3.2 EMT Floquet comparison<a class="headerlink" href="#emt-floquet-comparison" title="Link to this heading"></a></h3>
+<p>For the EMT model, VeraGrid integrates the variational system over one complete
+period to obtain the monodromy operator. Its Floquet multipliers <img class="math" src="../_images/math/4a3598141469c2555591e66606a1b86d4ec6dca9.svg" alt="\mu"/> are
+converted to continuous-time exponents using</p>
+<div class="math">
+<p><img src="../_images/math/b1ca89ba5f1530481df719c72c6bad2cd56b0d56.svg" alt="\lambda = \frac{\log(\mu)}{T},"/></p>
+</div><p>where <img class="math" src="../_images/math/e8dea8254118f111b5fb20895b03528c17566f06.svg" alt="T"/> is the periodic-orbit period. The resulting rightmost exponents are
+compared with the STAMP RMS eigenvalues.</p>
+<p>The physically important rightmost modes agree closely. Strongly damped,
+far-left EMT modes are less precise because their one-period multipliers are
+extremely small. This does not normally alter the stability conclusion. The
+full EMT model also contains additional modes associated with its three-phase
+and larger state-space representation; these have no one-to-one RMS
+counterpart and should not be forced into the matching set.</p>
+<p><img alt="VeraGrid EMT Floquet spectrum against the STAMP RMS reference" src="../_images/stamp_wscc_corrected_rms_emt_spectrum.png" /></p>
+<p><em>Complete 124-state VeraGrid EMT Floquet spectrum and zoom of the rightmost
+modes against the 88-state RMS/STAMP reference. Additional EMT-only modes are
+retained in the complete-spectrum panel.</em></p>
+</section>
+</section>
+<section id="powersimulationsdynamics-jl-comparison">
+<h2>4. PowerSimulationsDynamics.jl comparison<a class="headerlink" href="#powersimulationsdynamics-jl-comparison" title="Link to this heading"></a></h2>
+<p>The RMS small-signal comparison with PowerSimulationsDynamics.jl uses
+equivalent models, network data, and operating points for three systems:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Case</p></th>
+<th class="head text-right"><p>Finite modes in each program</p></th>
+<th class="head"><p>Recorded modal agreement</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Two-bus single-machine infinite-bus</p></td>
+<td class="text-right"><p>2</p></td>
+<td><p>Maximum difference approximately <img class="math" src="../_images/math/e411e2c26aa323ee151adf9639a1123ecfda4e7c.svg" alt="9.1\times10^{-5}\ \mathrm{s}^{-1}"/></p></td>
+</tr>
+<tr class="row-odd"><td><p>Three-bus system</p></td>
+<td class="text-right"><p>27</p></td>
+<td><p>Rightmost modes align; some internal modes show larger differences</p></td>
+</tr>
+<tr class="row-even"><td><p>IEEE 9-bus system</p></td>
+<td class="text-right"><p>45</p></td>
+<td><p>Median difference approximately <img class="math" src="../_images/math/8a1315406a88f5c4ca89d00f3b365df3050789b1.svg" alt="2.4\times10^{-7}\ \mathrm{s}^{-1}"/></p></td>
+</tr>
+</tbody>
+</table>
+<p>Modes are paired by nearest distance in the complex plane. Equal finite-mode
+counts confirm that the compared state spaces have the same retained modal
+dimension, but mode count alone is not a validation. The rightmost-mode match,
+individual distances, and full spectra must be inspected together.</p>
+<p><img alt="PowerSimulationsDynamics.jl and VeraGrid eigenvalue spectra" src="../_images/validated_eigenvalue_comparison.png" /></p>
+<p><em>Matched spectra for the two-bus, three-bus, and IEEE9 systems. The numerical
+matching errors are reported in the table above.</em></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="small_signal_stability_emt.html" class="btn btn-neutral float-left" title="🧬 EMT Small-Signal stability: Floquet analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dynamic_modeling.html" class="btn btn-neutral float-right" title="Building dynamic models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Santiago Peñate Vera et. al..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

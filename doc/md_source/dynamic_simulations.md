@@ -31,7 +31,20 @@ small_signal_stability_rms
 small_signal_stability_emt
 ```
 
-## 2. Dynamic editor and model construction
+## 2. Benchmarking against other software
+
+The benchmarking guide gathers the cross-software validation of RMS, EMT, and
+small-signal workflows. It explains the comparison method, numerical metrics,
+results, model-scope limitations, and the evidence required when adding a new
+benchmark.
+
+```{toctree}
+:maxdepth: 1
+
+dynamic_benchmarks
+```
+
+## 3. Dynamic editor and model construction
 
 Dynamic models can be assigned from a template or assembled from blocks. The modelling guide describes the common block structure and API workflow. The editor guide covers the model editor, Events, Comparison, and Plots pages. The DAE authoring guide is the detailed reference for writing equations and initialization expressions.
 
@@ -42,7 +55,7 @@ dynamic_modeling
 dynamic_editor
 ```
 
-## 3. Dynamic model library
+## 4. Dynamic model library
 
 The library reference documents the models and reusable blocks currently shipped with VeraGrid. Its navigation follows the present library organization and is kept separate from the theory and authoring guides.
 
@@ -61,6 +74,7 @@ dynamic_model_library_index
 | Run an EMT study | [EMT simulations](emt_simulations.md) | [EMT practical session](EMT_practical_session.md) |
 | Assess RMS small-signal stability | [RMS Small-Signal stability](small_signal_stability_rms.md) | Modal results and participation factors |
 | Assess EMT periodic-orbit stability | [EMT Small-Signal stability](small_signal_stability_emt.md) | Floquet multipliers and modes |
+| Review cross-software validation | [Dynamic simulation benchmarks](dynamic_benchmarks.md) | ANDES, PowerFactory, STAMP, and PowerSimulationsDynamics.jl |
 | Build or edit a model | [Building dynamic models](dynamic_modeling.md) | [Dynamic workspace and editors](dynamic_editor.md) |
 | Write DAE equations | [Writing DAE models in VeraGrid](dae_block_authoring.md) | [Physical network contracts](dynamic_physical_network_contracts.md) |
 | Look up a supplied model | [Dynamic model library](dynamic_model_library_index.md) | The model's reference page |

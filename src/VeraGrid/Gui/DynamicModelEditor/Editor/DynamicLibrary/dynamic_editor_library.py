@@ -18,8 +18,12 @@ from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
 from VeraGridEngine.Devices.Dynamic.fmu_template import FmuTemplate
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
-from VeraGridEngine.Templates.BasicBlockCatalog import BasicBlockTemplateDescriptor, \
-    get_editor_ready_basic_block_catalog_descriptors
+from VeraGridEngine.Templates.BasicBlockCatalog import (
+    BasicBlockTemplateDescriptor,
+    ExactMathematicalBlockDescriptor,
+    build_exact_mathematical_block_descriptors,
+    get_editor_ready_basic_block_catalog_descriptors,
+)
 from VeraGridEngine.Templates.ProceduralLogicCatalog import (
     ProceduralBlockParameterSpec,
     ProceduralBlockTemplateDescriptor,
@@ -31,6 +35,7 @@ from VeraGridEngine.Templates.InternationalStandardsCatalog import (
 from VeraGridEngine.enumerations import (
     BlockType,
     DynamicDeviceTemplateType,
+    ExactMathematicalBlockOperation,
     InternationalStandardModel,
     ProceduralLogicType,
 )
@@ -327,9 +332,9 @@ class DynamicEditorLibrary:
         )
 
         self.tree_structure["Tools"] = list((
-            LibraryLeafSpec("Signal Pair", BlockType.FROM_GOTO),
+            LibraryLeafSpec("Signal pair", BlockType.FROM_GOTO),
             LibraryLeafSpec("Measurements", BlockType.INPUT_CONN),
-            LibraryLeafSpec("Generic Device", BlockType.GENERIC),
+            LibraryLeafSpec("Generic device", BlockType.GENERIC),
         ))
 
         if self.templates_list:
@@ -1526,6 +1531,9 @@ def build_dynamic_library_device_template(
     if template is not None:
         # A device registration is authoritative for host compatibility even
         # when the underlying block builder is also usable as a control block.
+        # The same registration also owns the user-facing catalogue label. A
+        # builder's internal symbolic name must not leak into device selectors.
+        template.name = spec.label
         template.tpe = spec.device_type
         template.code = spec.unique_key
     else:
@@ -1533,13 +1541,13 @@ def build_dynamic_library_device_template(
     return template
 
 
-def build_basic_native_branch_skeleton() -> Dict[str, object]:
-    """Build the canonical empty hierarchy for ``Basic / Native``.
+def build_basic_branch_skeleton() -> Dict[str, object]:
+    """Build the canonical empty hierarchy below ``Basic``.
 
     The hierarchy lives beside the ``Devices`` and ``Controls`` registrations
     so the complete dynamic-editor library can be inspected and maintained in
-    one module. Empty leaf collections are intentional: they reserve the
-    requested semantic location for blocks added in the future.
+    one module. Empty leaf collections reserve the requested semantic location
+    while the tree is populated; they are removed before it becomes visible.
 
     :return: Ordered category tree whose leaf nodes are empty lists.
     """
@@ -1549,7 +1557,8 @@ def build_basic_native_branch_skeleton() -> Dict[str, object]:
         ("Sum", list()),
         ("Product", list()),
         ("Gain", list()),
-        ("Bias / Affine", list()),
+        ("Affine", list()),
+        ("Polynomials", list()),
         ("Minimum/Maximum", list()),
         ("Absolute value", list()),
         ("Sign", list()),
@@ -1575,7 +1584,6 @@ def build_basic_native_branch_skeleton() -> Dict[str, object]:
         ("Previous value", list()),
         ("Exact time delay", list()),
         ("Moving average", list()),
-        ("Discrete integrator", list()),
     ))
 
     # Event-generating comparators are distinguished from ordinary algebraic
@@ -1594,16 +1602,15 @@ def build_basic_native_branch_skeleton() -> Dict[str, object]:
         ("Deadband", list()),
         ("Rate limiter", list()),
         ("Hysteresis", list()),
-        ("Piecewise function", list()),
     ))
 
-    # Sources are classified by the waveform users look for, independently of
-    # whether a particular implementation uses parameters or signal inputs.
+    # Sources are classified by the waveform users look for. Scalar constants
+    # belong with the other mathematical constants, while clocks have their
+    # own category instead of being presented incorrectly as steps.
     sources: Dict[str, object] = dict((
-        ("Constant", list()),
+        ("Initial conditions", list()),
         ("Simulation time", list()),
-        ("Step", list()),
-        ("Ramp", list()),
+        ("Periodic clocks", list()),
         ("Pulse", list()),
         ("Sine", list()),
         ("Square", list()),
@@ -1627,6 +1634,11 @@ def build_basic_native_branch_skeleton() -> Dict[str, object]:
         ("Conjugate", list()),
         ("Arithmetic", list()),
     ))
+    measurements: Dict[str, object] = dict((
+        ("Electrical measurements", list()),
+        ("Per-unit conversions", list()),
+        ("Unit conversions", list()),
+    ))
     mechanical: Dict[str, object] = dict((("Drive train", list()),))
 
     return dict((
@@ -1639,7 +1651,7 @@ def build_basic_native_branch_skeleton() -> Dict[str, object]:
         ("Lookup tables", lookup_tables),
         ("Transforms", transforms),
         ("Complex numbers", complex_numbers),
-        ("Measurements", list()),
+        ("Measurements and conversions", measurements),
         ("Mechanical", mechanical),
     ))
 
@@ -1648,15 +1660,45 @@ def get_basic_lookup_table_category_path(descriptor: BasicBlockTemplateDescripto
     """Return the dimensional lookup-table category for one descriptor.
 
     :param descriptor: Basic-block descriptor being classified.
-    :return: Path below ``Basic / Native`` for the lookup implementation.
+    :return: Path below ``Basic`` for the lookup implementation.
     """
-    normalized_name: str = f"{descriptor.template_key} {descriptor.display_label}".lower()
-    if "inverse" in normalized_name or "invlapprox" in normalized_name:
+    template_key: str = descriptor.template_key
+    inverse_keys: tuple[str, ...] = (
+        "inverse_lookup_array_object_linear",
+        "invlapprox",
+    )
+    matrix_keys: tuple[str, ...] = (
+        "lookup_matrix_linear",
+        "lookup_matrix_spline",
+        "lookup_matrix_object_linear",
+        "lookup_matrix_object_spline",
+        "lapprox2",
+        "sapprox2",
+    )
+    array_keys: tuple[str, ...] = (
+        "lookup_array_linear_noclipping",
+        "lookup_array_1x3_linear_fixed",
+        "lookup_array_1x3_linear_variable",
+        "lookup_array_1x4_linear_fixed",
+        "lookup_array_1x4_linear_variable",
+        "lookup_array_object_linear",
+        "lookup_array_object_linear_noclipping",
+        "lookup_array_object_spline",
+        "lapprox",
+        "lapproxext",
+        "sapprox",
+    )
+
+    # Every shipped lookup implementation is named explicitly. This prevents a
+    # future matrix or inverse implementation from silently landing in 1D.
+    if template_key in inverse_keys:
         category_path: tuple[str, ...] = ("Lookup tables", "Inverse 1D lookup table")
-    elif "matrix" in normalized_name:
+    elif template_key in matrix_keys:
         category_path = ("Lookup tables", "2D lookup table")
-    else:
+    elif template_key in array_keys:
         category_path = ("Lookup tables", "1D lookup table")
+    else:
+        raise ValueError(f"Unclassified lookup-table template '{template_key}'")
     return category_path
 
 
@@ -1666,25 +1708,49 @@ def get_basic_mathematical_category_path(descriptor: BasicBlockTemplateDescripto
 
     :param descriptor: Basic-block descriptor being classified.
     :param source_category: Legacy second-level mathematical category.
-    :return: Path below ``Basic / Native`` for the mathematical behavior.
+    :return: Path below ``Basic`` for the mathematical behavior.
     """
-    template_key: str = descriptor.template_key.lower()
-    label: str = descriptor.display_label.lower()
+    template_key: str = descriptor.template_key
+    scaling_gain_keys: tuple[str, ...] = (
+        "multiply_1_form_a", "multiply_k_form_a", "multiply_1_k_form_a",
+        "multiply_1_k1_k2", "multiply_1_form_b",
+        "multiply_1_k_form_b",
+        "multiply_k_form_b", "multiply_k1_k2_k3_form_a",
+        "multiply_k1_k2_k3_form_b", "multiply_k1_k2_form_a",
+        "multiply_k1_k2_form_b", "multiply_sqrt2", "multiply_sqrt3",
+    )
+    saturated_gain_keys: tuple[str, ...] = (
+        "multiply_1_k_p", "multiply_1_k1k2_p", "multiply_k_p",
+    )
     trigonometric_keys: tuple[str, ...] = (
         "acos", "asin", "atan", "atan2", "atan2d", "atand",
         "cos", "cosd", "cosh", "coshd", "sin", "sind",
         "sinh", "sinhd", "tan", "tand", "tanh", "tanhd",
     )
+    polynomial_keys: tuple[str, ...] = (
+        "a_x_c1_x_c2", "ax_2_bx_c",
+    )
+    power_keys: tuple[str, ...] = (
+        "reciprocal", "reciprocal_fb", "x_2", "x_p",
+    )
 
     if source_category == "Constants and Scaling":
         category_path: tuple[str, ...] = ("Mathematical functions", "Constants")
     elif source_category == "Scaling and Products":
-        if template_key in ("bias", "mx_n"):
-            category_path = ("Mathematical functions", "Bias / Affine")
-        elif template_key in ("a_x_c1_x_c2", "ax_2_bx_c"):
+        if template_key == "bias":
+            category_path = ("Sources", "Initial conditions")
+        elif template_key == "mx_n":
+            category_path = ("Mathematical functions", "Affine")
+        elif template_key in polynomial_keys:
+            category_path = ("Mathematical functions", "Polynomials")
+        elif template_key in power_keys:
             category_path = ("Mathematical functions", "Power")
-        else:
+        elif template_key in saturated_gain_keys:
+            category_path = ("Limits and nonlinearities", "Saturation")
+        elif template_key in scaling_gain_keys:
             category_path = ("Mathematical functions", "Gain")
+        else:
+            raise ValueError(f"Unclassified scaling template '{template_key}'")
     elif template_key == "equal":
         category_path = ("Logic and events", "Comparator")
     elif template_key == "abs":
@@ -1699,10 +1765,10 @@ def get_basic_mathematical_category_path(descriptor: BasicBlockTemplateDescripto
         category_path = ("Mathematical functions", "Rounding and modulo")
     elif template_key in trigonometric_keys:
         category_path = ("Mathematical functions", "Trigonometric functions")
-    elif template_key in ("reciprocal", "reciprocal_fb", "x_2", "x_p") or "^" in label:
+    elif template_key in power_keys:
         category_path = ("Mathematical functions", "Power")
     else:
-        category_path = ("Mathematical functions", "Power")
+        raise ValueError(f"Unclassified elementary-function template '{template_key}'")
     return category_path
 
 
@@ -1712,29 +1778,50 @@ def get_basic_waveform_category_path(descriptor: BasicBlockTemplateDescriptor,
 
     :param descriptor: Basic-block descriptor being classified.
     :param source_category: Legacy waveform category.
-    :return: Path below ``Basic / Native`` for the source or event behavior.
+    :return: Path below ``Basic`` for the source or event behavior.
     """
-    template_key: str = descriptor.template_key.lower()
-    if "sawtooth" in template_key:
+    template_key: str = descriptor.template_key
+    timed_comparator_keys: tuple[str, ...] = (
+        "abs_in_greater_than_c_ip", "abs_in_less_than_c_ip",
+        "yi_equals_c_ip", "yi_greater_than_c_ip",
+        "yi_greater_than_or_equal_c_ip", "yi_less_than_c_ip",
+        "yi_less_than_or_equal_c_ip", "yi1_equals_yi2_ip",
+        "yi1_greater_than_or_equal_yi2_ip", "yi1_greater_than_yi2_ip",
+        "yi1_less_than_or_equal_yi2_ip", "yi1_less_than_yi2_ip",
+    )
+    pulse_logic_keys: tuple[str, ...] = (
+        "2_out_of_3_ip", "and2_ip", "and3_ip", "invert_logic_ip",
+        "not_ip", "or2_ip", "or3_ip",
+    )
+    clock_keys: tuple[str, ...] = (
+        "clock_t_0_par", "clock_t_0_sig", "clock_t_t0_par",
+        "clock_t_t0_sig", "clock_par", "clock_sig",
+    )
+
+    if template_key in ("sawtooth_wave_generator_ip", "sawtooth_wave_generator"):
         category_path: tuple[str, ...] = ("Sources", "Sawtooth")
-    elif "triangle" in template_key:
+    elif template_key in ("triangle_wave_generator", "triangle_wave_generator_ip"):
         category_path = ("Sources", "Triangle")
-    elif "square" in template_key:
+    elif template_key in ("square_wave_generator", "square_wave_generator_ip"):
         category_path = ("Sources", "Square")
-    elif "sine" in template_key:
+    elif template_key in ("sine_wave_generator_t_t0", "sine_wave_generator"):
         category_path = ("Sources", "Sine")
     elif template_key == "pulse":
         category_path = ("Sources", "Pulse")
-    elif source_category == "Time Sources and Timers" and template_key.startswith("time"):
+    elif template_key in ("time_form_a", "time_form_b"):
         category_path = ("Sources", "Simulation time")
-    elif source_category == "Time Sources and Timers" and template_key.startswith("clock"):
-        category_path = ("Sources", "Step")
-    elif source_category == "Time Sources and Timers":
+    elif template_key in clock_keys:
+        category_path = ("Sources", "Periodic clocks")
+    elif template_key in ("timer_reset", "timer_reset_hold_reset_t0_reset_incfw"):
         category_path = ("Logic and events", "Timers")
-    elif template_key.startswith("yi") or template_key.startswith("abs_in"):
+    elif template_key in timed_comparator_keys:
         category_path = ("Logic and events", "Timed comparator")
-    else:
+    elif template_key in pulse_logic_keys:
         category_path = ("Logic and events", "Logic gate")
+    else:
+        raise ValueError(
+            f"Unclassified waveform template '{template_key}' from '{source_category}'"
+        )
     return category_path
 
 
@@ -1744,32 +1831,79 @@ def get_basic_continuous_category_path(descriptor: BasicBlockTemplateDescriptor,
 
     :param descriptor: Basic-block descriptor being classified.
     :param source_category: Legacy continuous-time category.
-    :return: Path below ``Basic / Native`` for the continuous behavior.
+    :return: Path below ``Basic`` for the continuous behavior.
     """
-    template_key: str = descriptor.template_key.lower()
-    label: str = descriptor.display_label.lower()
+    template_key: str = descriptor.template_key
+    previous_value_keys: tuple[str, ...] = (
+        "lastvalue_form_a", "lastvalue_incbackward",
+        "lastvalue_incforward", "lastvalue_form_b",
+    )
+    delay_approximation_keys: tuple[str, ...] = (
+        "ke_st_bypass_incforward", "ke_st_incforward",
+        "pade_approximant_r12_incbackward", "pade_approximant_r12_incforward",
+        "e_s0_01_incforward", "e_st_bypass", "e_st_bypass_incbackward",
+        "e_st_bypass_incforward", "e_st_incbackward", "e_st_incforward",
+    )
+    derivative_keys: tuple[str, ...] = (
+        "s_1_st", "s_w0_2_s_2", "st_1_st_bypass_form_a", "st_1_st",
+        "st_1_st_bypass_form_b", "skt_1_st", "sktd_1_st",
+        "stb_1_sta_fb", "stld_1_stlg_fb", "sk_1_0_01s",
+        "sk_1_st_fb", "sk_1_st", "s_2k_1_st_2",
+    )
+    filter_keys: tuple[str, ...] = (
+        "h0w0_q_s_w0_2_sw0_q_s_2", "butterworth_2nd_order",
+        "butterworth_3rd_order", "butterworth_2nd_order_rst_hold",
+        "butterworth_3rd_order_rst_hold",
+    )
+    integrator_keys_from_controllers: tuple[str, ...] = (
+        "k_s_p", "k_s_s", "k_s",
+    )
+    mathematical_gain_keys: tuple[str, ...] = (
+        "multiply_1_sqrt2", "multiply_1_sqrt3", "multiply_pi",
+        "multiply_sqrt_2_3", "multiply_sqrt_3_2", "multiply_sqrt_k1_k2",
+    )
+    minimum_maximum_keys: tuple[str, ...] = (
+        "max2", "max3", "max4", "min2", "min3", "min4",
+    )
+
     if source_category == "Delays and Memory":
-        if "movingavg" in template_key:
+        if template_key == "movingavg":
             category_path: tuple[str, ...] = ("Memory and discrete-time", "Moving average")
-        elif "lastvalue" in template_key:
+        elif template_key in previous_value_keys:
             category_path = ("Memory and discrete-time", "Previous value")
-        elif "pade" in template_key:
+        elif template_key in delay_approximation_keys:
             category_path = ("Continuous dynamics", "Delay approximations")
-        else:
+        elif template_key == "delay":
             category_path = ("Memory and discrete-time", "Exact time delay")
+        else:
+            raise ValueError(f"Unclassified delay or memory template '{template_key}'")
     elif source_category == "Integrators and Derivatives":
-        if template_key.startswith("s_") or template_key.startswith("st_"):
+        if template_key in derivative_keys:
             category_path = ("Continuous dynamics", "Derivatives")
         else:
+            # The remaining audited source records implement 1/s or 1/(sT)
+            # variants with reset, hold, freeze, and limit options.
             category_path = ("Continuous dynamics", "Integrators")
-    elif template_key.startswith("max") or template_key.startswith("min"):
+    elif template_key in minimum_maximum_keys:
         category_path = ("Mathematical functions", "Minimum/Maximum")
-    elif template_key.startswith("multiply"):
+    elif template_key in ("picdro", "picdro_const"):
+        category_path = ("Logic and events", "Timed comparator")
+    elif template_key in mathematical_gain_keys:
         category_path = ("Mathematical functions", "Gain")
-    elif "butterworth" in template_key or "filter" in label or template_key.startswith("h0w0"):
+    elif template_key in filter_keys:
         category_path = ("Continuous dynamics", "Filters")
-    else:
+    elif template_key in derivative_keys:
+        category_path = ("Continuous dynamics", "Derivatives")
+    elif template_key in integrator_keys_from_controllers or template_key == "1_2hs":
+        category_path = ("Continuous dynamics", "Integrators")
+    elif source_category in ("Transfer Functions and Filters", "Controllers"):
+        # All non-exception records in these two audited legacy families are
+        # rational transfer functions or complete continuous controllers.
         category_path = ("Continuous dynamics", "Transfer functions")
+    else:
+        raise ValueError(
+            f"Unclassified continuous template '{template_key}' from '{source_category}'"
+        )
     return category_path
 
 
@@ -1779,21 +1913,83 @@ def get_basic_logic_category_path(descriptor: BasicBlockTemplateDescriptor,
 
     :param descriptor: Basic-block descriptor being classified.
     :param source_category: Legacy logical category.
-    :return: Path below ``Basic / Native`` for the logical behavior.
+    :return: Path below ``Basic`` for the logical behavior.
     """
-    template_key: str = descriptor.template_key.lower()
+    template_key: str = descriptor.template_key
+    latch_keys: tuple[str, ...] = ("aflipflop", "flipflop", "bistable")
+    gate_keys: tuple[str, ...] = (
+        "and2", "and3", "and4", "eor", "nor", "not", "or2", "or3", "or4",
+    )
+    gate_memory_switch_keys: tuple[str, ...] = (
+        "switch_sig_2_1_not_eq_k_by_s_p", "switch_sw_not_equal_c_2s_1s",
+    )
+    enabled_integrator_keys: tuple[str, ...] = (
+        "1_s_enable", "1_s_enable_reset", "1_s_enable_reset_sig",
+    )
+    enabled_derivative_keys: tuple[str, ...] = ("st_1_st_enable",)
+    enabled_transfer_function_keys: tuple[str, ...] = ("1_1_st_enable",)
+    signal_enable_keys: tuple[str, ...] = (
+        "enable_1_sig_hold", "enable_1_sig",
+        "enable_2_sig_hold", "enable_2_sig",
+        "enable_3_sig_hold", "enable_3_sig",
+        "enable_4_sig_hold", "enable_4_sig",
+        "enable_5_sig_hold", "enable_5_sig",
+        "enable_6_sig_hold", "enable_7_sig_hold", "enable_8_sig_hold",
+        "enable_signal_fixed", "enable_signal",
+    )
     if source_category == "Comparators":
         category_path: tuple[str, ...] = ("Logic and events", "Comparator")
-    elif source_category == "Switching and Selection" or template_key.startswith("switch"):
+    elif source_category == "Switching and Selection" or template_key in gate_memory_switch_keys:
         category_path = ("Logic and events", "Selector / Switch")
-    elif source_category == "Timers and Enables":
-        category_path = ("Logic and events", "Timers")
-    elif "edge" in template_key:
+    elif template_key in enabled_integrator_keys:
+        category_path = ("Continuous dynamics", "Integrators")
+    elif template_key in enabled_derivative_keys:
+        category_path = ("Continuous dynamics", "Derivatives")
+    elif template_key in enabled_transfer_function_keys:
+        category_path = ("Continuous dynamics", "Transfer functions")
+    elif template_key in signal_enable_keys:
+        category_path = ("Logic and events", "Selector / Switch")
+    elif template_key == "edge_detector":
         category_path = ("Logic and events", "Edge detector")
-    elif "flipflop" in template_key or template_key in ("bistable", "monostable"):
+    elif template_key == "monostable":
+        category_path = ("Logic and events", "Timers")
+    elif template_key in latch_keys:
         category_path = ("Logic and events", "Latches and flip-flops")
-    else:
+    elif template_key in gate_keys:
         category_path = ("Logic and events", "Logic gate")
+    else:
+        raise ValueError(
+            f"Unclassified logic template '{template_key}' from '{source_category}'"
+        )
+    return category_path
+
+
+def get_basic_measurement_category_path(descriptor: BasicBlockTemplateDescriptor) -> tuple[str, ...]:
+    """Classify measurements separately from unit and per-unit conversions.
+
+    :param descriptor: Basic-block descriptor being classified.
+    :return: Path below ``Basic`` for the measurement or conversion behavior.
+    """
+    template_key: str = descriptor.template_key
+    electrical_measurement_keys: tuple[str, ...] = (
+        "el_power", "pq_calculator", "accelerating_power_simple", "accelerating_power_ipb",
+    )
+    per_unit_conversion_keys: tuple[str, ...] = (
+        "power_base", "hz_p_u", "nm_p_u", "abs_p_u_par", "abs_p_u_sig",
+        "p_u_hz", "p_u_abs_par", "p_u_abs_sig", "p_u_rpm", "rpm_p_u",
+    )
+    unit_conversion_keys: tuple[str, ...] = (
+        "deg_rad", "rad_deg", "rad_s_rpm", "rpm_rad_s",
+    )
+
+    if template_key in electrical_measurement_keys:
+        category_path: tuple[str, ...] = ("Measurements and conversions", "Electrical measurements")
+    elif template_key in per_unit_conversion_keys:
+        category_path = ("Measurements and conversions", "Per-unit conversions")
+    elif template_key in unit_conversion_keys:
+        category_path = ("Measurements and conversions", "Unit conversions")
+    else:
+        raise ValueError(f"Unclassified measurement or conversion template '{template_key}'")
     return category_path
 
 
@@ -1803,19 +1999,32 @@ def get_basic_limit_category_path(descriptor: BasicBlockTemplateDescriptor,
 
     :param descriptor: Basic-block descriptor being classified.
     :param source_category: Legacy limit category.
-    :return: Path below ``Basic / Native`` for the nonlinear behavior.
+    :return: Path below ``Basic`` for the nonlinear behavior.
     """
-    template_key: str = descriptor.template_key.lower()
-    if "deadband" in template_key:
+    template_key: str = descriptor.template_key
+    deadband_keys: tuple[str, ...] = (
+        "deadband_p", "deadband_bypass", "deadband_discontinuous",
+        "deadband_offset_p", "deadband_offset_bypass", "deadband_stepped_p",
+        "deadband_stepped_bypass", "deadband",
+    )
+    rate_limiter_keys: tuple[str, ...] = (
+        "gradlim_const", "rate_limiter", "rate_limiter_base",
+        "rate_limiter_base_p_form_a", "rate_limiter_base_p_form_b",
+        "rate_limiter_base_p_form_c", "rate_limiter_p_form_a",
+        "rate_limiter_p_form_b", "rate_limiter_p_form_c", "rate_limiter_s",
+    )
+    if template_key in deadband_keys:
         category_path: tuple[str, ...] = ("Limits and nonlinearities", "Deadband")
-    elif "backlash" in template_key:
+    elif template_key == "backlash":
         category_path = ("Limits and nonlinearities", "Hysteresis")
-    elif "rate" in template_key or "grad" in template_key:
+    elif template_key in rate_limiter_keys:
         category_path = ("Limits and nonlinearities", "Rate limiter")
-    elif source_category == "Deadbands and Rate Limiters":
-        category_path = ("Limits and nonlinearities", "Deadband")
-    else:
+    elif source_category == "Limiters":
         category_path = ("Limits and nonlinearities", "Saturation")
+    else:
+        raise ValueError(
+            f"Unclassified limit template '{template_key}' from '{source_category}'"
+        )
     return category_path
 
 
@@ -1823,17 +2032,33 @@ def get_basic_transform_category_path(descriptor: BasicBlockTemplateDescriptor) 
     """Classify coordinate, sequence, and RMS transform descriptors.
 
     :param descriptor: Basic-block descriptor being classified.
-    :return: Path below ``Basic / Native`` for the transform behavior.
+    :return: Path below ``Basic`` for the transform behavior.
     """
-    template_key: str = descriptor.template_key.lower()
-    if "clarke" in template_key:
+    template_key: str = descriptor.template_key
+    clarke_keys: tuple[str, ...] = (
+        "clarke_transform_power_invariant", "clarke_transform",
+        "inverse_clarke_transform_pow_invariant", "inverse_clarke_transform",
+    )
+    park_keys: tuple[str, ...] = (
+        "inverse_park_transform_dq", "inverse_park_transform_dq0",
+        "park_transform_dq", "park_transform_dq0",
+        "abc_dq0_power_invariant_align_a_d", "abc_dq0_power_invariant_align_a_q",
+        "abc_dq0_power_variant_align_a_d", "abc_dq0_power_variant_align_a_q",
+        "dq0_abc_power_invariant_align_a_d", "dq0_abc_power_invariant_align_a_q",
+        "dq0_abc_power_variant_align_a_d", "dq0_abc_power_variant_align_a_q",
+    )
+    rms_keys: tuple[str, ...] = ("rms", "rms_value_p_u", "rms_value")
+    sequence_keys: tuple[str, ...] = ("balanced", "u_seq_ab0_u_abc")
+    if template_key in clarke_keys:
         category_path: tuple[str, ...] = ("Transforms", "Clarke")
-    elif "park" in template_key or "dq0" in template_key:
+    elif template_key in park_keys:
         category_path = ("Transforms", "Park / dq0")
-    elif template_key == "rms" or "rms_value" in template_key:
+    elif template_key in rms_keys:
         category_path = ("Transforms", "RMS conversions")
-    else:
+    elif template_key in sequence_keys:
         category_path = ("Transforms", "Sequence components")
+    else:
+        raise ValueError(f"Unclassified transform template '{template_key}'")
     return category_path
 
 
@@ -1841,29 +2066,33 @@ def get_basic_complex_category_path(descriptor: BasicBlockTemplateDescriptor) ->
     """Classify complex-number descriptors by their visible operation.
 
     :param descriptor: Basic-block descriptor being classified.
-    :return: Path below ``Basic / Native`` for the complex operation.
+    :return: Path below ``Basic`` for the complex operation.
     """
-    template_key: str = descriptor.template_key.lower()
-    if template_key.startswith("to_polar") or template_key.startswith("to_rectangular"):
+    template_key: str = descriptor.template_key
+    if template_key in ("to_polar_complex", "to_rectangular_complex"):
         category_path: tuple[str, ...] = ("Complex numbers", "Cartesian / polar conversion")
-    elif template_key.startswith("mag") or template_key.startswith("angle"):
+    elif template_key == "mag_complex":
         category_path = ("Complex numbers", "Magnitude and angle")
-    elif template_key.startswith("conj"):
+    elif template_key == "conj_complex":
         category_path = ("Complex numbers", "Conjugate")
-    else:
+    elif template_key in ("add_complex", "div_complex", "mul_complex", "sub_complex"):
         category_path = ("Complex numbers", "Arithmetic")
+    elif template_key in ("limit_p_complex", "limit_ppp_complex_with_prio"):
+        category_path = ("Limits and nonlinearities", "Saturation")
+    else:
+        raise ValueError(f"Unclassified complex template '{template_key}'")
     return category_path
 
 
 def get_basic_library_category_path(descriptor: BasicBlockTemplateDescriptor) -> tuple[str, ...]:
-    """Translate catalog metadata into the canonical ``Basic / Native`` tree.
+    """Translate catalog metadata into the canonical ``Basic`` tree.
 
     The catalog retains its stable import metadata while this GUI-owned mapping
     controls only where a draggable leaf is presented. This keeps persistence
     and template materialization independent from library organization.
 
     :param descriptor: Editor-ready catalog descriptor to place in the tree.
-    :return: Canonical path below ``Basic / Native``.
+    :return: Canonical path below ``Basic``.
     """
     source_path: tuple[str, ...] = tuple(descriptor.category_path)
     if len(source_path) > 0 and source_path[0] == "Native":
@@ -1914,68 +2143,268 @@ def get_basic_library_category_path(descriptor: BasicBlockTemplateDescriptor) ->
     elif primary_category == "Mechanical":
         category_path = ("Mechanical", "Drive train")
     elif primary_category == "Control and Measurement" and secondary_category == "Controllers":
-        category_path = ("Continuous dynamics", "Transfer functions")
+        category_path = get_basic_continuous_category_path(
+            descriptor=descriptor,
+            source_category=secondary_category,
+        )
+    elif primary_category == "Control and Measurement" and secondary_category == "Measurements and Units":
+        category_path = get_basic_measurement_category_path(descriptor=descriptor)
     else:
-        # Measurement and unit-conversion blocks intentionally remain direct
-        # children because the requested hierarchy leaves this branch open.
-        category_path = ("Measurements",)
+        raise ValueError(
+            f"Unclassified basic-catalog path {source_path!r} for '{descriptor.template_key}'"
+        )
     return category_path
 
 
-def build_basic_library_branch() -> Dict[str, object]:
-    """Build the complete categorized ``Basic / Native`` library branch.
+def get_basic_procedural_category_path(
+        descriptor: ProceduralBlockTemplateDescriptor,
+) -> tuple[str, ...] | None:
+    """Return the Basic path for a reusable procedural primitive.
 
-    Every editor-ready catalog descriptor is inserted exactly once after the
-    native structural blocks, so the reorganization cannot discard or clone a
-    materializable block.
+    Common sampling, memory, limit, latch, edge, and timer behaviors belong in
+    the semantic Basic taxonomy. Device-oriented switching and diagnostic
+    behaviors remain under the dedicated ``Procedural logic`` branch.
+
+    :param descriptor: Procedural descriptor being projected into the Library.
+    :return: Basic category path, or ``None`` for an advanced procedural block.
+    """
+    logic_tpe: ProceduralLogicType = descriptor.logic_tpe
+    if logic_tpe == ProceduralLogicType.FixedSample:
+        category_path: tuple[str, ...] | None = ("Memory and discrete-time", "Sample and hold")
+    elif logic_tpe == ProceduralLogicType.SampledValue:
+        category_path = ("Memory and discrete-time", "Previous value")
+    elif logic_tpe == ProceduralLogicType.TimeDelay:
+        category_path = ("Memory and discrete-time", "Exact time delay")
+    elif logic_tpe == ProceduralLogicType.MovingAverage:
+        category_path = ("Memory and discrete-time", "Moving average")
+    elif logic_tpe == ProceduralLogicType.HardSaturation:
+        category_path = ("Limits and nonlinearities", "Saturation")
+    elif logic_tpe == ProceduralLogicType.GradientLimiter:
+        category_path = ("Limits and nonlinearities", "Rate limiter")
+    elif logic_tpe in (ProceduralLogicType.FlipFlop, ProceduralLogicType.AnalogFlipFlop):
+        category_path = ("Logic and events", "Latches and flip-flops")
+    elif logic_tpe in (ProceduralLogicType.PickupDropoff, ProceduralLogicType.DelayedThresholdLatch):
+        category_path = ("Logic and events", "Timed comparator")
+    elif logic_tpe == ProceduralLogicType.ResetOnRisingEdge:
+        category_path = ("Logic and events", "Edge detector")
+    elif logic_tpe == ProceduralLogicType.StartupHandover:
+        category_path = ("Logic and events", "Timers")
+    elif logic_tpe in (
+            ProceduralLogicType.ConditionalDiagnostic,
+            ProceduralLogicType.DelayedSwitchEvent,
+            ProceduralLogicType.ValveState,
+            ProceduralLogicType.ThreePhaseCarrierPwm,
+            ProceduralLogicType.ThreePhaseCarrierSampledModulation,
+    ):
+        category_path = None
+    else:
+        raise ValueError(f"Unclassified procedural Library type '{logic_tpe.name}'")
+    return category_path
+
+
+def is_replaced_legacy_basic_descriptor(descriptor: BasicBlockTemplateDescriptor) -> bool:
+    """Return whether the Basic library omits one redundant legacy leaf.
+
+    The generated templates remain importable for saved-model compatibility.
+    Their draggable entries are suppressed when a canonical structural,
+    mathematical, or procedural block provides the same behavior, or when the
+    template is a no-op identity block.
+
+    :param descriptor: Basic catalog descriptor being considered for display.
+    :return: ``True`` when the legacy descriptor must stay out of the library.
+    """
+    replaced_template_keys: tuple[str, ...] = (
+        "1_sqrt2",
+        "2pi_form_a",
+        "2pi_form_b",
+        "2pi_form_c",
+        "2pi_form_d",
+        "2pi_form_e",
+        "abs",
+        "aflipflop",
+        "c_form_b",
+        "c_form_c",
+        "c_form_d",
+        "c_form_e",
+        "c_form_f",
+        "delay",
+        "e",
+        "flipflop",
+        "gradlim_const",
+        "inverse_lookup_array_object_linear",
+        "lastvalue_form_a",
+        "lastvalue_form_b",
+        "lookup_array_1x3_linear_fixed",
+        "lookup_array_1x3_linear_variable",
+        "lookup_array_1x4_linear_fixed",
+        "lookup_array_1x4_linear_variable",
+        "lookup_array_linear_noclipping",
+        "lookup_array_object_linear",
+        "lookup_array_object_linear_noclipping",
+        "lookup_array_object_spline",
+        "lookup_matrix_linear",
+        "lookup_matrix_object_linear",
+        "lookup_matrix_object_spline",
+        "lookup_matrix_spline",
+        "movingavg",
+        "max2",
+        "max3",
+        "max4",
+        "min2",
+        "min3",
+        "min4",
+        "multiply_1_form_b",
+        "multiply_1_sqrt2",
+        "multiply_1_sqrt3",
+        "multiply_k_form_a",
+        "multiply_k_form_b",
+        "multiply_pi",
+        "multiply_sqrt2",
+        "multiply_sqrt3",
+        "multiply_sqrt_2_3",
+        "multiply_sqrt_3_2",
+        "pi",
+        "pi_2",
+        "picdro_const",
+        "sqrt2",
+        "sqrt3",
+        "sqrt_2_3",
+        "sqrt_3_2",
+        "time_form_a",
+    )
+    return descriptor.template_key in replaced_template_keys
+
+
+def build_non_empty_library_branch(branch: Dict[str, object]) -> Dict[str, object]:
+    """Copy a Library branch while removing empty categories recursively.
+
+    :param branch: Fully populated branch built from the canonical skeleton.
+    :return: Branch containing only categories with at least one visible leaf.
+    """
+    result: Dict[str, object] = dict()
+    label: str
+    child_data: object
+    for label, child_data in branch.items():
+        if isinstance(child_data, dict):
+            filtered_child: Dict[str, object] = build_non_empty_library_branch(branch=child_data)
+            if len(filtered_child) > 0:
+                result[label] = filtered_child
+            else:
+                pass
+        elif isinstance(child_data, list):
+            if len(child_data) > 0:
+                result[label] = child_data
+            else:
+                pass
+        else:
+            raise TypeError(f"Unsupported Library branch data type {type(child_data)!r}")
+    return result
+
+
+def build_basic_library_branch() -> Dict[str, object]:
+    """Build the complete categorized ``Basic`` library branch.
+
+    Structural blocks, canonical procedural primitives, and non-duplicate
+    catalog descriptors are inserted into one semantic hierarchy. Legacy
+    wrapper templates remain loadable even when their duplicate leaf is hidden.
 
     :return: Nested branch data consumed by :class:`DynamicEditorLibrary`.
     """
-    native_branch: Dict[str, object] = build_basic_native_branch_skeleton()
-    native_blocks: tuple[tuple[tuple[str, ...], LibraryLeafSpec], ...] = (
-        (("Sources", "Constant"), LibraryLeafSpec("Const", BlockType.CONST)),
+    basic_branch: Dict[str, object] = build_basic_branch_skeleton()
+    structural_blocks: tuple[tuple[tuple[str, ...], LibraryLeafSpec], ...] = (
+        (("Mathematical functions", "Constants"), LibraryLeafSpec("Configurable constant", BlockType.CONST)),
         (("Mathematical functions", "Gain"), LibraryLeafSpec("Gain", BlockType.GAIN)),
         (("Mathematical functions", "Sum"), LibraryLeafSpec("Sum", BlockType.SUM)),
         (("Mathematical functions", "Product"), LibraryLeafSpec("Product", BlockType.PRODUCT)),
-        (("Mathematical functions", "Absolute value"), LibraryLeafSpec("Abs", BlockType.ABS)),
+        (("Mathematical functions", "Minimum/Maximum"), LibraryLeafSpec("MIN", BlockType.MIN)),
+        (("Mathematical functions", "Minimum/Maximum"), LibraryLeafSpec("MAX", BlockType.MAX)),
+        (("Mathematical functions", "Absolute value"), LibraryLeafSpec("Absolute value", BlockType.ABS)),
         (("Lookup tables", "Inverse 1D lookup table"),
-         LibraryLeafSpec("Inverse Lookup array (linear)", BlockType.INVERSE_LOOKUP_ARRAY)),
+         LibraryLeafSpec("Inverse linear lookup table", BlockType.INVERSE_LOOKUP_ARRAY)),
         (("Lookup tables", "1D lookup table"),
-         LibraryLeafSpec("Lookup array (linear)", BlockType.LOOKUP_ARRAY_LINEAR)),
+         LibraryLeafSpec("Linear lookup table", BlockType.LOOKUP_ARRAY_LINEAR)),
         (("Lookup tables", "1D lookup table"),
-         LibraryLeafSpec("Lookup array (spline)", BlockType.LOOKUP_ARRAY_SPLINE)),
+         LibraryLeafSpec("Spline lookup table", BlockType.LOOKUP_ARRAY_SPLINE)),
+        (("Lookup tables", "1D lookup table"),
+         LibraryLeafSpec("Dynamic linear lookup table", BlockType.LOOKUP_ARRAY_LINEAR_VARIABLE)),
         (("Lookup tables", "2D lookup table"),
-         LibraryLeafSpec("Lookup matrix (linear)", BlockType.LOOKUP_MATRIX_LINEAR)),
+         LibraryLeafSpec("Bilinear lookup table", BlockType.LOOKUP_MATRIX_LINEAR)),
         (("Lookup tables", "2D lookup table"),
-         LibraryLeafSpec("Lookup matrix (spline)", BlockType.LOOKUP_MATRIX_SPLINE)),
+         LibraryLeafSpec("2D spline lookup table", BlockType.LOOKUP_MATRIX_SPLINE)),
     )
-    native_entry: tuple[tuple[str, ...], LibraryLeafSpec]
-    for native_entry in native_blocks:
+    structural_entry: tuple[tuple[str, ...], LibraryLeafSpec]
+    for structural_entry in structural_blocks:
         insert_library_leaf(
-            branch=native_branch,
-            category_path=native_entry[0],
-            leaf=native_entry[1],
+            branch=basic_branch,
+            category_path=structural_entry[0],
+            leaf=structural_entry[1],
         )
 
-    # Catalog descriptors carry stable import identities. Only their visible
-    # paths are translated here, beside the rest of the Library registrations.
-    descriptor: BasicBlockTemplateDescriptor
-    for descriptor in get_editor_ready_basic_block_catalog_descriptors():
+    # Exact named values are registered as two parallel normal block families:
+    # sources under Constants and multipliers under Gain. Imported equivalents
+    # remain available for legacy files but their duplicate leaves are hidden.
+    exact_descriptor: ExactMathematicalBlockDescriptor
+    for exact_descriptor in build_exact_mathematical_block_descriptors():
+        if exact_descriptor.operation == ExactMathematicalBlockOperation.CONSTANT:
+            exact_category_path: tuple[str, ...] = ("Mathematical functions", "Constants")
+        else:
+            exact_category_path = ("Mathematical functions", "Gain")
         insert_library_leaf(
-            branch=native_branch,
-            category_path=get_basic_library_category_path(descriptor=descriptor),
+            branch=basic_branch,
+            category_path=exact_category_path,
             leaf=LibraryLeafSpec(
-                label=descriptor.display_label,
-                payload=descriptor,
-                search_text=descriptor.search_text,
+                label=exact_descriptor.display_label,
+                payload=exact_descriptor,
+                search_text=exact_descriptor.search_text,
             ),
         )
 
-    return dict((("Native", native_branch),))
+    # Reusable procedural primitives are shown in their semantic Basic category
+    # instead of being duplicated under the top-level procedural branch.
+    procedural_descriptor: ProceduralBlockTemplateDescriptor
+    for procedural_descriptor in get_dynamic_library_procedural_descriptors():
+        procedural_category_path: tuple[str, ...] | None = get_basic_procedural_category_path(
+            descriptor=procedural_descriptor,
+        )
+        if procedural_category_path is not None:
+            insert_library_leaf(
+                branch=basic_branch,
+                category_path=procedural_category_path,
+                leaf=LibraryLeafSpec(
+                    label=procedural_descriptor.display_label,
+                    payload=procedural_descriptor,
+                    search_text=procedural_descriptor.search_text,
+                ),
+            )
+        else:
+            pass
+
+    # Catalog descriptors carry stable import identities. Only their visible
+    # paths are translated here, beside the rest of the Library registrations.
+    # Redundant wrappers stay loadable for legacy models but are not exposed as
+    # duplicate draggable entries.
+    descriptor: BasicBlockTemplateDescriptor
+    for descriptor in get_editor_ready_basic_block_catalog_descriptors():
+        if is_replaced_legacy_basic_descriptor(descriptor=descriptor):
+            pass
+        else:
+            insert_library_leaf(
+                branch=basic_branch,
+                category_path=get_basic_library_category_path(descriptor=descriptor),
+                leaf=LibraryLeafSpec(
+                    label=descriptor.display_label,
+                    payload=descriptor,
+                    search_text=descriptor.search_text,
+                ),
+            )
+
+    # Planned categories without an implementation are intentionally omitted
+    # until a real block is available, avoiding dead ends in the visible tree.
+    return build_non_empty_library_branch(branch=basic_branch)
 
 
 def build_procedural_library_branch() -> Dict[str, object]:
-    """Build the complete native procedural-logic branch.
+    """Build the advanced procedural-logic branch.
 
     The descriptor inventory and its ordering are owned locally by this
     Library module. Engine code remains responsible only for materializing the
@@ -1986,15 +2415,18 @@ def build_procedural_library_branch() -> Dict[str, object]:
     branch: Dict[str, object] = dict()
     descriptor: ProceduralBlockTemplateDescriptor
     for descriptor in get_dynamic_library_procedural_descriptors():
-        insert_library_leaf(
-            branch=branch,
-            category_path=tuple(descriptor.category_path),
-            leaf=LibraryLeafSpec(
-                label=descriptor.display_label,
-                payload=descriptor,
-                search_text=descriptor.search_text,
-            ),
-        )
+        if get_basic_procedural_category_path(descriptor=descriptor) is None:
+            insert_library_leaf(
+                branch=branch,
+                category_path=tuple(descriptor.category_path),
+                leaf=LibraryLeafSpec(
+                    label=descriptor.display_label,
+                    payload=descriptor,
+                    search_text=descriptor.search_text,
+                ),
+            )
+        else:
+            pass
     return branch
 
 
@@ -2016,6 +2448,8 @@ def is_supported_library_payload(item_data: object) -> bool:
     :return: ``True`` when the payload can be materialized in the editor.
     """
     if isinstance(item_data, BlockType):
+        return True
+    elif isinstance(item_data, ExactMathematicalBlockDescriptor):
         return True
     elif isinstance(item_data, BasicBlockTemplateDescriptor):
         return True
@@ -2063,21 +2497,29 @@ def build_library_item_description(payload: object) -> str:
     :return: Human-readable description derived from existing block metadata.
     """
     if isinstance(payload, BasicBlockTemplateDescriptor):
-        description: str = build_library_interface_description(
-            inputs=payload.inputs,
-            outputs=payload.outputs,
-            states=payload.states,
-            params=payload.params,
-        )
+        if len(payload.description) > 0:
+            description: str = payload.description
+        else:
+            description = build_library_interface_description(
+                inputs=payload.inputs,
+                outputs=payload.outputs,
+                states=payload.states,
+                params=payload.params,
+            )
+    elif isinstance(payload, ExactMathematicalBlockDescriptor):
+        description = payload.description
     elif isinstance(payload, ProceduralBlockTemplateDescriptor):
-        description = build_library_interface_description(
-            inputs=payload.input_names,
-            outputs=payload.output_names,
-            states=tuple(),
-            params=tuple(parameter_spec.name for parameter_spec in payload.parameter_specs),
-        )
+        if len(payload.description) > 0:
+            description = payload.description
+        else:
+            description = build_library_interface_description(
+                inputs=payload.input_names,
+                outputs=payload.output_names,
+                states=tuple(),
+                params=tuple(parameter_spec.name for parameter_spec in payload.parameter_specs),
+            )
         if payload.requires_configuration:
-            description = f"{description}. Requires external configuration"
+            description = f"{description.rstrip('.')}. Requires external configuration"
         else:
             pass
     elif isinstance(payload, InternationalStandardTemplateDescriptor):
@@ -2235,6 +2677,10 @@ def build_block_type_description(block_type: BlockType) -> str:
         description = "Produces a configurable constant signal"
     elif block_type == BlockType.GAIN:
         description = "Multiplies an input signal by a configurable gain"
+    elif block_type == BlockType.MIN:
+        description = "Outputs the smallest input signal; the number of inputs is configurable"
+    elif block_type == BlockType.MAX:
+        description = "Outputs the largest input signal; the number of inputs is configurable"
     elif block_type == BlockType.SUM:
         description = "Adds or subtracts a configurable set of input signals"
     elif block_type == BlockType.DIVIDE:
@@ -2272,13 +2718,18 @@ def build_block_type_description(block_type: BlockType) -> str:
     elif block_type == BlockType.INVERSE_LOOKUP_ARRAY:
         description = "Computes the input corresponding to a tabulated output using linear interpolation"
     elif block_type == BlockType.LOOKUP_ARRAY_LINEAR:
-        description = "Interpolates a one-dimensional lookup table linearly"
+        description = "Interpolates a configurable one-dimensional table linearly, with clipping or extrapolation"
+    elif block_type == BlockType.LOOKUP_ARRAY_LINEAR_VARIABLE:
+        description = (
+            "Linearly interpolates a table whose ordered x/y points are signal inputs; "
+            "the point count and clipping rule are configurable"
+        )
     elif block_type == BlockType.LOOKUP_ARRAY_SPLINE:
-        description = "Interpolates a one-dimensional lookup table with a spline"
+        description = "Interpolates a configurable one-dimensional table with a clipped natural cubic spline"
     elif block_type == BlockType.LOOKUP_MATRIX_LINEAR:
-        description = "Interpolates a two-dimensional lookup table linearly"
+        description = "Interpolates a configurable two-dimensional table bilinearly"
     elif block_type == BlockType.LOOKUP_MATRIX_SPLINE:
-        description = "Interpolates a two-dimensional lookup table with a spline"
+        description = "Interpolates a configurable two-dimensional table with a clipped natural cubic spline"
     elif block_type.name.endswith("_RMS"):
         description = f"RMS dynamic-model component implementing {block_type.value} behavior"
     elif block_type.name.endswith("_EMT"):
@@ -2344,7 +2795,15 @@ def set_library_item_icon(item: QtGui.QStandardItem, payload: object) -> None:
             item.setIcon(QtGui.QIcon(device_type_icons[DeviceType.RmsModelTemplateDevice.value]))
         else:
             item.setIcon(QtGui.QIcon(device_type_icons[DeviceType.EmtModelTemplateDevice.value]))
-    elif isinstance(payload, (EmtModelTemplate, BasicBlockTemplateDescriptor, ProceduralBlockTemplateDescriptor)):
+    elif isinstance(
+            payload,
+            (
+                EmtModelTemplate,
+                BasicBlockTemplateDescriptor,
+                ExactMathematicalBlockDescriptor,
+                ProceduralBlockTemplateDescriptor,
+            ),
+    ):
         item.setIcon(QtGui.QIcon(device_type_icons[DeviceType.EmtModelTemplateDevice.value]))
     elif isinstance(payload, BlockType):
         if payload == BlockType.FROM_GOTO:

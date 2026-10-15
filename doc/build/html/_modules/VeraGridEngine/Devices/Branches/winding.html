@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Branches.winding &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Devices.Branches.winding &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -69,7 +69,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -126,9 +127,9 @@
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">bus_from</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">bus_to</span><span class="p">:</span> <span class="n">Bus</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">name</span><span class="o">=</span><span class="s1">'Winding'</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Winding&#39;</span><span class="p">,</span>
                  <span class="n">idtag</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">,</span>
+                 <span class="n">code</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
                  <span class="n">HV</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">LV</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">nominal_power</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.001</span><span class="p">,</span>
@@ -177,13 +178,13 @@
                  <span class="n">capex</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">opex</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
                  <span class="n">build_status</span><span class="p">:</span> <span class="n">BuildStatus</span> <span class="o">=</span> <span class="n">BuildStatus</span><span class="o">.</span><span class="n">Commissioned</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transformer constructor</span>
 <span class="sd">        :param name: Name of the branch</span>
 <span class="sd">        :param idtag: UUID code</span>
 <span class="sd">        :param code: secondary id</span>
-<span class="sd">        :param bus_from: "From" :ref:`bus&lt;Bus&gt;` object</span>
-<span class="sd">        :param bus_to: "To" :ref:`bus&lt;Bus&gt;` object</span>
+<span class="sd">        :param bus_from: &quot;From&quot; :ref:`bus&lt;Bus&gt;` object</span>
+<span class="sd">        :param bus_to: &quot;To&quot; :ref:`bus&lt;Bus&gt;` object</span>
 <span class="sd">        :param HV: Higher voltage value in kV</span>
 <span class="sd">        :param LV: Lower voltage value in kV</span>
 <span class="sd">        :param nominal_power: Nominal power of the machine in MVA</span>
@@ -231,7 +232,7 @@
 <span class="sd">        :param capex: Cost of investment (e/MW)</span>
 <span class="sd">        :param opex: Cost of operation (e/MWh)</span>
 <span class="sd">        :param build_status: build status (now time)</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">Transformer2W</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                                <span class="n">bus_from</span><span class="o">=</span><span class="n">bus_from</span><span class="p">,</span>
                                <span class="n">bus_to</span><span class="o">=</span><span class="n">bus_to</span><span class="p">,</span>
@@ -293,10 +294,10 @@
 <div class="viewcode-block" id="Winding.get_winding_connections">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.winding.Winding.get_winding_connections">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_winding_connections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">WindingType</span><span class="p">,</span> <span class="n">WindingType</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Resolve the external connection of historical DGS star equivalents.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve the external connection of historical DGS star equivalents.</span>
 
 <span class="sd">        :return: From/to connections, with the internal star at the internal bus.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Older DGS imports stored the external connection on the internal end.</span>
         <span class="c1"># Recognise that layout without changing the saved device or its clock.</span>
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bus_to</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">internal</span>
@@ -313,13 +314,13 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.winding.Winding.transformer_admittance">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">transformer_admittance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vtap_f</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">vtap_t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">Mat</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""Build NABC blocks for one branch of a multi-winding star equivalent.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build NABC blocks for one branch of a multi-winding star equivalent.</span>
 
 <span class="sd">        :param vtap_f: From-side virtual tap.</span>
 <span class="sd">        :param vtap_t: To-side virtual tap.</span>
 <span class="sd">        :param logger: Calculation diagnostics.</span>
 <span class="sd">        :return: Yff, Yft, Ytf and Ytt, each in NABC order.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">internal_from</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_from</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_from</span><span class="o">.</span><span class="n">internal</span>
         <span class="n">internal_to</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_to</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bus_to</span><span class="o">.</span><span class="n">internal</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">internal_from</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">internal_to</span><span class="p">:</span>
@@ -333,7 +334,7 @@
         <span class="n">allowed</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">WindingType</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">WindingType</span><span class="o">.</span><span class="n">GroundedStar</span><span class="p">,</span> <span class="n">WindingType</span><span class="o">.</span><span class="n">NeutralStar</span><span class="p">,</span>
                                            <span class="n">WindingType</span><span class="o">.</span><span class="n">FloatingStar</span><span class="p">,</span> <span class="n">WindingType</span><span class="o">.</span><span class="n">Delta</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">conn_f</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed</span> <span class="ow">or</span> <span class="n">conn_t</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Three-phase winding connection is not supported: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">conn_f</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">conn_t</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Three-phase winding connection is not supported: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">conn_f</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">conn_t</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -345,7 +346,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">z1</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">z2</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">min</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">z1</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">1e-12</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Three-phase winding Z1/Z2 must be finite and nonzero: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Three-phase winding Z1/Z2 must be finite and nonzero: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
@@ -372,8 +373,8 @@
         <span class="k">if</span> <span class="n">external</span> <span class="ow">in</span> <span class="p">(</span><span class="n">WindingType</span><span class="o">.</span><span class="n">GroundedStar</span><span class="p">,</span> <span class="n">WindingType</span><span class="o">.</span><span class="n">Delta</span><span class="p">)</span> <span class="ow">or</span> <span class="n">explicit_neutral</span><span class="p">:</span>
             <span class="n">z0</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="nb">complex</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">R0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">X0</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">z0</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-12</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Three-phase winding Z0 must be finite and nonzero: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">; "</span>
-                                 <span class="s2">"set R0/X0 or export TypTr3 uk0hm/uk0ml/uk0hl and ur0hm/ur0ml/ur0hl"</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Three-phase winding Z0 must be finite and nonzero: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">; &quot;</span>
+                                 <span class="s2">&quot;set R0/X0 or export TypTr3 uk0hm/uk0ml/uk0hl and ur0hm/ur0ml/ur0hl&quot;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="n">zero</span><span class="p">:</span> <span class="n">Mat</span> <span class="o">=</span> <span class="n">fortescue_012_to_abc</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">z0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>

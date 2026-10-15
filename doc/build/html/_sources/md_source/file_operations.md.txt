@@ -352,6 +352,23 @@ explicit phase-power inputs keep their model. No additional earth connection or 
 constraint is introduced. See [StaticGenerator](devices/static_generator.md) for
 units, legacy defaults and the distinction between PQ and Q-V droop.
 
+Storage `ElmGenstat` records with `av_mode=constq` remain `Battery` devices.
+Their connection and sequence impedances use the same conversion as other
+`ElmGenstat` injections. ABC includes their fixed positive-sequence P/Q and passive
+I0/I2 response, following the fixed-PQ convention above. Positive P discharges into
+the network; negative P charges. Manually created voltage-controlled batteries
+reuse the generator U1 controller and its total-terminal-power convention, including
+Q limits and colocated generators/shunts. Supply finite, nonzero Z2 and, for Yg, Z0
+for both battery modes. The storage identity, energy parameters and profiles remain
+available; this snapshot electrical model does not simulate state-of-charge evolution.
+
+Storage records with `av_mode=vdroop` instead become `StaticGenerator` devices with
+the existing Q-V droop control by default. They retain P/Q, `sgn`, `usetp`, `ddroop`,
+the `usp_min`/`usp_max` voltage clamps, connection and sequence impedances.
+ABC evaluates the droop using U1. With the explicit VSC import option enabled,
+these records keep the VSC representation and its auxiliary DC bus. Fixed-Q storage
+continues to use `Battery` under either option.
+
 For DGS `ElmGenstat` PV and PQ import, export `phtech`, `nneutral`, `r0`, `x0`, `r2` and `x2`.
 Include these permanent variables in the **Static Generator (ElmGenstat)** variable set
 of the PowerFactory DGS export definition (for example, **DGS Export Definitions 8 - VeraGrid**).
@@ -384,6 +401,19 @@ Series reactors (`ElmSind` / `SeriesReactance`) participate in ABC power flow us
 their existing `R/X`, `R0/X0` and `R2/X2` on the system base. The compiler transforms
 the three sequence admittances to ABC and stamps a series-only branch, without
 charging. Missing legacy Z0 or Z2 values inherit Z1, as in the line fallback.
+
+Common impedances (`ElmZpu`) reuse this `SeriesReactance` ABC model. Include
+`e:r0_pu`, `e:x0_pu`, `e:r2_pu`, `e:x2_pu`, `e:iz2eqz1` and `e:iequalz`
+in the Common Impedance variable set of **DGS Export Definitions 8 - VeraGrid**,
+alongside the existing `Sn`, `r_pu` and `x_pu`. The importer converts all exported
+sequence impedances using `Z_system = Z_PF * Sbase/Sn`. With `iz2eqz1=1`, Z2 uses
+Z1 even if separate negative-sequence fields contain older values. Old exports
+without the sequence fields retain the existing ABC Z1 fallback and report the
+missing fields. Re-export to obtain the physical sequence response.
+This equivalence covers reciprocal, series-only common impedances with unit ratio
+and no phase shift. Unequal forward/reverse impedances produce a warning and keep
+the existing forward-value approximation; general ElmZpu shunts and complex ratios
+are not added by this sequence extension.
 
 Series capacitors (`ElmScap`) already use the same `SeriesReactance` model with
 negative `X`, so this ABC calculation also applies to them. The current scalar

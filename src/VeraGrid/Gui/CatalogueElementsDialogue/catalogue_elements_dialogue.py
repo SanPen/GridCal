@@ -269,7 +269,7 @@ class CatalogueElementsSelectionDialogue(QtWidgets.QDialog):
         if mode == DynamicSimulationMode.RMS:
             action_kind: CatalogueActionKind = CatalogueActionKind.AddRmsTemplate
         elif mode == DynamicSimulationMode.EMT:
-            action_kind = CatalogueActionKind.AddEmtTemplate
+            action_kind: CatalogueActionKind = CatalogueActionKind.AddEmtTemplate
         else:
             return list()
 

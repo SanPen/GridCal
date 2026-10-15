@@ -6,6 +6,7 @@
 import numpy as np
 import numba as nb
 import scipy.sparse as sp
+import cProfile as profile
 import time
 from VeraGridEngine.Utils.Symbolic.symbolic import Var, Expr, BinOp, UnOp, Func
 
@@ -896,6 +897,10 @@ class JitAdSolver:
 
         use_dense_solver = (n_eqs <= self.dense_threshold)
 
+        pr = profile.Profile()
+        pr.disable()
+        pr.enable()
+
         t = np.linspace(self.t0, self.t_end, self.steps + 1, dtype=np.float64)
         self.t = t
 
@@ -1210,6 +1215,8 @@ class JitAdSolver:
         else:
             pass
 
+        pr.disable()
+        pr.dump_stats("profile_grid_for_loads_jac_batching_10_seconds.pstat")
         return self.t, self.y, self.dy, well_initialized, converged
 
     def get_backend_build_stats(self) -> Dict[str, float]:

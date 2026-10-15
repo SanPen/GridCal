@@ -136,7 +136,7 @@ class InjectionParent(DynamicDevice):
             prop_name='scalable',
             units='',
             tpe=bool,
-            definition='Is the injection scalable?',
+            definition='Is the injection scalable? (only for data compatibility)',
             cat=[PrpCat.OPF],
         ),
         GCProp(

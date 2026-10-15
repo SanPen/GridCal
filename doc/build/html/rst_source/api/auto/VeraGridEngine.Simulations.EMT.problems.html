@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.problems package &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.problems package &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -73,6 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -168,98 +169,6 @@ point of view and must therefore resolve to an explicit no-op disposition.</p>
 <dt class="sig sig-object py" id="VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtDeviceDisposition.NON_EMT_NOOP">
 <span class="sig-name descname"><span class="pre">NON_EMT_NOOP</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'non_emt_noop'</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtDeviceDisposition.NON_EMT_NOOP" title="Link to this definition"></a></dt>
 <dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtInjectionSeedStore">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.</span></span><span class="sig-name descname"><span class="pre">EmtInjectionSeedStore</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_injections</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/EMT/problems/emt_problem_dae.html#EmtInjectionSeedStore"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtInjectionSeedStore" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Fixed-size container storing PF-derived initialization seeds for EMT injections.</p>
-<p>The store is indexed by the position of each injection in the pre-built
-<code class="docutils literal notranslate"><span class="pre">injection_devices</span></code> list of <code class="docutils literal notranslate"><span class="pre">EmtProblemDae._build_structure_and_collect</span></code>.
-This avoids dynamic dictionaries for numerical data and keeps memory layout
-explicit and preallocated.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>n_injections</strong> – Number of injection devices in the EMT problem.</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtInjectionSeedStore.get_ac_seed">
-<span class="sig-name descname"><span class="pre">get_ac_seed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">injection_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/EMT/problems/emt_problem_dae.html#EmtInjectionSeedStore.get_ac_seed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtInjectionSeedStore.get_ac_seed" title="Link to this definition"></a></dt>
-<dd><p>Return the AC phase-power seed in NABC order.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>injection_index</strong> – Injection position in the fixed injection list.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Complex power vector in NABC order.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtInjectionSeedStore.get_dc_seed">
-<span class="sig-name descname"><span class="pre">get_dc_seed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">injection_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/EMT/problems/emt_problem_dae.html#EmtInjectionSeedStore.get_dc_seed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtInjectionSeedStore.get_dc_seed" title="Link to this definition"></a></dt>
-<dd><p>Return the DC active-power seed.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>injection_index</strong> – Injection position in the fixed injection list.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>DC active power in per unit.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtInjectionSeedStore.has_seed">
-<span class="sig-name descname"><span class="pre">has_seed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">injection_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/EMT/problems/emt_problem_dae.html#EmtInjectionSeedStore.has_seed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtInjectionSeedStore.has_seed" title="Link to this definition"></a></dt>
-<dd><p>Return whether the given injection has a stored seed.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>injection_index</strong> – Injection position in the fixed injection list.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if a seed exists, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtInjectionSeedStore.set_ac_seed">
-<span class="sig-name descname"><span class="pre">set_ac_seed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">injection_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">phase_power</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/EMT/problems/emt_problem_dae.html#EmtInjectionSeedStore.set_ac_seed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtInjectionSeedStore.set_ac_seed" title="Link to this definition"></a></dt>
-<dd><p>Store one AC four-phase power seed.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>injection_index</strong> – Injection position in the fixed injection list.</p></li>
-<li><p><strong>phase_power</strong> – Complex power vector in NABC order.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtInjectionSeedStore.set_dc_seed">
-<span class="sig-name descname"><span class="pre">set_dc_seed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">injection_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">power_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/EMT/problems/emt_problem_dae.html#EmtInjectionSeedStore.set_dc_seed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtInjectionSeedStore.set_dc_seed" title="Link to this definition"></a></dt>
-<dd><p>Store one DC active-power seed.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>injection_index</strong> – Injection position in the fixed injection list.</p></li>
-<li><p><strong>power_value</strong> – DC active power in per unit.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>None.</p>
-</dd>
-</dl>
-</dd></dl>
 
 </dd></dl>
 
@@ -455,7 +364,7 @@ while keeping the small-signal driver unchanged.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtProblemDae.logger">
-<span class="sig-name descname"><span class="pre">logger</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtProblemDae.logger" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">logger</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="VeraGridEngine.html#VeraGridEngine.basic_structures.Logger" title="VeraGridEngine.basic_structures.Logger"><span class="pre">Logger</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtProblemDae.logger" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -539,7 +448,22 @@ boundary update hook used by the EMT solvers.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtProblemDae.set_external_param">
 <span class="sig-name descname"><span class="pre">set_external_param</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mdl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.Block" title="VeraGridEngine.Utils.Symbolic.block.Block"><span class="pre">Block</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.html#VeraGridEngine.enumerations.VarPowerFlowReferenceType" title="VeraGridEngine.enumerations.VarPowerFlowReferenceType"><span class="pre">VarPowerFlowReferenceType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/EMT/problems/emt_problem_dae.html#EmtProblemDae.set_external_param"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtProblemDae.set_external_param" title="Link to this definition"></a></dt>
-<dd><p>Set a PF-derived value either as an event parameter if the mapped variable belongs to mdl.event_dict.</p>
+<dd><p>Seed one externally mapped runtime parameter on problem-local storage.</p>
+<p>The source <code class="docutils literal notranslate"><span class="pre">Block.event_dict</span></code> declares mutability and remains unchanged.
+This method supports calls both before and after the flat runtime vectors
+have been constructed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mdl</strong> – Dynamic model which exposes the external mapping.</p></li>
+<li><p><strong>key</strong> – Power-flow reference identifying the runtime target.</p></li>
+<li><p><strong>value</strong> – PF-derived initial value.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -654,7 +578,7 @@ boundary update hook used by the EMT solvers.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtProblemDae.set_internal_runtime_if_exists">
 <span class="sig-name descname"><span class="pre">set_internal_runtime_if_exists</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mdl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.Block" title="VeraGridEngine.Utils.Symbolic.block.Block"><span class="pre">Block</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/EMT/problems/emt_problem_dae.html#EmtProblemDae.set_internal_runtime_if_exists"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.EmtProblemDae.set_internal_runtime_if_exists" title="Link to this definition"></a></dt>
-<dd><p>Set one internal runtime parameter default if the variable exists in <code class="docutils literal notranslate"><span class="pre">event_dict</span></code>.</p>
+<dd><p>Seed one internal runtime parameter without modifying its source block.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -715,21 +639,26 @@ This includes orphaned in_vars/out_vars and floating bus phases.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.validate_line_phase_layout">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.</span></span><span class="sig-name descname"><span class="pre">validate_line_phase_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mdl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.Block" title="VeraGridEngine.Utils.Symbolic.block.Block"><span class="pre">Block</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.html#VeraGridEngine.basic_structures.Logger" title="VeraGridEngine.basic_structures.Logger"><span class="pre">Logger</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/EMT/problems/emt_problem_dae.html#validate_line_phase_layout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.validate_line_phase_layout" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.</span></span><span class="sig-name descname"><span class="pre">validate_line_phase_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">branch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Parents.html#VeraGridEngine.Devices.Parents.branch_parent.BranchParent" title="VeraGridEngine.Devices.Parents.branch_parent.BranchParent"><span class="pre">BranchParent</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">mdl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.Block" title="VeraGridEngine.Utils.Symbolic.block.Block"><span class="pre">Block</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">effective_external_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.symbolic.Var" title="VeraGridEngine.Utils.Symbolic.symbolic.Var"><span class="pre">Var</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logger</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.html#VeraGridEngine.basic_structures.Logger" title="VeraGridEngine.basic_structures.Logger"><span class="pre">Logger</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Simulations/EMT/problems/emt_problem_dae.html#validate_line_phase_layout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Simulations.EMT.problems.emt_problem_dae.validate_line_phase_layout" title="Link to this definition"></a></dt>
 <dd><p>Validate that a pi-line EMT block matches the physical branch phase layout.</p>
 <p>The EMT parameter mapper writes reduced branch matrices into the fixed NABC
 API map using <code class="docutils literal notranslate"><span class="pre">branch.ys</span></code>. This helper therefore checks that the symbolic
 pi-line terminal layout still matches the physical branch phase mask before
-the device is flattened into the system model. A mismatch is a topology
-error, so the function reports it through the shared logger and preserves the
-original model instead of silently rebuilding it.</p>
+the device is flattened into the system model. The validation result is
+independent of diagnostic availability: a missing logger suppresses the log
+entry but never turns an invalid topology into a valid one.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>branch</strong> – Grid branch device.</p></li>
 <li><p><strong>mdl</strong> – EMT block associated with the branch.</p></li>
-<li><p><strong>logger</strong> – Shared system logger used to report invalid topology states.</p></li>
+<li><p><strong>effective_external_mapping</strong> – Problem-local mapping already completed
+from modern declarations and compatible legacy input references.</p></li>
+<li><p><strong>logger</strong> – Optional driver-owned logger used for diagnostics.</p></li>
 </ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when symbolic and physical terminal layouts match.</p>
 </dd>
 </dl>
 </dd></dl>

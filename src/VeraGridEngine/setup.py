@@ -100,12 +100,8 @@ package_data: Dict[str, List[str]] = {
         'setup.py',
         'data/fmu/**/*.c',
         'data/fmu/**/*.h',
-    ],
-    'VeraGridEngine.IO.manufacturer_native': [
-        'native_worker/source/*.c',
-        'native_worker/source/*.h',
-        'native_worker/windows_x86/*.exe',
-        'native_worker/windows_x86/*.json',
+        'data/native_worker/source/*.c',
+        'data/native_worker/source/*.h'
     ],
 }
 

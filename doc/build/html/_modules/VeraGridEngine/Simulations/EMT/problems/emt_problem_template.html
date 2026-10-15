@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.problems.emt_problem_template &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.problems.emt_problem_template &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -119,28 +120,28 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiCircuit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">build_api_parameter_initial_values_by_uid</span><span class="p">,</span>
-    <span class="n">get_api_parameter_initial_value_by_uid</span><span class="p">,</span>
+    <span class="n">resolve_parameter_initial_expression</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynamicEventTransitionType</span><span class="p">,</span> <span class="n">VarPowerFlowReferenceType</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_diff_var_sort_key</span><span class="p">(</span><span class="n">diff_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return the ordering key used to sort differential variables.</span>
 
 <span class="sd">    :param diff_var: Differential variable to inspect.</span>
 <span class="sd">    :return: Sorting key associated with the differential variable.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">diff_var</span><span class="o">.</span><span class="n">diff_order</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_external_mapping</span><span class="p">(</span><span class="n">mdl</span><span class="p">:</span> <span class="n">Block</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Var</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return the external mapping associated with a model block.</span>
 
 <span class="sd">    :param mdl: Model block to inspect.</span>
 <span class="sd">    :return: External mapping dictionary or None.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">external_mapping</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Var</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mdl</span><span class="o">.</span><span class="n">external_mapping</span>
 
     <span class="k">if</span> <span class="n">external_mapping</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -155,7 +156,7 @@
                                         <span class="n">init_eqs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                                         <span class="n">compiler_names_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
                                         <span class="n">alias_names_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Register compiler-name aliases for vars referenced only through cloned expressions.</span>
 
 <span class="sd">    Saved editor models can preserve symbolic expressions that reference one ``Var``</span>
@@ -178,7 +179,7 @@
 <span class="sd">    :type alias_names_dict: Dict[int, str]</span>
 <span class="sd">    :return: None.</span>
 <span class="sd">    :rtype: None</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">expression_groups</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">expression_group</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span>
     <span class="n">expression_item</span><span class="p">:</span> <span class="n">Any</span>
@@ -200,12 +201,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_collect_block_tree_sequence</span><span class="p">(</span><span class="n">root_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Block</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return the symbolic block tree in root-first traversal order.</span>
 
 <span class="sd">    :param root_block: Root symbolic block.</span>
 <span class="sd">    :return: Ordered block list including the root and every descendant.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ordered_blocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">pending_blocks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">([</span><span class="n">root_block</span><span class="p">])</span>
     <span class="n">pending_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
@@ -224,12 +225,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_collect_hierarchical_init_equations</span><span class="p">(</span><span class="n">root_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Collect initialization equations from the full block hierarchy.</span>
 
 <span class="sd">    :param root_block: Root symbolic block.</span>
 <span class="sd">    :return: Tuple ``(init_eqs, diff_init_eqs)`` merged from the hierarchy.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">block_sequence</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="n">_collect_block_tree_sequence</span><span class="p">(</span><span class="n">root_block</span><span class="p">)</span>
     <span class="n">init_eqs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">diff_init_eqs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -248,12 +249,12 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_collect_hierarchical_runtime_equations</span><span class="p">(</span><span class="n">root_block</span><span class="p">:</span> <span class="n">Block</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Collect runtime event and mode equations from the full block hierarchy.</span>
 
 <span class="sd">    :param root_block: Root symbolic block.</span>
 <span class="sd">    :return: Runtime equation lookup keyed by variable uid.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">block_sequence</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Block</span><span class="p">]</span> <span class="o">=</span> <span class="n">_collect_block_tree_sequence</span><span class="p">(</span><span class="n">root_block</span><span class="p">)</span>
     <span class="n">runtime_equation_lookup</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
     <span class="n">block_item</span><span class="p">:</span> <span class="n">Block</span>
@@ -273,115 +274,115 @@
 <div class="viewcode-block" id="EmtBoundaryUpdateProtocol">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtBoundaryUpdateProtocol">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EmtBoundaryUpdateProtocol</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Structural protocol implemented by EMT boundary update providers.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
 <div class="viewcode-block" id="EmtBoundaryUpdateProtocol.update">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtBoundaryUpdateProtocol.update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the full parameter vector and return a shortened retry target.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 
 
 <div class="viewcode-block" id="EmtBoundaryUpdateProtocol.get_next_forced_event_time">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtBoundaryUpdateProtocol.get_next_forced_event_time">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_next_forced_event_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t_prev</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">t_target</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the next exact-alignment event time inside ``(t_prev, t_target]``.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 
 
 <div class="viewcode-block" id="EmtBoundaryUpdateProtocol.resolve_step">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtBoundaryUpdateProtocol.resolve_step">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resolve_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Resolve a prepared external boundary step after Newton.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve a prepared external boundary step after Newton.</span>
 
 <span class="sd">        :param accepted: Whether the EMT numerical step converged.</span>
 <span class="sd">        :param params: Full runtime-parameter vector.</span>
 <span class="sd">        :return: Earlier state-event retry time, or ``None``.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 
 
 <div class="viewcode-block" id="EmtBoundaryUpdateProtocol.commit_boundary">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtBoundaryUpdateProtocol.commit_boundary">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">commit_boundary</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Advance post-accepted external sample-and-hold runtimes.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Advance post-accepted external sample-and-hold runtimes.</span>
 
 <span class="sd">        :param t: Accepted solver boundary.</span>
 <span class="sd">        :param x: Accepted state vector.</span>
 <span class="sd">        :param params: Mutable runtime parameter vector.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="o">...</span></div>
 </div>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_implements_forced_event_time_api</span><span class="p">(</span><span class="n">boundary_updater</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return whether one boundary updater type implements ``get_next_forced_event_time``.</span>
 
 <span class="sd">    :param boundary_updater: Boundary updater instance.</span>
 <span class="sd">    :return: ``True`` when the API is implemented.</span>
-<span class="sd">    """</span>
-    <span class="k">return</span> <span class="s2">"get_next_forced_event_time"</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">boundary_updater</span><span class="p">)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;get_next_forced_event_time&quot;</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">boundary_updater</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_implements_step_resolution_api</span><span class="p">(</span><span class="n">boundary_updater</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Return whether one boundary updater implements ``resolve_step``.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return whether one boundary updater implements ``resolve_step``.</span>
 
 <span class="sd">    :param boundary_updater: Boundary updater instance.</span>
 <span class="sd">    :return: ``True`` when transactional step resolution is implemented.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">return</span> <span class="s2">"resolve_step"</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">boundary_updater</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;resolve_step&quot;</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">boundary_updater</span><span class="p">)</span>
 
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_implements_commit_boundary_api</span><span class="p">(</span><span class="n">boundary_updater</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Return whether an updater implements a boundary commit callback.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return whether an updater implements a boundary commit callback.</span>
 
 <span class="sd">    :param boundary_updater: Boundary updater instance.</span>
 <span class="sd">    :return: ``True`` when boundary commit is implemented.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">updater_type</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">boundary_updater</span><span class="p">)</span>
     <span class="n">base_type</span><span class="p">:</span> <span class="nb">type</span>
     <span class="k">for</span> <span class="n">base_type</span> <span class="ow">in</span> <span class="n">updater_type</span><span class="o">.</span><span class="vm">__mro__</span><span class="p">:</span>
-        <span class="k">if</span> <span class="s2">"commit_boundary"</span> <span class="ow">in</span> <span class="n">base_type</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;commit_boundary&quot;</span> <span class="ow">in</span> <span class="n">base_type</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">True</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
     <span class="k">return</span> <span class="kc">False</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_emt_event_spec_time_sort_key</span><span class="p">(</span><span class="n">event_spec</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return the sorting key of one EMT runtime-event specification.</span>
 
 <span class="sd">    :param event_spec: EMT runtime-event specification.</span>
 <span class="sd">    :return: Event start time.</span>
-<span class="sd">    """</span>
-    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">event_spec</span><span class="p">[</span><span class="s2">"time"</span><span class="p">])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">event_spec</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">])</span>
 
 
 <div class="viewcode-block" id="resolve_solver_boundary_updater">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.resolve_solver_boundary_updater">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">resolve_solver_boundary_updater</span><span class="p">(</span>
-        <span class="n">problem</span><span class="p">:</span> <span class="s2">"EmtProblemTemplate"</span><span class="p">,</span>
+        <span class="n">problem</span><span class="p">:</span> <span class="s2">&quot;EmtProblemTemplate&quot;</span><span class="p">,</span>
         <span class="n">boundary_updater</span><span class="p">:</span> <span class="n">EmtBoundaryUpdateProtocol</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">t0</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtBoundaryUpdateProtocol</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Resolve the boundary updater consumed by an EMT solver.</span>
 
 <span class="sd">    The problem-owned updater remains the default, but demos and legacy callers</span>
 <span class="sd">    may still provide external wrappers that only implement ``update()``.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">problem</span><span class="o">.</span><span class="n">reset_boundary_update_state</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">t0</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">boundary_updater</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -397,12 +398,12 @@
         <span class="n">t_prev</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">t_target</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Query the next forced-alignment event time if the updater exposes it.</span>
 
 <span class="sd">    Legacy boundary updaters that only implement ``update()`` are treated as</span>
 <span class="sd">    having no forced event alignment requirements.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">boundary_updater</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
     <span class="k">else</span><span class="p">:</span>
@@ -431,7 +432,7 @@
         <span class="n">committed_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">committed_state</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Resolve a prepared external boundary step when the updater supports it.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve a prepared external boundary step when the updater supports it.</span>
 
 <span class="sd">    Legacy and native boundary updaters without transactional FMU ME state do</span>
 <span class="sd">    not need a resolution callback.</span>
@@ -442,7 +443,7 @@
 <span class="sd">    :param committed_time: Accepted boundary time for sample-and-hold runtimes.</span>
 <span class="sd">    :param committed_state: Accepted state for sample-and-hold inputs.</span>
 <span class="sd">    :return: Earlier state-event retry time, or ``None``.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">boundary_updater</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">retry_time</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
@@ -466,14 +467,14 @@
 
 <div class="viewcode-block" id="is_problem_owned_boundary_updater">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.is_problem_owned_boundary_updater">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">is_problem_owned_boundary_updater</span><span class="p">(</span><span class="n">problem</span><span class="p">:</span> <span class="s2">"EmtProblemTemplate"</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">is_problem_owned_boundary_updater</span><span class="p">(</span><span class="n">problem</span><span class="p">:</span> <span class="s2">&quot;EmtProblemTemplate&quot;</span><span class="p">,</span>
                                      <span class="n">boundary_updater</span><span class="p">:</span> <span class="n">EmtBoundaryUpdateProtocol</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return whether the updater is owned by the EMT problem itself.</span>
 
 <span class="sd">    This distinguishes endogenous problem boundary logic from external wrappers</span>
 <span class="sd">    supplied by tests or demos.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">boundary_updater</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
@@ -490,14 +491,14 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_freeze_runtime_expr_at_time</span><span class="p">(</span><span class="n">expr</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">time_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">sample_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Freeze one runtime expression at an explicit time value.</span>
 
 <span class="sd">    :param expr: Runtime expression to freeze.</span>
 <span class="sd">    :param time_var: Global symbolic time variable.</span>
 <span class="sd">    :param sample_time: Time used to evaluate the expression boundary.</span>
 <span class="sd">    :return: Time-frozen symbolic expression.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="p">(</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Var</span><span class="p">,</span> <span class="n">Const</span><span class="p">)):</span>
         <span class="k">return</span> <span class="n">expr</span><span class="o">.</span><span class="n">subs</span><span class="p">(</span><span class="nb">dict</span><span class="p">({</span><span class="n">time_var</span><span class="p">:</span> <span class="n">Const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">sample_time</span><span class="p">))}))</span><span class="o">.</span><span class="n">simplify</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
@@ -511,7 +512,7 @@
     <span class="n">before_expr</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
     <span class="n">final_value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Build one linear ramp transition on top of an existing runtime expression.</span>
 
 <span class="sd">    :param time_var: Global symbolic time variable.</span>
@@ -520,7 +521,7 @@
 <span class="sd">    :param before_expr: Expression active before the ramp starts.</span>
 <span class="sd">    :param final_value: Final runtime value after the ramp ends.</span>
 <span class="sd">    :return: Combined symbolic expression.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">start_expr</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">_freeze_runtime_expr_at_time</span><span class="p">(</span><span class="n">before_expr</span><span class="p">,</span> <span class="n">time_var</span><span class="p">,</span> <span class="n">start_time</span><span class="p">)</span>
     <span class="n">duration_expr</span><span class="p">:</span> <span class="n">Const</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span><span class="p">))</span>
     <span class="n">time_offset_expr</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">time_var</span> <span class="o">-</span> <span class="n">Const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">start_time</span><span class="p">))</span>
@@ -536,67 +537,67 @@
 <div class="viewcode-block" id="EmtProblemTemplate">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">EmtProblemTemplate</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Intermediate layer that manages DAE plumbing including indexing, variable mapping,</span>
 <span class="sd">    and event updating, regardless of whether the system comes from an electrical</span>
 <span class="sd">    circuit or a generic mathematical model.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">VARS_NAME</span> <span class="o">=</span> <span class="s2">"vars"</span>
-    <span class="n">VARIABLE_PARAMS_NAME</span> <span class="o">=</span> <span class="s2">"vprms"</span>
-    <span class="n">CONSTANT_PARAMS_NAME</span> <span class="o">=</span> <span class="s2">"cprms"</span>
-    <span class="n">DIFF_NAME</span> <span class="o">=</span> <span class="s2">"diff"</span>
-    <span class="n">TIME_NAME</span> <span class="o">=</span> <span class="s2">"glob_time"</span>
+    <span class="n">VARS_NAME</span> <span class="o">=</span> <span class="s2">&quot;vars&quot;</span>
+    <span class="n">VARIABLE_PARAMS_NAME</span> <span class="o">=</span> <span class="s2">&quot;vprms&quot;</span>
+    <span class="n">CONSTANT_PARAMS_NAME</span> <span class="o">=</span> <span class="s2">&quot;cprms&quot;</span>
+    <span class="n">DIFF_NAME</span> <span class="o">=</span> <span class="s2">&quot;diff&quot;</span>
+    <span class="n">TIME_NAME</span> <span class="o">=</span> <span class="s2">&quot;glob_time&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">"sys_block"</span><span class="p">,</span>
-        <span class="s2">"grid"</span><span class="p">,</span>
-        <span class="s2">"_glob_time"</span><span class="p">,</span>
-        <span class="s2">"_newton_trace_collector"</span><span class="p">,</span>
-        <span class="s2">"_init_eqs_flat"</span><span class="p">,</span>
-        <span class="s2">"_diff_init_eqs_flat"</span><span class="p">,</span>
-        <span class="s2">"_state_vars"</span><span class="p">,</span>
-        <span class="s2">"_algebraic_vars"</span><span class="p">,</span>
-        <span class="s2">"_state_eqs"</span><span class="p">,</span>
-        <span class="s2">"_algebraic_eqs"</span><span class="p">,</span>
-        <span class="s2">"_diff_vars"</span><span class="p">,</span>
-        <span class="s2">"_static_parameter_values"</span><span class="p">,</span>
-        <span class="s2">"_api_parameter_initial_values_by_uid"</span><span class="p">,</span>
-        <span class="s2">"_variable_parameters"</span><span class="p">,</span>
-        <span class="s2">"_event_parameters_eqs"</span><span class="p">,</span>
-        <span class="s2">"_runtime_mode_uids"</span><span class="p">,</span>
-        <span class="s2">"_constant_parameters"</span><span class="p">,</span>
-        <span class="s2">"_parameters_values"</span><span class="p">,</span>
-        <span class="s2">"_runtime_all_parameters_source"</span><span class="p">,</span>
-        <span class="s2">"_runtime_all_eqs_source"</span><span class="p">,</span>
-        <span class="s2">"_runtime_continuous_parameters"</span><span class="p">,</span>
-        <span class="s2">"_runtime_mode_parameters"</span><span class="p">,</span>
-        <span class="s2">"_runtime_continuous_eqs"</span><span class="p">,</span>
-        <span class="s2">"_runtime_mode_eqs"</span><span class="p">,</span>
-        <span class="s2">"_runtime_continuous_slice"</span><span class="p">,</span>
-        <span class="s2">"_runtime_mode_slice"</span><span class="p">,</span>
-        <span class="s2">"_vars_glob_name2uid"</span><span class="p">,</span>
-        <span class="s2">"init_guess"</span><span class="p">,</span>
-        <span class="s2">"event_params_init_dict"</span><span class="p">,</span>
-        <span class="s2">"diff_init_guess"</span><span class="p">,</span>
-        <span class="s2">"_event_params_values"</span><span class="p">,</span>
-        <span class="s2">"_constant_params_values"</span><span class="p">,</span>
-        <span class="s2">"progress_signal"</span><span class="p">,</span>
-        <span class="s2">"progress_text"</span><span class="p">,</span>
-        <span class="s2">"_n_vars"</span><span class="p">,</span>
-        <span class="s2">"_n_state"</span><span class="p">,</span>
-        <span class="s2">"_n_alg"</span><span class="p">,</span>
-        <span class="s2">"_n_algebraic"</span><span class="p">,</span>
-        <span class="s2">"_n_diff"</span><span class="p">,</span>
-        <span class="s2">"_n_params"</span><span class="p">,</span>
-        <span class="s2">"_n_event_params"</span><span class="p">,</span>
-        <span class="s2">"_uid2idx_vars"</span><span class="p">,</span>
-        <span class="s2">"_uid2idx_diff"</span><span class="p">,</span>
-        <span class="s2">"_uid2idx_params"</span><span class="p">,</span>
-        <span class="s2">"_uid2idx_event_params"</span><span class="p">,</span>
-        <span class="s2">"_compiler_names_dict"</span><span class="p">,</span>
-        <span class="s2">"_alias_names_dict"</span><span class="p">,</span>
-        <span class="s2">"_uid2idx_t"</span><span class="p">,</span>
+        <span class="s2">&quot;sys_block&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;grid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_glob_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_newton_trace_collector&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_init_eqs_flat&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_diff_init_eqs_flat&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_state_vars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_algebraic_vars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_state_eqs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_algebraic_eqs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_diff_vars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_static_parameter_values&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_api_parameter_initial_values_by_uid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_variable_parameters&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_event_parameters_eqs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_runtime_mode_uids&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_constant_parameters&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_parameters_values&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_runtime_all_parameters_source&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_runtime_all_eqs_source&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_runtime_continuous_parameters&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_runtime_mode_parameters&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_runtime_continuous_eqs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_runtime_mode_eqs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_runtime_continuous_slice&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_runtime_mode_slice&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_vars_glob_name2uid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;init_guess&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;event_params_init_dict&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;diff_init_guess&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_event_params_values&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_constant_params_values&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;progress_signal&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;progress_text&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_vars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_state&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_alg&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_algebraic&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_diff&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_params&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_event_params&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_uid2idx_vars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_uid2idx_diff&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_uid2idx_params&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_uid2idx_event_params&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_compiler_names_dict&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_alias_names_dict&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_uid2idx_t&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -609,7 +610,7 @@
                  <span class="n">progress_signal</span><span class="p">:</span> <span class="n">DummySignal</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">progress_text</span><span class="p">:</span> <span class="n">DummySignal</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the EMT problem template.</span>
 
 <span class="sd">        :param sys_block: Root symbolic block that defines the EMT problem.</span>
@@ -620,7 +621,7 @@
 <span class="sd">        :param diff_init_eqs_flat: Optional pre-collected differential initialization equations.</span>
 <span class="sd">        :param vars_glob_name2uid: Optional pre-collected variable-name lookup.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sys_block</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">sys_block</span>
         <span class="n">existing_grid</span><span class="p">:</span> <span class="n">MultiCircuit</span> <span class="o">|</span> <span class="kc">None</span>
@@ -666,9 +667,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_runtime_mode_uids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
-        <span class="c1"># The API-object mapping provides initial values only. Block.parameters</span>
-        <span class="c1"># and Block.event_dict remain authoritative for immutable and runtime</span>
-        <span class="c1"># roles respectively, matching the RMS registration contract.</span>
+        <span class="c1"># The API-object mapping provides initial values only. Block.parameters,</span>
+        <span class="c1"># Block.event_dict and Block.mode_dict remain authoritative for immutable,</span>
+        <span class="c1"># continuous-runtime and discrete-runtime roles, matching RMS.</span>
         <span class="k">for</span> <span class="n">block_item</span> <span class="ow">in</span> <span class="n">block_sequence</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_state_vars</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">block_item</span><span class="o">.</span><span class="n">state_vars</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">block_item</span><span class="o">.</span><span class="n">algebraic_vars</span><span class="p">)</span>
@@ -679,37 +680,44 @@
             <span class="k">for</span> <span class="n">const_var</span><span class="p">,</span> <span class="n">const_expr</span> <span class="ow">in</span> <span class="n">block_item</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">const_var</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">registered_parameter_uids</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">"EMT constant parameter '</span><span class="si">{</span><span class="n">const_var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' (uid=</span><span class="si">{</span><span class="n">const_var</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) "</span>
-                        <span class="o">+</span> <span class="s2">"is declared more than once in the block hierarchy."</span>
+                        <span class="sa">f</span><span class="s2">&quot;EMT constant parameter &#39;</span><span class="si">{</span><span class="n">const_var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (uid=</span><span class="si">{</span><span class="n">const_var</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) &quot;</span>
+                        <span class="o">+</span> <span class="s2">&quot;is declared more than once in the block hierarchy.&quot;</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">registered_parameter_uids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">const_var</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span>
 
-                    <span class="n">mapped_const_expr</span><span class="p">:</span> <span class="n">Const</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">get_api_parameter_initial_value_by_uid</span><span class="p">(</span>
+                    <span class="n">resolved_const_expression</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">|</span> <span class="n">Const</span> <span class="o">=</span> <span class="n">resolve_parameter_initial_expression</span><span class="p">(</span>
                         <span class="n">parameter</span><span class="o">=</span><span class="n">const_var</span><span class="p">,</span>
+                        <span class="n">declared_expression</span><span class="o">=</span><span class="n">const_expr</span><span class="p">,</span>
                         <span class="n">problem_mapping</span><span class="o">=</span><span class="n">static_parameter_values_mapping</span><span class="p">,</span>
                     <span class="p">)</span>
-                    <span class="k">if</span> <span class="n">mapped_const_expr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_static_parameter_values</span><span class="p">[</span><span class="n">const_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">const_expr</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">resolved_const_expression</span><span class="p">,</span> <span class="n">Const</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_static_parameter_values</span><span class="p">[</span><span class="n">const_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">resolved_const_expression</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_static_parameter_values</span><span class="p">[</span><span class="n">const_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">mapped_const_expr</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;EMT immutable parameter &#39;</span><span class="si">{</span><span class="n">const_var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (uid=</span><span class="si">{</span><span class="n">const_var</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) &quot;</span>
+                            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;in block &#39;</span><span class="si">{</span><span class="n">block_item</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; must resolve to Const.&quot;</span>
+                        <span class="p">)</span>
 
             <span class="k">for</span> <span class="n">runtime_var</span><span class="p">,</span> <span class="n">runtime_expr</span> <span class="ow">in</span> <span class="n">block_item</span><span class="o">.</span><span class="n">event_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">runtime_var</span><span class="p">)</span>
-                <span class="n">mapped_runtime_expr</span><span class="p">:</span> <span class="n">Const</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">get_api_parameter_initial_value_by_uid</span><span class="p">(</span>
+                <span class="n">resolved_runtime_expression</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">|</span> <span class="n">Const</span> <span class="o">=</span> <span class="n">resolve_parameter_initial_expression</span><span class="p">(</span>
                     <span class="n">parameter</span><span class="o">=</span><span class="n">runtime_var</span><span class="p">,</span>
+                    <span class="n">declared_expression</span><span class="o">=</span><span class="n">runtime_expr</span><span class="p">,</span>
                     <span class="n">problem_mapping</span><span class="o">=</span><span class="n">static_parameter_values_mapping</span><span class="p">,</span>
                 <span class="p">)</span>
-                <span class="k">if</span> <span class="n">mapped_runtime_expr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">runtime_expr</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="c1"># The block keeps the runtime declaration while the problem</span>
-                    <span class="c1"># uses the static-device value as its event baseline.</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mapped_runtime_expr</span><span class="p">)</span>
+                <span class="c1"># The block keeps its runtime declaration while the problem</span>
+                <span class="c1"># stores the authoritative mapped value as the initial baseline.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resolved_runtime_expression</span><span class="p">)</span>
 
             <span class="k">for</span> <span class="n">runtime_var</span><span class="p">,</span> <span class="n">runtime_expr</span> <span class="ow">in</span> <span class="n">block_item</span><span class="o">.</span><span class="n">mode_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">runtime_var</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">runtime_expr</span><span class="p">)</span>
+                <span class="n">resolved_mode_expression</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">|</span> <span class="n">Const</span> <span class="o">=</span> <span class="n">resolve_parameter_initial_expression</span><span class="p">(</span>
+                    <span class="n">parameter</span><span class="o">=</span><span class="n">runtime_var</span><span class="p">,</span>
+                    <span class="n">declared_expression</span><span class="o">=</span><span class="n">runtime_expr</span><span class="p">,</span>
+                    <span class="n">problem_mapping</span><span class="o">=</span><span class="n">static_parameter_values_mapping</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">resolved_mode_expression</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_runtime_mode_uids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">runtime_var</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_constant_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_static_parameter_values</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
@@ -755,33 +763,33 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">glob_time</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Var</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the global time symbolic variable.</span>
 
 <span class="sd">        :return: Global time symbolic variable.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_glob_time</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">boundary_update</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtBoundaryUpdateProtocol</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the boundary update provider consumed by EMT solvers.</span>
 
 <span class="sd">        Problems without endogenous boundary logic return ``None``.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="EmtProblemTemplate.report_progress">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.report_progress">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">report_progress</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Emit one absolute progress update.</span>
 
 <span class="sd">        :param val: Progress value in percent.</span>
 <span class="sd">        :type val: float</span>
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -791,7 +799,7 @@
 <div class="viewcode-block" id="EmtProblemTemplate.report_progress2">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.report_progress2">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">report_progress2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">total</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Emit one progress update from a zero-based iteration index.</span>
 
 <span class="sd">        :param current: Zero-based iteration index.</span>
@@ -800,7 +808,7 @@
 <span class="sd">        :type total: int</span>
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="p">((</span><span class="n">current</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">total</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
@@ -809,11 +817,11 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_finalize_order_and_maps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Build canonical ordering, index maps and internal counters.</span>
 
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_diff_vars</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_diff_vars</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">_get_diff_var_sort_key</span><span class="p">)</span>
 
@@ -837,8 +845,8 @@
 
         <span class="n">i</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_vars</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]"</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
             <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars_glob_name2uid</span><span class="p">:</span>
                 <span class="k">pass</span>
@@ -847,8 +855,8 @@
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]"</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
             <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars_glob_name2uid</span><span class="p">:</span>
                 <span class="k">pass</span>
@@ -857,18 +865,18 @@
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_constant_parameters</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">CONSTANT_PARAMS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">]"</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">CONSTANT_PARAMS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">CONSTANT_PARAMS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">CONSTANT_PARAMS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_params</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">j</span>
 
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARIABLE_PARAMS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">]"</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARIABLE_PARAMS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARIABLE_PARAMS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARIABLE_PARAMS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_event_params</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
 
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_diff_vars</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DIFF_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">]"</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DIFF_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DIFF_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DIFF_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_diff</span><span class="p">[</span><span class="n">d</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
             <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars_glob_name2uid</span><span class="p">:</span>
                 <span class="k">pass</span>
@@ -893,7 +901,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_t</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_glob_time</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_runtime_param_vectors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Build and initialize runtime and constant parameter buffers.</span>
 
 <span class="sd">        Runtime parameters are kept in a single flat vector. Continuous and mode</span>
@@ -901,7 +909,7 @@
 <span class="sd">        later during the simulation.</span>
 
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">n_runtime</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable_parameter_number</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_params_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_runtime</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
@@ -924,24 +932,24 @@
 <div class="viewcode-block" id="EmtProblemTemplate.rebuild_runtime_param_vectors">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.rebuild_runtime_param_vectors">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rebuild_runtime_param_vectors</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Rebuild the runtime and constant parameter buffers.</span>
 
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_build_runtime_param_vectors</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.set_events_group">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.set_events_group">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_events_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">emt_events_group</span><span class="p">:</span> <span class="n">EmtEventsGroup</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Apply a selected EMT events group to the runtime parameter equations.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Apply a selected EMT events group to the runtime parameter equations.</span>
 
 <span class="sd">        The method is generic with respect to the specific EMT templates used in the</span>
 <span class="sd">        problem. Any runtime parameter exposed through `event_dict` / `mode_dict`</span>
 <span class="sd">        can be reassigned with a piecewise time function driven by the selected</span>
 <span class="sd">        group of `grid.emt_events`.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">active_runtime_eqs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_runtime_all_eqs_source</span><span class="p">)</span>
 
         <span class="n">collect_events</span> <span class="o">=</span> <span class="p">{</span><span class="n">param</span><span class="o">.</span><span class="n">uid</span><span class="p">:</span> <span class="nb">list</span><span class="p">()</span> <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="p">}</span>
@@ -969,10 +977,10 @@
 
                 <span class="n">collect_events</span><span class="p">[</span><span class="n">parameter_uid</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
                     <span class="nb">dict</span><span class="p">({</span>
-                        <span class="s2">"time"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">emt_evt</span><span class="o">.</span><span class="n">time</span><span class="p">),</span>
-                        <span class="s2">"value"</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">emt_evt</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
-                        <span class="s2">"end_time"</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">end_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">end_time</span><span class="p">),</span>
-                        <span class="s2">"transition_type"</span><span class="p">:</span> <span class="n">transition_type</span><span class="p">,</span>
+                        <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">emt_evt</span><span class="o">.</span><span class="n">time</span><span class="p">),</span>
+                        <span class="s2">&quot;value&quot;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">emt_evt</span><span class="o">.</span><span class="n">value</span><span class="p">),</span>
+                        <span class="s2">&quot;end_time&quot;</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">end_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="n">end_time</span><span class="p">),</span>
+                        <span class="s2">&quot;transition_type&quot;</span><span class="p">:</span> <span class="n">transition_type</span><span class="p">,</span>
                     <span class="p">})</span>
                 <span class="p">)</span>
 
@@ -986,12 +994,12 @@
                 <span class="n">sorted_specs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">event_specs</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="n">_emt_event_spec_time_sort_key</span><span class="p">)</span>
 
                 <span class="k">for</span> <span class="n">event_spec</span> <span class="ow">in</span> <span class="n">sorted_specs</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">event_spec</span><span class="p">[</span><span class="s2">"transition_type"</span><span class="p">]</span> <span class="o">==</span> <span class="n">DynamicEventTransitionType</span><span class="o">.</span><span class="n">Ramp</span><span class="p">:</span>
-                        <span class="n">start_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">event_spec</span><span class="p">[</span><span class="s2">"time"</span><span class="p">])</span>
-                        <span class="n">end_time_raw</span> <span class="o">=</span> <span class="n">event_spec</span><span class="p">[</span><span class="s2">"end_time"</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">event_spec</span><span class="p">[</span><span class="s2">&quot;transition_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">DynamicEventTransitionType</span><span class="o">.</span><span class="n">Ramp</span><span class="p">:</span>
+                        <span class="n">start_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">event_spec</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">])</span>
+                        <span class="n">end_time_raw</span> <span class="o">=</span> <span class="n">event_spec</span><span class="p">[</span><span class="s2">&quot;end_time&quot;</span><span class="p">]</span>
 
                         <span class="k">if</span> <span class="n">end_time_raw</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Ramp EMT events require an end_time"</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Ramp EMT events require an end_time&quot;</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="k">pass</span>
 
@@ -1000,20 +1008,20 @@
                         <span class="k">if</span> <span class="n">end_time</span> <span class="o">&gt;</span> <span class="n">start_time</span><span class="p">:</span>
                             <span class="k">pass</span>
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Ramp EMT events require end_time greater than time"</span><span class="p">)</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Ramp EMT events require end_time greater than time&quot;</span><span class="p">)</span>
 
                         <span class="n">active_expr</span> <span class="o">=</span> <span class="n">_build_ramp_runtime_expr</span><span class="p">(</span>
                             <span class="n">time_var</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_glob_time</span><span class="p">,</span>
                             <span class="n">start_time</span><span class="o">=</span><span class="n">start_time</span><span class="p">,</span>
                             <span class="n">end_time</span><span class="o">=</span><span class="n">end_time</span><span class="p">,</span>
                             <span class="n">before_expr</span><span class="o">=</span><span class="n">active_expr</span><span class="p">,</span>
-                            <span class="n">final_value</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">event_spec</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]),</span>
+                            <span class="n">final_value</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">event_spec</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]),</span>
                         <span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="n">active_expr</span> <span class="o">=</span> <span class="n">piecewise</span><span class="p">(</span>
                             <span class="n">time_var</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_glob_time</span><span class="p">,</span>
-                            <span class="n">t_events</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">event_spec</span><span class="p">[</span><span class="s2">"time"</span><span class="p">])],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
-                            <span class="n">new_values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">event_spec</span><span class="p">[</span><span class="s2">"value"</span><span class="p">]</span> <span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                            <span class="n">t_events</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">event_spec</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">])],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
+                            <span class="n">new_values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">event_spec</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">]</span> <span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">),</span>
                             <span class="n">default_value</span><span class="o">=</span><span class="n">active_expr</span><span class="p">,</span>
                         <span class="p">)</span>
 
@@ -1027,12 +1035,12 @@
 <div class="viewcode-block" id="EmtProblemTemplate.reset_boundary_update_state">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.reset_boundary_update_state">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reset_boundary_update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reset runtime parameter values before a new EMT simulation starts.</span>
 
 <span class="sd">        :param t0: Initial simulation time.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_params_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_runtime_parameter_values</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">t0</span><span class="p">),</span> <span class="n">seed_values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_params_values</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_params_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_event_params_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_params_values</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">t0</span><span class="p">))</span></div>
 
@@ -1040,38 +1048,38 @@
 <div class="viewcode-block" id="EmtProblemTemplate.get_compiler_names_dict">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_compiler_names_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_compiler_names_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the compiler-name mapping used by symbolic kernels.</span>
 
 <span class="sd">        :return: Compiler-name dictionary.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_alias_names_dict">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_alias_names_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_alias_names_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the alias-name mapping used by symbolic kernels.</span>
 
 <span class="sd">        :return: Alias-name dictionary.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_event_parameter_equations">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_event_parameter_equations">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_event_parameter_equations</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the runtime event-parameter equations.</span>
 
 <span class="sd">        :return: Event-parameter equations.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_rebuild_runtime_parameter_partition</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Rebuild the runtime parameter partition.</span>
 
 <span class="sd">        The runtime parameters are stored in a single flat vector, but their</span>
@@ -1079,7 +1087,7 @@
 <span class="sd">        retained discrete mode parameters appear afterwards.</span>
 
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_runtime_continuous_parameters</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_runtime_mode_parameters</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 
@@ -1126,11 +1134,11 @@
 <div class="viewcode-block" id="EmtProblemTemplate.refresh_runtime_equations_from_hierarchy">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.refresh_runtime_equations_from_hierarchy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">refresh_runtime_equations_from_hierarchy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Refresh canonical runtime equations from the current block hierarchy.</span>
 
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">runtime_equation_lookup</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">_collect_hierarchical_runtime_equations</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sys_block</span><span class="p">)</span>
         <span class="n">refreshed_equations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="n">runtime_parameter</span><span class="p">:</span> <span class="n">Var</span>
@@ -1160,7 +1168,7 @@
 <div class="viewcode-block" id="EmtProblemTemplate.set_runtime_mode_parameters">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.set_runtime_mode_parameters">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_runtime_mode_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Classify a subset of runtime parameters as retained discrete mode parameters.</span>
 
 <span class="sd">        The physical storage remains a single flat runtime vector. This method</span>
@@ -1169,7 +1177,7 @@
 
 <span class="sd">        :param mode_parameters: Runtime parameters to classify as mode parameters.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">valid_runtime_uids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="n">selected_mode_uids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
 
@@ -1181,7 +1189,7 @@
                 <span class="n">selected_mode_uids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">parameter</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">"Runtime mode parameter uid=</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2"> does not belong to the runtime parameter source."</span>
+                    <span class="sa">f</span><span class="s2">&quot;Runtime mode parameter uid=</span><span class="si">{</span><span class="n">parameter</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2"> does not belong to the runtime parameter source.&quot;</span>
                 <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_runtime_mode_uids</span> <span class="o">=</span> <span class="n">selected_mode_uids</span>
@@ -1191,7 +1199,7 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_initialize_runtime_parameter_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">seed_values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Vec</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the flat runtime parameter vector at a given time.</span>
 
 <span class="sd">        This method evaluates the full runtime parameter list once in the final</span>
@@ -1200,7 +1208,7 @@
 
 <span class="sd">        :param tm: Initialization time.</span>
 <span class="sd">        :return: Initialized runtime parameter vector.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">n_runtime</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="p">)</span>
         <span class="n">out</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_runtime</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
@@ -1231,7 +1239,7 @@
         <span class="k">return</span> <span class="n">out</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_runtime_expression_dependencies_available</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span> <span class="n">Expr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Return whether a runtime expression can be evaluated at this stage.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return whether a runtime expression can be evaluated at this stage.</span>
 
 <span class="sd">        Runtime and constant parameters are always represented in the problem</span>
 <span class="sd">        vectors. Algebraic, state, and differential variables become available</span>
@@ -1241,9 +1249,9 @@
 
 <span class="sd">        :param expression: Runtime initialization expression to inspect.</span>
 <span class="sd">        :return: ``True`` when every referenced variable has a usable binding.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_vars</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">uid</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_glob_time</span><span class="o">.</span><span class="n">uid</span> <span class="ow">or</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"time"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TIME_NAME</span><span class="p">}:</span>
+            <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">uid</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_glob_time</span><span class="o">.</span><span class="n">uid</span> <span class="ow">or</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TIME_NAME</span><span class="p">}:</span>
                 <span class="k">pass</span>
             <span class="k">elif</span> <span class="n">variable</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_event_params</span><span class="p">:</span>
                 <span class="k">pass</span>
@@ -1261,7 +1269,7 @@
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_evaluate_runtime_expression</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">runtime_params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">tm</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Evaluate a runtime parameter expression.</span>
 
 <span class="sd">        The evaluation uses UID-based bindings to avoid ambiguous name-based</span>
@@ -1271,7 +1279,7 @@
 <span class="sd">        :param runtime_params: Current flat runtime parameter vector.</span>
 <span class="sd">        :param tm: Current time.</span>
 <span class="sd">        :return: Numeric value of the expression.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">Const</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">expression</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">return</span> <span class="mf">0.0</span>
@@ -1279,7 +1287,7 @@
                 <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">expression</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">Var</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">expression</span><span class="o">.</span><span class="n">uid</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_glob_time</span><span class="o">.</span><span class="n">uid</span> <span class="ow">or</span> <span class="n">expression</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"time"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TIME_NAME</span><span class="p">}:</span>
+            <span class="k">if</span> <span class="n">expression</span><span class="o">.</span><span class="n">uid</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_glob_time</span><span class="o">.</span><span class="n">uid</span> <span class="ow">or</span> <span class="n">expression</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TIME_NAME</span><span class="p">}:</span>
                 <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">tm</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">idx_runtime</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_event_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">expression</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -1294,7 +1302,10 @@
                         <span class="k">if</span> <span class="n">idx_var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                             <span class="n">init_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">expression</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                             <span class="k">if</span> <span class="n">init_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                                <span class="k">return</span> <span class="mf">0.0</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                                    <span class="sa">f</span><span class="s2">&quot;EMT runtime variable &#39;</span><span class="si">{</span><span class="n">expression</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                                    <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;(uid=</span><span class="si">{</span><span class="n">expression</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) has no initialized state value.&quot;</span>
+                                <span class="p">)</span>
                             <span class="k">else</span><span class="p">:</span>
                                 <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">init_value</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
@@ -1302,11 +1313,17 @@
                             <span class="k">if</span> <span class="n">idx_diff</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                                 <span class="n">diff_init_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_init_guess</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">expression</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
                                 <span class="k">if</span> <span class="n">diff_init_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                                    <span class="k">return</span> <span class="mf">0.0</span>
+                                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                                        <span class="sa">f</span><span class="s2">&quot;EMT runtime variable &#39;</span><span class="si">{</span><span class="n">expression</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                                        <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;(uid=</span><span class="si">{</span><span class="n">expression</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) has no initialized differential value.&quot;</span>
+                                    <span class="p">)</span>
                                 <span class="k">else</span><span class="p">:</span>
                                     <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">diff_init_value</span><span class="p">)</span>
                             <span class="k">else</span><span class="p">:</span>
-                                <span class="k">return</span> <span class="mf">0.0</span>
+                                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                                    <span class="sa">f</span><span class="s2">&quot;EMT runtime expression variable &#39;</span><span class="si">{</span><span class="n">expression</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
+                                    <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;(uid=</span><span class="si">{</span><span class="n">expression</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) is not registered.&quot;</span>
+                                <span class="p">)</span>
 
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">Expr</span><span class="p">):</span>
             <span class="n">uid_bindings</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -1345,7 +1362,7 @@
 
             <span class="n">uid_bindings</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_glob_time</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tm</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">expression</span><span class="o">.</span><span class="n">get_vars</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">"time"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TIME_NAME</span><span class="p">}:</span>
+                <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">TIME_NAME</span><span class="p">}:</span>
                     <span class="n">uid_bindings</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">tm</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">expression</span><span class="o">.</span><span class="n">eval_uid</span><span class="p">(</span><span class="n">uid_bindings</span><span class="p">))</span>
@@ -1357,11 +1374,11 @@
 <div class="viewcode-block" id="EmtProblemTemplate.get_state_vars">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_state_vars">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_state_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the ordered list of state variables.</span>
 
 <span class="sd">        :return: Ordered list of state variables.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_vars</span></div>
 
 
@@ -1369,20 +1386,20 @@
 <div class="viewcode-block" id="EmtProblemTemplate.get_algebraic_vars">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_algebraic_vars">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_algebraic_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the ordered list of algebraic variables.</span>
 
 <span class="sd">        :return: Ordered list of algebraic variables.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.state_and_algebraic_vars">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.state_and_algebraic_vars">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">state_and_algebraic_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">variables</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">lst</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_vars</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span><span class="p">]:</span>
             <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">lst</span><span class="p">:</span>
@@ -1395,11 +1412,11 @@
 <div class="viewcode-block" id="EmtProblemTemplate.get_state_eqs">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_state_eqs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_state_eqs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the ordered list of state equations.</span>
 
 <span class="sd">        :return: Ordered list of state equations.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_eqs</span></div>
 
 
@@ -1407,11 +1424,11 @@
 <div class="viewcode-block" id="EmtProblemTemplate.get_algebraic_eqs">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_algebraic_eqs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_algebraic_eqs</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the ordered list of algebraic equations.</span>
 
 <span class="sd">        :return: Ordered list of algebraic equations.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span></div>
 
 
@@ -1419,11 +1436,11 @@
 <div class="viewcode-block" id="EmtProblemTemplate.get_variable_parameters">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_variable_parameters">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_variable_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the ordered list of runtime parameters.</span>
 
 <span class="sd">        :return: Ordered list of runtime parameters.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span></div>
 
 
@@ -1431,11 +1448,11 @@
 <div class="viewcode-block" id="EmtProblemTemplate.get_constant_parameters">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_constant_parameters">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_constant_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the ordered list of constant parameters.</span>
 
 <span class="sd">        :return: Ordered list of constant parameters.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_constant_parameters</span></div>
 
 
@@ -1443,11 +1460,11 @@
 <div class="viewcode-block" id="EmtProblemTemplate.get_diff_vars">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_diff_vars">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_diff_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the ordered list of differential variables.</span>
 
 <span class="sd">        :return: Ordered list of differential variables.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diff_vars</span></div>
 
 
@@ -1455,77 +1472,77 @@
 <div class="viewcode-block" id="EmtProblemTemplate.get_parameters_values">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_parameters_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_parameters_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Const</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the ordered list of constant parameter values.</span>
 
 <span class="sd">        :return: Ordered list of constant parameter values.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters_values</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_all_vars_number">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_all_vars_number">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_vars_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the total number of state and algebraic variables.</span>
 
 <span class="sd">        :return: Total number of variables.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_diff_var_number">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_diff_var_number">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_diff_var_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the number of differential variables.</span>
 
 <span class="sd">        :return: Number of differential variables.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_diff</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_algebraic_var_number">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_algebraic_var_number">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_algebraic_var_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the number of algebraic variables.</span>
 
 <span class="sd">        :return: Number of algebraic variables.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_alg</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_states_number">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_states_number">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_states_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the number of state variables.</span>
 
 <span class="sd">        :return: Number of state variables.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_state</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_variable_parameter_number">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_variable_parameter_number">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_variable_parameter_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the number of runtime parameters.</span>
 
 <span class="sd">        :return: Number of runtime parameters.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_event_params</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_x0">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_x0">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_x0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Build the initial state vector from the stored initialization guess.</span>
 
 <span class="sd">        :return: Initial state vector.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -1544,11 +1561,11 @@
 <div class="viewcode-block" id="EmtProblemTemplate.get_dx0">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_dx0">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_dx0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Build the initial differential vector from the stored differential initialization guess.</span>
 
 <span class="sd">        :return: Initial differential vector.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_diff</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_init_guess</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_diff</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">uid</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
@@ -1566,13 +1583,13 @@
 <div class="viewcode-block" id="EmtProblemTemplate.set_x0">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.set_x0">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_x0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the initial state vector guess from an array.</span>
 
 <span class="sd">        :param x0: Initial state vector.</span>
 <span class="sd">        :type x0: Vec</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">x0</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">[</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x0</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
@@ -1583,13 +1600,13 @@
 <div class="viewcode-block" id="EmtProblemTemplate.set_dx0">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.set_dx0">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_dx0</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dx0</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the initial differential vector guess from an array.</span>
 
 <span class="sd">        :param dx0: Initial differential vector.</span>
 <span class="sd">        :type dx0: Vec</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_diff</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">dx0</span><span class="p">):</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">diff_init_guess</span><span class="p">[</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dx0</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
@@ -1605,7 +1622,7 @@
             <span class="n">tm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
             <span class="n">defer_unavailable_dependencies</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update only the continuous runtime parameter slice.</span>
 
 <span class="sd">        Retained discrete mode parameters are preserved exactly as they enter</span>
@@ -1617,7 +1634,7 @@
 <span class="sd">        :param defer_unavailable_dependencies: Preserve the current value when</span>
 <span class="sd">            construction-time algebraic/state dependencies are not initialized.</span>
 <span class="sd">        :return: Updated flat runtime parameter vector.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">n_continuous</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_runtime_continuous_eqs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">n_continuous</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -1646,103 +1663,103 @@
 <div class="viewcode-block" id="EmtProblemTemplate.update_variable_params">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.update_variable_params">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_variable_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update the internal runtime parameter values at the given time.</span>
 
 <span class="sd">        :param t: Current time.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_params_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">def_event_params_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_params_values</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">t</span><span class="p">))</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_full_param_index">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_full_param_index">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_full_param_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uid</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the flat full-parameter index associated with the given UID.</span>
 
 <span class="sd">        :param uid: Parameter unique identifier.</span>
 <span class="sd">        :return: Flat index inside the full parameter vector.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">n_ev</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">uid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_event_params</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_event_params</span><span class="p">[</span><span class="n">uid</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">uid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_params</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">n_ev</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_params</span><span class="p">[</span><span class="n">uid</span><span class="p">]</span>
-        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown param uid=</span><span class="si">{</span><span class="n">uid</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown param uid=</span><span class="si">{</span><span class="n">uid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_newton_trace_collector">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_newton_trace_collector">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_newton_trace_collector</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the Newton trace collector instance.</span>
 
 <span class="sd">        :return: Newton trace collector instance or None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_newton_trace_collector</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.set_newton_trace_collector">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.set_newton_trace_collector">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_newton_trace_collector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collector</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the Newton trace collector instance.</span>
 
 <span class="sd">        :param collector: Newton trace collector instance.</span>
 <span class="sd">        :return: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_newton_trace_collector</span> <span class="o">=</span> <span class="n">collector</span></div>
 
 
     <span class="c1"># def get_device_vars_dict(self) -&gt; Dict[Any, List[Var]]:</span>
-    <span class="c1">#     """</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
     <span class="c1">#     Return the device-to-variable mapping dictionary.</span>
     <span class="c1">#</span>
     <span class="c1">#     :return: Device-to-variable mapping dictionary.</span>
-    <span class="c1">#     """</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
     <span class="c1">#     return self._vars_info</span>
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_var_idx">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_var_idx">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_var_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">Var</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the flat variable index associated with the given variable.</span>
 
 <span class="sd">        :param v: Variable to locate.</span>
 <span class="sd">        :return: Flat variable index.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_diff_var_idx">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_diff_var_idx">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_diff_var_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dv</span><span class="p">:</span> <span class="n">Var</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the flat differential index associated with the given differential variable.</span>
 
 <span class="sd">        :param dv: Differential variable to locate.</span>
 <span class="sd">        :return: Flat differential index.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_diff</span><span class="p">[</span><span class="n">dv</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">vars_glob_name2uid</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :return:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars_glob_name2uid</span>
 
     <span class="c1"># def set_init_guess(self, mdl: Block, reference_powerflow: VarPowerFlowReferenceType, val: float) -&gt; None:</span>
-    <span class="c1">#     """</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
     <span class="c1">#     Set the initialization guess associated with a model external mapping.</span>
     <span class="c1">#</span>
     <span class="c1">#     :param mdl: Model block containing the external mapping.</span>
     <span class="c1">#     :param reference_powerflow: Reference key used to locate the mapped variable.</span>
     <span class="c1">#     :param val: Initialization value.</span>
     <span class="c1">#     :return: None</span>
-    <span class="c1">#     """</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
     <span class="c1">#     external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping(mdl)</span>
     <span class="c1">#</span>
     <span class="c1">#     if external_mapping is None:</span>
@@ -1766,7 +1783,7 @@
             <span class="n">jac_evaluator</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
             <span class="n">static_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Vec</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the stack of transition matrices used for Floquet analysis.</span>
 
 <span class="sd">        :param trajectory: State trajectory over one period.</span>
@@ -1774,97 +1791,97 @@
 <span class="sd">        :param jac_evaluator: Optional Jacobian evaluator.</span>
 <span class="sd">        :param static_params: Optional static parameter vector.</span>
 <span class="sd">        :return: Stack of transition matrices or None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_runtime_continuous_slice">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_runtime_continuous_slice">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_runtime_continuous_slice</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">slice</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the slice of continuous runtime inputs inside the flat runtime vector.</span>
 
 <span class="sd">        :return: Continuous runtime slice.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runtime_continuous_slice</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_runtime_mode_slice">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_runtime_mode_slice">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_runtime_mode_slice</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">slice</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the slice of retained mode parameters inside the flat runtime vector.</span>
 
 <span class="sd">        :return: Mode runtime slice.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runtime_mode_slice</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_runtime_continuous_parameters">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_runtime_continuous_parameters">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_runtime_continuous_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the ordered list of continuous runtime parameters.</span>
 
 <span class="sd">        :return: Continuous runtime parameters.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runtime_continuous_parameters</span></div>
 
 
 <div class="viewcode-block" id="EmtProblemTemplate.get_runtime_mode_parameters">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.EMT.problems.html#VeraGridEngine.Simulations.EMT.problems.emt_problem_template.EmtProblemTemplate.get_runtime_mode_parameters">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_runtime_mode_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the ordered list of retained mode runtime parameters.</span>
 
 <span class="sd">        :return: Mode runtime parameters.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_runtime_mode_parameters</span></div>
 
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">uid2idx_vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the UID-to-variable-index mapping.</span>
 
 <span class="sd">        :return: UID-to-variable-index mapping.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">uid2idx_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the UID-to-constant-parameter-index mapping.</span>
 
 <span class="sd">        :return: UID-to-constant-parameter-index mapping.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_params</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">uid2idx_event_params</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the UID-to-runtime-parameter-index mapping.</span>
 
 <span class="sd">        :return: UID-to-runtime-parameter-index mapping.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_event_params</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">uid2idx_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the UID-to-differential-index mapping.</span>
 
 <span class="sd">        :return: UID-to-differential-index mapping.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_diff</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">event_params_values</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the current flat runtime parameter vector.</span>
 
 <span class="sd">        :return: Current flat runtime parameter vector.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_params_values</span>
 
     <span class="nd">@property</span>

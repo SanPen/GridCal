@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms.hvdc_vsc_gfl_rms_template &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Templates.Rms.hvdc_vsc_gfl_rms_template &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -69,7 +69,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -107,7 +108,7 @@
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 
-<span class="sd">"""Standalone grid-following VSC models for RMS HVDC studies."""</span>
+<span class="sd">&quot;&quot;&quot;Standalone grid-following VSC models for RMS HVDC studies.&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Dynamic.rms_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">RmsModelTemplate</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Dynamic.var_factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">VarFactory</span>
@@ -120,23 +121,23 @@
 <div class="viewcode-block" id="HvdcVscGflRmsTemplate">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.hvdc_vsc_gfl_rms_template.HvdcVscGflRmsTemplate">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">HvdcVscGflRmsTemplate</span><span class="p">(</span><span class="n">TemplateDefinition</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""Editable template definition for the standalone HVDC GFL VSC model."""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Editable template definition for the standalone HVDC GFL VSC model.&quot;&quot;&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vf</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Define the structural inputs exposed by the dynamic editor.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Define the structural inputs exposed by the dynamic editor.</span>
 
 <span class="sd">        :param vf: Variable factory that will own the generated RMS variables.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">vf</span><span class="p">,</span>
             <span class="n">params</span><span class="o">=</span><span class="nb">list</span><span class="p">((</span>
                 <span class="n">TemplateProp</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s2">"control1"</span><span class="p">,</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
-                    <span class="n">descr</span><span class="o">=</span><span class="s2">"Active-axis control mode (Vm_dc, Pdc, or Pac)."</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;control1&quot;</span><span class="p">,</span>
+                    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Active-axis control mode (Vm_dc, Pdc, or Pac).&quot;</span><span class="p">,</span>
                     <span class="n">tpe</span><span class="o">=</span><span class="n">ConverterControlType</span><span class="p">,</span>
                     <span class="n">value</span><span class="o">=</span><span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Vm_dc</span><span class="p">,</span>
                     <span class="n">allowed_values</span><span class="o">=</span><span class="p">(</span>
@@ -146,9 +147,9 @@
                     <span class="p">),</span>
                 <span class="p">),</span>
                 <span class="n">TemplateProp</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s2">"control2"</span><span class="p">,</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
-                    <span class="n">descr</span><span class="o">=</span><span class="s2">"Reactive-axis control mode (Qac or Vm_ac)."</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;control2&quot;</span><span class="p">,</span>
+                    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Reactive-axis control mode (Qac or Vm_ac).&quot;</span><span class="p">,</span>
                     <span class="n">tpe</span><span class="o">=</span><span class="n">ConverterControlType</span><span class="p">,</span>
                     <span class="n">value</span><span class="o">=</span><span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Qac</span><span class="p">,</span>
                     <span class="n">allowed_values</span><span class="o">=</span><span class="p">(</span>
@@ -157,18 +158,18 @@
                     <span class="p">),</span>
                 <span class="p">),</span>
                 <span class="n">TemplateProp</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s2">"cdc"</span><span class="p">,</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">"p.u."</span><span class="p">,</span>
-                    <span class="n">descr</span><span class="o">=</span><span class="s2">"DC-link capacitance used by the RMS voltage state."</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;cdc&quot;</span><span class="p">,</span>
+                    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;p.u.&quot;</span><span class="p">,</span>
+                    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;DC-link capacitance used by the RMS voltage state.&quot;</span><span class="p">,</span>
                     <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
                     <span class="n">value</span><span class="o">=</span><span class="mf">0.40</span><span class="p">,</span>
                 <span class="p">),</span>
                 <span class="n">TemplateProp</span><span class="p">(</span>
-                    <span class="n">name</span><span class="o">=</span><span class="s2">"name"</span><span class="p">,</span>
-                    <span class="n">units</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
-                    <span class="n">descr</span><span class="o">=</span><span class="s2">"Name of the RMS model."</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span>
+                    <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Name of the RMS model.&quot;</span><span class="p">,</span>
                     <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
-                    <span class="n">value</span><span class="o">=</span><span class="s2">"HVDC GFL VSC"</span><span class="p">,</span>
+                    <span class="n">value</span><span class="o">=</span><span class="s2">&quot;HVDC GFL VSC&quot;</span><span class="p">,</span>
                 <span class="p">),</span>
             <span class="p">)),</span>
         <span class="p">)</span>
@@ -176,14 +177,14 @@
 <div class="viewcode-block" id="HvdcVscGflRmsTemplate.eval">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.hvdc_vsc_gfl_rms_template.HvdcVscGflRmsTemplate.eval">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Build the HVDC VSC using the current editor property values.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the HVDC VSC using the current editor property values.</span>
 
 <span class="sd">        :return: Configured standalone HVDC GFL VSC RMS template.</span>
-<span class="sd">        """</span>
-        <span class="n">control1</span><span class="p">:</span> <span class="n">ConverterControlType</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"control1"</span><span class="p">)</span>
-        <span class="n">control2</span><span class="p">:</span> <span class="n">ConverterControlType</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"control2"</span><span class="p">)</span>
-        <span class="n">cdc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"cdc"</span><span class="p">)</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">"name"</span><span class="p">)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">control1</span><span class="p">:</span> <span class="n">ConverterControlType</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;control1&quot;</span><span class="p">)</span>
+        <span class="n">control2</span><span class="p">:</span> <span class="n">ConverterControlType</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;control2&quot;</span><span class="p">)</span>
+        <span class="n">cdc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;cdc&quot;</span><span class="p">)</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">build_hvdc_vsc_gfl_rms</span><span class="p">(</span>
             <span class="n">vfactory</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vf</span><span class="p">,</span>
@@ -197,7 +198,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_set_parameter_value</span><span class="p">(</span><span class="n">block</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">variable_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">vf</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Set a static or event parameter without changing its ownership.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set a static or event parameter without changing its ownership.</span>
 
 <span class="sd">    :param block: Root of the symbolic block tree to update.</span>
 <span class="sd">    :param variable_name: Exact parameter name to update.</span>
@@ -205,26 +206,26 @@
 <span class="sd">    :param vf: Factory used to create the symbolic constant.</span>
 <span class="sd">    :return: None.</span>
 <span class="sd">    :raises KeyError: If the block has no matching parameter.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">for</span> <span class="n">owner</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">get_all_blocks</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">destination</span> <span class="ow">in</span> <span class="p">(</span><span class="n">owner</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">owner</span><span class="o">.</span><span class="n">event_dict</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">variable</span> <span class="ow">in</span> <span class="n">destination</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">variable</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">variable_name</span><span class="p">:</span>
                     <span class="n">destination</span><span class="p">[</span><span class="n">variable</span><span class="p">]</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
                     <span class="k">return</span>
-    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The VSC GFL model has no parameter named '</span><span class="si">{</span><span class="n">variable_name</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The VSC GFL model has no parameter named &#39;</span><span class="si">{</span><span class="n">variable_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="build_hvdc_vsc_gfl_rms">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.hvdc_vsc_gfl_rms_template.build_hvdc_vsc_gfl_rms">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">build_hvdc_vsc_gfl_rms</span><span class="p">(</span>
         <span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"HVDC GFL VSC"</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;HVDC GFL VSC&quot;</span><span class="p">,</span>
         <span class="n">control1</span><span class="p">:</span> <span class="n">ConverterControlType</span> <span class="o">=</span> <span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Vm_dc</span><span class="p">,</span>
         <span class="n">control2</span><span class="p">:</span> <span class="n">ConverterControlType</span> <span class="o">=</span> <span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Qac</span><span class="p">,</span>
         <span class="n">cdc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.40</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Build a complete controlled VSC with an RMS DC-link capacitor.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a complete controlled VSC with an RMS DC-link capacitor.</span>
 
 <span class="sd">    The model belongs directly to a :class:`VSC` device. Its AC terminal uses</span>
 <span class="sd">    ``Vm/Va`` and its DC terminal uses ``Vdc``. A physical coupling transformer</span>
@@ -237,7 +238,7 @@
 <span class="sd">    :param control2: Reactive-axis control mode (``Qac`` or ``Vm_ac``).</span>
 <span class="sd">    :param cdc: DC-link capacitance in p.u.</span>
 <span class="sd">    :return: Complete reusable RMS VSC template.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">template</span><span class="p">:</span> <span class="n">RmsModelTemplate</span> <span class="o">=</span> <span class="n">VscGflBuild</span><span class="p">(</span>
         <span class="n">vfactory</span><span class="o">=</span><span class="n">vfactory</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -249,14 +250,14 @@
 
     <span class="n">vdc</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">external_mapping</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vdc</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">vdc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The HVDC GFL VSC template must expose its Vdc variable"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The HVDC GFL VSC template must expose its Vdc variable&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">pass</span>
 
     <span class="c1"># Internal symbols must remain valid identifiers independently of the</span>
     <span class="c1"># user-facing block name, which may legitimately contain spaces.</span>
-    <span class="n">dvdc_dt</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="s2">"dVdc_dt"</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">vdc</span><span class="p">)</span>
-    <span class="n">cdc_parameter</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Cdc"</span><span class="p">)</span>
+    <span class="n">dvdc_dt</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="s2">&quot;dVdc_dt&quot;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">vdc</span><span class="p">)</span>
+    <span class="n">cdc_parameter</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Cdc&quot;</span><span class="p">)</span>
 
     <span class="c1"># Pf_dc + Pt_ac - Ploss - Cdc*Vdc*dVdc/dt = 0.</span>
     <span class="n">template</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">algebraic_eqs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-=</span> <span class="n">cdc_parameter</span> <span class="o">*</span> <span class="n">vdc</span> <span class="o">*</span> <span class="n">dvdc_dt</span>
@@ -268,13 +269,13 @@
     <span class="c1"># transformer carries station resistance, so the converter interface is</span>
     <span class="c1"># lossless and does not duplicate that network loss.</span>
     <span class="n">defaults</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="p">(</span><span class="s2">"Kp_vdc"</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">"Ki_vdc"</span><span class="p">,</span> <span class="mf">1.00</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">"Kp_icl"</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">"Ki_icl"</span><span class="p">,</span> <span class="mf">5.00</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">"Kp_pol"</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">"Ki_pol"</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">),</span>
-        <span class="p">(</span><span class="s2">"R"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Kp_vdc&quot;</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Ki_vdc&quot;</span><span class="p">,</span> <span class="mf">1.00</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Kp_icl&quot;</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Ki_icl&quot;</span><span class="p">,</span> <span class="mf">5.00</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Kp_pol&quot;</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;Ki_pol&quot;</span><span class="p">,</span> <span class="mf">0.10</span><span class="p">),</span>
+        <span class="p">(</span><span class="s2">&quot;R&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="n">variable_name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">float</span>
@@ -289,9 +290,9 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.hvdc_vsc_gfl_rms_template.get_hvdc_vdc_q_vsc_rms">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_hvdc_vdc_q_vsc_rms</span><span class="p">(</span>
         <span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"HVDC GFL VSC - Vdc/Q"</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;HVDC GFL VSC - Vdc/Q&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Build the DC-voltage/reactive-power controlling HVDC terminal."""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the DC-voltage/reactive-power controlling HVDC terminal.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">build_hvdc_vsc_gfl_rms</span><span class="p">(</span>
         <span class="n">vfactory</span><span class="o">=</span><span class="n">vfactory</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -305,9 +306,9 @@
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.hvdc_vsc_gfl_rms_template.get_hvdc_pdc_q_vsc_rms">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_hvdc_pdc_q_vsc_rms</span><span class="p">(</span>
         <span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"HVDC GFL VSC - Pdc/Q"</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;HVDC GFL VSC - Pdc/Q&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Build the DC-power/reactive-power controlling HVDC terminal."""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build the DC-power/reactive-power controlling HVDC terminal.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">build_hvdc_vsc_gfl_rms</span><span class="p">(</span>
         <span class="n">vfactory</span><span class="o">=</span><span class="n">vfactory</span><span class="p">,</span>
         <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>

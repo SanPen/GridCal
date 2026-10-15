@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Rms.initialization &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.Rms.initialization &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -112,9 +113,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">deque</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.jit_compiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">RMSCompiler</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.sparse.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">MatrixRankWarning</span>
 
@@ -122,7 +121,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_explicit_init_graph</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">eval_uid</span> <span class="k">as</span> <span class="n">eval_expr_uid</span><span class="p">,</span> <span class="n">get_expression_vars</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.block</span><span class="w"> </span><span class="kn">import</span> <span class="n">Block</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Var</span><span class="p">,</span> <span class="n">Const</span><span class="p">,</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">find_vars_order</span><span class="p">,</span> <span class="n">BinOp</span><span class="p">,</span> <span class="n">UnOp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Var</span><span class="p">,</span> <span class="n">Const</span><span class="p">,</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">BinOp</span><span class="p">,</span> <span class="n">UnOp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">VarPowerFlowReferenceType</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.basic_structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vec</span>
 
@@ -601,319 +600,6 @@
                 <span class="k">pass</span>
 
     <span class="k">return</span> <span class="n">ordered_update_eqs</span>
-
-
-<div class="viewcode-block" id="build_init_dict">
-<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.html#VeraGridEngine.Simulations.Rms.initialization.build_init_dict">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">build_init_dict</span><span class="p">(</span><span class="n">mdl</span><span class="p">,</span> <span class="n">init_vars</span><span class="p">,</span> <span class="n">init_event</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    builds initialization dictionary from mdl</span>
-<span class="sd">    :param mdl:</span>
-<span class="sd">    :type mdl:</span>
-<span class="sd">    :param init_vars:</span>
-<span class="sd">    :param init_event:</span>
-<span class="sd">    :type init_vars:</span>
-<span class="sd">    init_dict</span>
-<span class="sd">    :return:</span>
-<span class="sd">    :rtype:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">init_vars</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mdl</span><span class="o">.</span><span class="n">init_eqs</span><span class="p">)</span>
-    <span class="n">init_event</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mdl</span><span class="o">.</span><span class="n">event_dict</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">blk</span> <span class="ow">in</span> <span class="n">mdl</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
-        <span class="n">build_init_dict</span><span class="p">(</span><span class="n">blk</span><span class="p">,</span> <span class="n">init_vars</span><span class="p">,</span> <span class="n">init_event</span><span class="p">)</span></div>
-
-
-
-
-<div class="viewcode-block" id="solve_secant">
-<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.html#VeraGridEngine.Simulations.Rms.initialization.solve_secant">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">solve_secant</span><span class="p">(</span><span class="n">eq_fn</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">idx</span><span class="p">,</span> <span class="n">event_params_array</span><span class="p">,</span> <span class="n">params_array</span><span class="p">,</span>
-                 <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fallback_seed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">seed</span><span class="p">):</span>
-        <span class="n">x0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]):</span>
-        <span class="n">x0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">x0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">fallback_seed</span><span class="p">)</span>
-
-    <span class="n">x1</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span> <span class="k">else</span> <span class="n">x0</span> <span class="o">*</span> <span class="mf">1.1</span>
-
-    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span><span class="p">):</span>
-
-        <span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">x0</span>
-        <span class="n">f0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">eq_fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">event_params_array</span><span class="p">,</span> <span class="n">params_array</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">x0</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">f0</span><span class="p">):</span>
-            <span class="n">x0</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">fallback_seed</span><span class="p">)</span>
-            <span class="n">x1</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span> <span class="k">else</span> <span class="n">x0</span> <span class="o">*</span> <span class="mf">1.1</span>
-            <span class="k">continue</span>
-
-        <span class="n">x</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">x1</span>
-        <span class="n">f1</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">eq_fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">event_params_array</span><span class="p">,</span> <span class="n">params_array</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="n">x1</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">f1</span><span class="p">):</span>
-            <span class="n">x1</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-6</span> <span class="k">else</span> <span class="n">x0</span> <span class="o">*</span> <span class="mf">1.1</span>
-            <span class="k">continue</span>
-
-        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">x1</span>
-
-        <span class="n">denom</span> <span class="o">=</span> <span class="p">(</span><span class="n">f1</span> <span class="o">-</span> <span class="n">f0</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">denom</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-12</span><span class="p">:</span>
-            <span class="k">break</span>
-
-        <span class="n">x2</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">f1</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="n">denom</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x2</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Secant init produced non-finite iterate at idx=</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: x0=</span><span class="si">{</span><span class="n">x0</span><span class="si">}</span><span class="s2">, x1=</span><span class="si">{</span><span class="n">x1</span><span class="si">}</span><span class="s2">, x2=</span><span class="si">{</span><span class="n">x2</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-
-        <span class="n">x0</span><span class="p">,</span> <span class="n">x1</span> <span class="o">=</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x1</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Secant init failed to converge to a finite value at idx=</span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">x1</span></div>
-
-
-<div class="viewcode-block" id="init_explicit">
-<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.html#VeraGridEngine.Simulations.Rms.initialization.init_explicit">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">init_explicit</span><span class="p">(</span><span class="n">mdl</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
-                  <span class="n">sys_vars</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Var</span><span class="p">],</span>
-                  <span class="n">variable_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span>
-                  <span class="n">event_parameters_eqs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Expr</span> <span class="o">|</span> <span class="n">Const</span><span class="p">],</span>
-                  <span class="n">constant_parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span>
-                  <span class="n">init_guess</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-                  <span class="n">uid2idx_vars</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-                  <span class="n">uid2idx_params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-                  <span class="n">uid2idx_event_params</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
-                  <span class="n">compiler_names_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
-                  <span class="n">alias_names_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
-                  <span class="n">VARIABLE_PARAMS_NAME</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                  <span class="n">TIME_NAME</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                  <span class="n">VARS_NAME</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                  <span class="n">DIFF_NAME</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                  <span class="n">CONSTANT_PARAMS_NAME</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">    initialize model using explicit equations</span>
-
-<span class="sd">    :param mdl:</span>
-<span class="sd">    :type mdl: VeraGridEngine.Utils.Symbolic.block.Block</span>
-<span class="sd">    :param sys_vars:</span>
-<span class="sd">    :type sys_vars: Union[List[Tuple[int, str]], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], List[Tuple[int, str]], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var], List[Tuple[int, str]], Dict[int, VeraGridEngine.Utils.Symbolic.symbolic.Var]]</span>
-<span class="sd">    :param variable_parameters:</span>
-<span class="sd">    :type variable_parameters: List[VeraGridEngine.Utils.Symbolic.symbolic.Var]</span>
-<span class="sd">    :param event_parameters_eqs:</span>
-<span class="sd">    :type event_parameters_eqs:</span>
-<span class="sd">    :param constant_parameters:</span>
-<span class="sd">    :type constant_parameters: List[VeraGridEngine.Utils.Symbolic.symbolic.Var]</span>
-<span class="sd">    :param init_guess:</span>
-<span class="sd">    :type init_guess: Dict[Tuple[int, str], float]</span>
-<span class="sd">    :param uid2idx_vars:</span>
-<span class="sd">    :type uid2idx_vars: Dict[int, int]</span>
-<span class="sd">    :param uid2idx_params:</span>
-<span class="sd">    :type uid2idx_params: Dict[int, int]</span>
-<span class="sd">    :param uid2idx_event_params:</span>
-<span class="sd">    :type uid2idx_event_params: Dict[int, int]</span>
-<span class="sd">    :param compiler_names_dict:</span>
-<span class="sd">    :type compiler_names_dict: Dict[int, str]</span>
-<span class="sd">    :param alias_names_dict:</span>
-<span class="sd">    :type alias_names_dict: Dict[int, str]</span>
-<span class="sd">    :param VARIABLE_PARAMS_NAME:</span>
-<span class="sd">    :type VARIABLE_PARAMS_NAME: str</span>
-<span class="sd">    :param TIME_NAME:</span>
-<span class="sd">    :type TIME_NAME: str</span>
-<span class="sd">    :param VARS_NAME:</span>
-<span class="sd">    :type VARS_NAME: str</span>
-<span class="sd">    :param DIFF_NAME:</span>
-<span class="sd">    :type DIFF_NAME: str</span>
-<span class="sd">    :param CONSTANT_PARAMS_NAME:</span>
-<span class="sd">    :type CONSTANT_PARAMS_NAME:</span>
-<span class="sd">    :return:</span>
-<span class="sd">    :rtype: Union[None, Tuple[Dict[Tuple[int, str], float], VeraGridEngine.Utils.Symbolic.block.Block]]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="n">rms_compiler</span> <span class="o">=</span> <span class="n">RMSCompiler</span><span class="p">(</span>
-        <span class="n">variables</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">sys_vars</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
-        <span class="n">diff_vars</span><span class="o">=</span><span class="nb">list</span><span class="p">(),</span>
-        <span class="n">v_params</span><span class="o">=</span><span class="n">variable_parameters</span><span class="p">,</span>
-        <span class="n">c_params</span><span class="o">=</span><span class="n">constant_parameters</span><span class="p">,</span>
-        <span class="n">dt_var</span><span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;dt&quot;</span><span class="p">),</span>
-        <span class="n">compiler_names_dict</span><span class="o">=</span><span class="n">compiler_names_dict</span>
-    <span class="p">)</span>
-
-    <span class="c1"># initialize array for model variables</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sys_vars</span><span class="p">))</span>
-
-    <span class="c1"># assign initial guesses for known variables</span>
-    <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">init_guess</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">x</span><span class="p">[</span><span class="n">uid2idx_vars</span><span class="p">[</span><span class="n">uid</span><span class="p">]]</span> <span class="o">=</span> <span class="n">val</span>
-
-    <span class="c1"># initialize array for model params</span>
-    <span class="n">params_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">constant_parameters</span><span class="p">))</span>
-
-    <span class="c1"># compute and assign parameters value</span>
-    <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">mdl</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">params_array</span><span class="p">[</span><span class="n">uid2idx_params</span><span class="p">[</span><span class="n">param</span><span class="o">.</span><span class="n">uid</span><span class="p">]]</span> <span class="o">=</span> <span class="n">const</span><span class="o">.</span><span class="n">value</span>
-
-    <span class="c1"># compute and assign known event parameters value</span>
-    <span class="n">event_params_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">variable_parameters</span><span class="p">))</span>
-
-    <span class="c1"># unify event_dict and init_equations</span>
-    <span class="n">init_vars</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="n">init_event</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-    <span class="n">build_init_dict</span><span class="p">(</span><span class="n">mdl</span><span class="p">,</span> <span class="n">init_vars</span><span class="p">,</span> <span class="n">init_event</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">init_event</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">Const</span><span class="p">)</span> <span class="ow">and</span> <span class="n">val</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
-            <span class="n">init_vars</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">pass</span>
-
-    <span class="c1"># compute and assign missing init_vars and None event parameters</span>
-
-    <span class="c1">####################################################################################################################################</span>
-
-    <span class="c1"># construct graph of dependencies</span>
-    <span class="n">graph</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
-    <span class="n">in_degree</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-
-    <span class="n">dependencies</span> <span class="o">=</span> <span class="p">{}</span>
-
-    <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">eq</span> <span class="ow">in</span> <span class="n">init_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-
-        <span class="n">vars_in_eq</span> <span class="o">=</span> <span class="n">get_expression_vars</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>
-        <span class="n">deps</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">vars_in_eq</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">init_vars</span><span class="p">]</span>
-
-        <span class="n">dependencies</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">deps</span>
-
-        <span class="k">for</span> <span class="n">dep</span> <span class="ow">in</span> <span class="n">deps</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">dep</span><span class="o">.</span><span class="n">uid</span> <span class="o">!=</span> <span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">:</span>
-                <span class="n">graph</span><span class="p">[</span><span class="n">dep</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
-                <span class="n">in_degree</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">in_degree</span><span class="p">:</span>
-            <span class="n">in_degree</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="c1"># topological sort</span>
-    <span class="n">queue</span> <span class="o">=</span> <span class="n">deque</span><span class="p">([</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">in_degree</span> <span class="k">if</span> <span class="n">in_degree</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">])</span>
-    <span class="n">topo_order</span> <span class="o">=</span> <span class="p">[]</span>
-
-    <span class="k">while</span> <span class="n">queue</span><span class="p">:</span>
-        <span class="n">u</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">popleft</span><span class="p">()</span>
-        <span class="n">topo_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">graph</span><span class="p">[</span><span class="n">u</span><span class="p">]:</span>
-            <span class="n">in_degree</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">1</span>
-            <span class="k">if</span> <span class="n">in_degree</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="n">queue</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">topo_order</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">init_vars</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Cycle detected between different variables&quot;</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_numeric</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Var</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_event_params</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">event_params_array</span><span class="p">[</span><span class="n">uid2idx_event_params</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">uid</span><span class="p">]])</span>
-            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_vars</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">uid2idx_vars</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">uid</span><span class="p">]])</span>
-            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_params</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">params_array</span><span class="p">[</span><span class="n">uid2idx_params</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">uid</span><span class="p">]])</span>
-            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">init_guess</span><span class="p">:</span>
-                <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">init_guess</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">uid</span><span class="p">])</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Could not resolve numeric value for &#39;</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (uid=</span><span class="si">{</span><span class="n">value</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-
-        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-
-    <span class="c1"># evaluate</span>
-    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">topo_order</span><span class="p">:</span>
-        <span class="n">eq</span> <span class="o">=</span> <span class="n">init_vars</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
-        <span class="n">vars_list</span> <span class="o">=</span> <span class="n">find_vars_order</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">init_event</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-            <span class="n">uid_bindings</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-            <span class="k">for</span> <span class="n">vr</span> <span class="ow">in</span> <span class="n">vars_list</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">vr</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_event_params</span><span class="p">:</span>
-                    <span class="n">uid_bindings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="p">:</span> <span class="n">event_params_array</span><span class="p">[</span><span class="n">uid2idx_event_params</span><span class="p">[</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="p">]]})</span>
-                <span class="k">elif</span> <span class="n">vr</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_vars</span><span class="p">:</span>
-                    <span class="n">uid_bindings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">uid2idx_vars</span><span class="p">[</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="p">]]})</span>
-                <span class="k">elif</span> <span class="n">vr</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_params</span><span class="p">:</span>
-                    <span class="n">uid_bindings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="p">:</span> <span class="n">params_array</span><span class="p">[</span><span class="n">uid2idx_params</span><span class="p">[</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="p">]]})</span>
-
-            <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">vr</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">vr</span> <span class="ow">in</span> <span class="n">vars_list</span> <span class="k">if</span> <span class="n">vr</span><span class="o">.</span><span class="n">uid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">uid_bindings</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Explicit init could not evaluate event equation for &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (uid=</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">). &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;Missing bindings: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-
-            <span class="n">result</span> <span class="o">=</span> <span class="n">eq</span><span class="o">.</span><span class="n">eval_uid</span><span class="p">(</span><span class="n">uid_bindings</span><span class="p">)</span>
-            <span class="n">resolved_result</span> <span class="o">=</span> <span class="n">_resolve_numeric</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">resolved_result</span><span class="p">):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;Explicit init produced non-finite event value for &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (uid=</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">): &quot;</span>
-                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">resolved_result</span><span class="si">}</span><span class="s2">. Equation: </span><span class="si">{</span><span class="n">eq</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-            <span class="n">event_params_array</span><span class="p">[</span><span class="n">uid2idx_event_params</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]]</span> <span class="o">=</span> <span class="n">resolved_result</span>
-            <span class="n">index</span> <span class="o">=</span> <span class="n">variable_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
-            <span class="n">event_parameters_eqs</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="n">resolved_result</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">var</span><span class="o">.</span><span class="n">base_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># check if implicit equation</span>
-            <span class="n">is_self_implicit</span> <span class="o">=</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">dependencies</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">is_self_implicit</span><span class="p">:</span>
-                <span class="n">uid_bindings</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
-                <span class="n">vars_list</span> <span class="o">=</span> <span class="n">find_vars_order</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">vr</span> <span class="ow">in</span> <span class="n">vars_list</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">vr</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_event_params</span><span class="p">:</span>
-                        <span class="n">uid_bindings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="p">:</span> <span class="n">event_params_array</span><span class="p">[</span><span class="n">uid2idx_event_params</span><span class="p">[</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="p">]]})</span>
-                    <span class="k">elif</span> <span class="n">vr</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_vars</span><span class="p">:</span>
-                        <span class="n">uid_bindings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="n">uid2idx_vars</span><span class="p">[</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="p">]]})</span>
-                    <span class="k">elif</span> <span class="n">vr</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_params</span><span class="p">:</span>
-                        <span class="n">uid_bindings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="p">:</span> <span class="n">params_array</span><span class="p">[</span><span class="n">uid2idx_params</span><span class="p">[</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="p">]]})</span>
-
-                <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">vr</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">vr</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">vr</span> <span class="ow">in</span> <span class="n">vars_list</span> <span class="k">if</span> <span class="n">vr</span><span class="o">.</span><span class="n">uid</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">uid_bindings</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Explicit init could not evaluate equation for &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (uid=</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">). &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;Missing bindings: </span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-
-                <span class="n">result</span> <span class="o">=</span> <span class="n">eq</span><span class="o">.</span><span class="n">eval_uid</span><span class="p">(</span><span class="n">uid_bindings</span><span class="p">)</span>
-                <span class="n">resolved_result</span> <span class="o">=</span> <span class="n">_resolve_numeric</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">resolved_result</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Explicit init produced non-finite state/algebraic value for &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (uid=</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">): &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">resolved_result</span><span class="si">}</span><span class="s2">. Equation: </span><span class="si">{</span><span class="n">eq</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-                <span class="n">init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">resolved_result</span>
-                <span class="n">x</span><span class="p">[</span><span class="n">uid2idx_vars</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]]</span> <span class="o">=</span> <span class="n">resolved_result</span>
-
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># compile equations</span>
-                <span class="n">eq_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_rhs</span><span class="p">([</span><span class="n">eq</span><span class="p">],</span> <span class="s2">&quot;equation&quot;</span><span class="p">)</span>
-
-                <span class="n">idx</span> <span class="o">=</span> <span class="n">uid2idx_vars</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span>
-
-                <span class="c1"># solve using secant method</span>
-                <span class="n">init_val</span> <span class="o">=</span> <span class="n">solve_secant</span><span class="p">(</span>
-                    <span class="n">eq_fn</span><span class="o">=</span><span class="n">eq_fn</span><span class="p">,</span>
-                    <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
-                    <span class="n">idx</span><span class="o">=</span><span class="n">idx</span><span class="p">,</span>
-                    <span class="n">event_params_array</span><span class="o">=</span><span class="n">event_params_array</span><span class="p">,</span>
-                    <span class="n">params_array</span><span class="o">=</span><span class="n">params_array</span><span class="p">,</span>
-                    <span class="n">tol</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span>
-                    <span class="n">max_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
-                    <span class="n">seed</span><span class="o">=</span><span class="n">init_guess</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-                <span class="p">)</span>
-
-                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">init_val</span><span class="p">):</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;Explicit init produced non-finite implicit solve value for &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; &quot;</span>
-                        <span class="sa">f</span><span class="s2">&quot;(uid=</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">init_val</span><span class="si">}</span><span class="s2">. Equation: </span><span class="si">{</span><span class="n">eq</span><span class="si">}</span><span class="s2">&quot;</span>
-                    <span class="p">)</span>
-
-                <span class="n">init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">init_val</span>
-                <span class="n">x</span><span class="p">[</span><span class="n">uid2idx_vars</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]]</span> <span class="o">=</span> <span class="n">init_val</span></div>
 
 
 <div class="viewcode-block" id="PseudoTransientInitProblem">
@@ -1692,8 +1378,6 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize model using pseudo-transient method.</span>
 
-<span class="sd">    Similar interface to init_explicit but uses pseudo-transient simulation</span>
-<span class="sd">    instead of explicit equation evaluation.</span>
 <span class="sd">    :param mdl:</span>
 <span class="sd">    :param sys_vars:</span>
 <span class="sd">    :param variable_parameters:</span>

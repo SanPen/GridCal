@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import io
+import unicodedata
 import numpy as np
 import pandas as pd
 from typing import List, Union, Any, Dict
@@ -510,6 +511,7 @@ class DeviceSelectorPanel(QtWidgets.QFrame):
         self.main_layout: QtWidgets.QVBoxLayout = QtWidgets.QVBoxLayout(self)
         self.search_box: QtWidgets.QLineEdit = QtWidgets.QLineEdit(self)
         self.search_box.setPlaceholderText(self.tr("Search"))
+        self.search_box.setAttribute(QtCore.Qt.WidgetAttribute.WA_InputMethodEnabled, True)
         self.tree_view: QtWidgets.QTreeView = QtWidgets.QTreeView(self)
         self.tree_view.setHeaderHidden(True)
         self.tree_view.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
@@ -520,6 +522,7 @@ class DeviceSelectorPanel(QtWidgets.QFrame):
         self.proxy_model.setSourceModel(self.source_model)
         self.proxy_model.setFilterCaseSensitivity(QtCore.Qt.CaseSensitivity.CaseInsensitive)
         self.proxy_model.setFilterKeyColumn(0)
+        self.proxy_model.setFilterRole(QtCore.Qt.ItemDataRole.UserRole + 2)
         self.proxy_model.setRecursiveFilteringEnabled(True)
         self.tree_view.setModel(self.proxy_model)
 
@@ -540,6 +543,33 @@ class DeviceSelectorPanel(QtWidgets.QFrame):
 
         self.fill_tree()
         self.position_size_grip()
+
+    @staticmethod
+    def normalize_search_text(text: str) -> str:
+        """
+        Normalize case and diacritics for selector matching.
+
+        The visible text remains unchanged, so composed characters and input
+        methods keep working while an unaccented query can match accented names.
+
+        :param text: Visible device name or user query.
+        :return: Case-folded text without combining diacritical marks.
+        """
+        decomposed_text: str = unicodedata.normalize('NFD', text)
+        normalized_text: str = ''.join(
+            character for character in decomposed_text if unicodedata.combining(character) == 0
+        ).casefold()
+        return normalized_text
+
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        """
+        Focus the search field when the selector popup opens.
+
+        :param event: Widget show event.
+        :return: None.
+        """
+        super().showEvent(event)
+        self.search_box.setFocus(QtCore.Qt.FocusReason.PopupFocusReason)
 
     def set_resize_grip_at_top(self, value: bool) -> None:
         """
@@ -602,6 +632,10 @@ class DeviceSelectorPanel(QtWidgets.QFrame):
             none_item: QtGui.QStandardItem = QtGui.QStandardItem(self.tr("None"))
             none_item.setEditable(False)
             none_item.setData(True, QtCore.Qt.ItemDataRole.UserRole + 1)
+            none_item.setData(
+                self.normalize_search_text(none_item.text()),
+                QtCore.Qt.ItemDataRole.UserRole + 2,
+            )
             self.source_model.appendRow(none_item)
         else:
             pass
@@ -618,6 +652,10 @@ class DeviceSelectorPanel(QtWidgets.QFrame):
 
                 device_type_item.setEditable(False)
                 device_type_item.setSelectable(False)
+                device_type_item.setData(
+                    self.normalize_search_text(device_type_item.text()),
+                    QtCore.Qt.ItemDataRole.UserRole + 2,
+                )
 
                 for device in devices:
                     # Device objects are stored in UserRole while names remain the visible text.
@@ -630,6 +668,10 @@ class DeviceSelectorPanel(QtWidgets.QFrame):
                     device_item.setEditable(False)
                     device_item.setData(device, QtCore.Qt.ItemDataRole.UserRole)
                     device_item.setData(True, QtCore.Qt.ItemDataRole.UserRole + 1)
+                    device_item.setData(
+                        self.normalize_search_text(device_item.text()),
+                        QtCore.Qt.ItemDataRole.UserRole + 2,
+                    )
                     device_type_item.appendRow(device_item)
 
                 self.source_model.appendRow(device_type_item)
@@ -646,7 +688,8 @@ class DeviceSelectorPanel(QtWidgets.QFrame):
         :return: None.
         """
         # Qt's proxy handles recursive matching through the device tree.
-        escaped_text: str = QtCore.QRegularExpression.escape(text)
+        normalized_text: str = self.normalize_search_text(text)
+        escaped_text: str = QtCore.QRegularExpression.escape(normalized_text)
         expression: QtCore.QRegularExpression = QtCore.QRegularExpression(escaped_text)
         expression.setPatternOptions(QtCore.QRegularExpression.PatternOption.CaseInsensitiveOption)
         self.proxy_model.setFilterRegularExpression(expression)

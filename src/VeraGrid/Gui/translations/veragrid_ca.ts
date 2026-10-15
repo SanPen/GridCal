@@ -213,6 +213,201 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
 </context>
 <context>
+    <name>AddSymbolDialog</name>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="12"/>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
+        <source>Add block property</source>
+        <translation>Afegir propietat del bloc</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="31"/>
+        <source>Define a new property for the selected block.</source>
+        <translation>Definir una nova propietat per al bloc seleccionat.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="48"/>
+        <source>Owner block</source>
+        <translation>Bloc propietari</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="58"/>
+        <source>Name</source>
+        <translation>Nom</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="64"/>
+        <source>Enter a valid symbol name</source>
+        <translation>Introduir un nom de símbol vàlid</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="70"/>
+        <source>Variable type</source>
+        <translation>Tipus de variable</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="80"/>
+        <source>Choose how this symbol participates in the dynamic model.</source>
+        <translation>Escollir com participa aquest símbol en el model dinàmic.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="98"/>
+        <source>Options</source>
+        <translation>Opcions</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="111"/>
+        <source>Expose as output</source>
+        <translation>Expor com a sortida</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="116"/>
+        <source>Create derivative variable</source>
+        <translation>Crear variable derivativa</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="130"/>
+        <source>Power-flow variable used to initialize this dynamic variable.</source>
+        <translation>Variable de flux de potència utilitzada per inicialitzar aquesta variable dinàmica.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="131"/>
+        <source>Power-flow initialization source</source>
+        <translation>Font d'inicialització del flux de potència</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="154"/>
+        <source>Local initial value</source>
+        <translation>Valor inicial local</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="167"/>
+        <source>Device initial value</source>
+        <translation>Valor inicial del dispositiu</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="186"/>
+        <source>Retained modes preserve discrete state between simulation steps.</source>
+        <translation>Els modes conservats preserven l'estat discret entre els passos de simulació.</translation>
+    </message>
+    <message>
+        <source>Add parameter</source>
+        <translation>Afegir paràmetre</translation>
+    </message>
+    <message>
+        <source>Add retained mode</source>
+        <translation>Afegir mode conservat</translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation>Afegir variable</translation>
+    </message>
+    <message>
+        <source>Algebraic</source>
+        <translation>Algebraic</translation>
+    </message>
+    <message>
+        <source>Declare a configurable value owned by the selected dynamic block.</source>
+        <translation>Declarar un valor configurable propi del bloc dinàmic seleccionat.</translation>
+    </message>
+    <message>
+        <source>Declare a variable owned by the selected dynamic block.</source>
+        <translation>Declarar una variable propi del bloc dinàmic seleccionat.</translation>
+    </message>
+    <message>
+        <source>Declare discrete state that persists between simulation steps.</source>
+        <translation>Declarar un estat discret que persisteix entre els passos de simulació.</translation>
+    </message>
+    <message>
+        <source>Dynamic parameter</source>
+        <translation>Paràmetre dinàmic</translation>
+    </message>
+    <message>
+        <source>Enter a valid Python symbol name.</source>
+        <translation>Introduir un nom de símbol Python vàlid.</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>Entrada</translation>
+    </message>
+    <message>
+        <source>May change during the simulation and can optionally start from a grid-device value.</source>
+        <translation>Pot canviar durant la simulació i pot començar opcionalment des d'un valor de dispositiu de la xarxa.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Cap</translation>
+    </message>
+    <message>
+        <source>Nothing was added: {message}</source>
+        <translation>No es va afegir res: {message}</translation>
+    </message>
+    <message>
+        <source>Parameter type</source>
+        <translation>Tipus de paràmetre</translation>
+    </message>
+    <message>
+        <source>Preserves discrete state between simulation steps.</source>
+        <translation>Conserva l'estat discret entre els passos de simulació.</translation>
+    </message>
+    <message>
+        <source>Receives its value from an incoming block connection.</source>
+        <translation>Reull el seu valor d'una connexió de bloc entrant.</translation>
+    </message>
+    <message>
+        <source>Remains fixed during the simulation and can optionally start from a grid-device value.</source>
+        <translation>Es manté fix durant la simulació i pot començar opcionalment des d'un valor de dispositiu de la xarxa.</translation>
+    </message>
+    <message>
+        <source>Represents a differential state integrated during the simulation.</source>
+        <translation>Representa un estat diferencial integrat durant la simulació.</translation>
+    </message>
+    <message>
+        <source>Represents a value solved by the algebraic equations.</source>
+        <translation>Representa un valor resolt per les equacions algebraiques.</translation>
+    </message>
+    <message>
+        <source>Retained mode</source>
+        <translation>Mode conservat</translation>
+    </message>
+    <message>
+        <source>Search device parameters</source>
+        <translation>Cercar paràmetres del dispositiu</translation>
+    </message>
+    <message>
+        <source>Search power-flow variables</source>
+        <translation>Cercar variables del flux de potència</translation>
+    </message>
+    <message>
+        <source>Select a device initialization source from the list.</source>
+        <translation>Seleccionar una font d'inicialització de dispositiu de la llista.</translation>
+    </message>
+    <message>
+        <source>Select a power-flow initialization source from the list.</source>
+        <translation>Seleccionar una font d'inicialització del flux de potència de la llista.</translation>
+    </message>
+    <message>
+        <source>Select a valid owner block.</source>
+        <translation>Seleccionar un bloc propietari vàlid.</translation>
+    </message>
+    <message>
+        <source>Select a valid symbol type.</source>
+        <translation>Seleccionar un tipus de símbol vàlid.</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>Estat</translation>
+    </message>
+    <message>
+        <source>Static parameter</source>
+        <translation>Paràmetre estàtic</translation>
+    </message>
+    <message>
+        <source>Use local numeric value</source>
+        <translation>Utilitzar valor numèric local</translation>
+    </message>
+</context>
+<context>
     <name>AdmittanceMatrixEditorWidget</name>
     <message>
         <location filename="../DeviceEditors/AdmittanceMatrixEditor/admittance_matrix_editor_gui.ui" line="19"/>
@@ -804,7 +999,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <name>BlockPropertyTreeModel</name>
     <message>
         <source>Missing PF mapping</source>
-        <translation>Mancant mapeig PF</translation>
+        <translation type="vanished">Mancant mapeig PF</translation>
     </message>
     <message>
         <source>Name</source>
@@ -820,7 +1015,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
     </message>
     <message>
         <source>Template issue: static parameters require api_obj_mapping. An independently editable parameter should be in event_dict. This refactor does not migrate templates automatically.</source>
-        <translation>Problema de la plantilla: els paràmetres estàtics requereixen api_obj_mapping. Un paràmetre editable independentment hauria de ser en event_dict. Aquesta refactorització no migra les plantilles automàticament.</translation>
+        <translation type="vanished">Problema de la plantilla: els paràmetres estàtics requereixen api_obj_mapping. Un paràmetre editable independentment hauria de ser en event_dict. Aquesta refactorització no migra les plantilles automàticament.</translation>
     </message>
     <message>
         <source>Type</source>
@@ -829,6 +1024,14 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <message>
         <source>Value / PF reference</source>
         <translation>Valor / Referència PF</translation>
+    </message>
+    <message>
+        <source>Fixed local value. Select a device initialization mapping only when this value must come from the associated grid device.</source>
+        <translation>Valor local fix. Seleccioneu un mapeig d'inicialització de dispositiu només quan aquest valor ha de venir del dispositiu de la xarxa associat.</translation>
+    </message>
+    <message>
+        <source>Invalid device initialization mapping: the target is not declared in this block's parameters or event_dict.</source>
+        <translation>Mapeig d'inicialització de dispositiu no vàlid: el target no està declarat en els paràmetres o event_dict d'aquest bloc.</translation>
     </message>
 </context>
 <context>
@@ -2136,7 +2339,7 @@ Combreu?</translation>
     </message>
     <message>
         <source>The element is still referenced by: {names}</source>
-        <translation>L'element encara és referenciat per: {names}</translation>
+        <translation>L&apos;element encara és referenciat per: {names}</translation>
     </message>
 </context>
 <context>
@@ -2186,7 +2389,7 @@ Combreu?</translation>
     </message>
     <message>
         <source>Positive length, voltage and power base are required</source>
-        <translation>S'exigeu longitud, tensió i base de potència positives</translation>
+        <translation>S&apos;exigeu longitud, tensió i base de potència positives</translation>
     </message>
     <message>
         <source>Use Cable System</source>
@@ -2612,8 +2815,8 @@ Combreu?</translation>
         <translation>només té valors per a l&apos;instantània</translation>
     </message>
     <message>
-        <source>Are you sure that you want to delete folder '{0}' and all its contents?</source>
-        <translation>Està segur que voleu eliminar la carpeta '{0}' i tot el seu contingut?</translation>
+        <source>Are you sure that you want to delete folder &apos;{0}&apos; and all its contents?</source>
+        <translation>Està segur que voleu eliminar la carpeta &apos;{0}&apos; i tot el seu contingut?</translation>
     </message>
     <message>
         <source>Folder name:</source>
@@ -3222,7 +3425,7 @@ Combreu?</translation>
     </message>
     <message>
         <source>Invalid — provider not found</source>
-        <translation>Invalid — no s'ha trobat el proveïdor</translation>
+        <translation>Invalid — no s&apos;ha trobat el proveïdor</translation>
     </message>
     <message>
         <source>Manufacturer native controller
@@ -3247,6 +3450,58 @@ Referència: {status}</translation>
     <message>
         <source>Valid</source>
         <translation>Vàlid</translation>
+    </message>
+    <message>
+        <source>Equation counts</source>
+        <translation>Comtesa d'equacions</translation>
+    </message>
+    <message>
+        <source>Repeated variable names</source>
+        <translation>Noms de variables repetits</translation>
+    </message>
+    <message>
+        <source>Static parameter mappings</source>
+        <translation>Mapeig de paràmetres estàtics</translation>
+    </message>
+    <message>
+        <source>Unnamed block</source>
+        <translation>Bloc sense nom</translation>
+    </message>
+    <message>
+        <source>Variable initialization</source>
+        <translation>Inicialització de variables</translation>
+    </message>
+    <message>
+        <source>algebraic variables={variable_count}, algebraic equations={equation_count}</source>
+        <translation>variables algebraiques={variable_count}, equacions algebraiques={equation_count}</translation>
+    </message>
+    <message>
+        <source>derivative variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>variables derivades sense inicialització o una font de flux de potència: {variable_names}</translation>
+    </message>
+    <message>
+        <source>event parameters with no value: {parameter_names}</source>
+        <translation>paràmetres d'esdeveniment sense valor: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>mapping targets not declared as local parameters: {parameter_names}</source>
+        <translation>targets de mapeig no declarats com a paràmetres locals: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>parameters missing a static mapping: {parameter_names}</source>
+        <translation>paràmetres sense un mapeig estàtic: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>state variables={variable_count}, state equations={equation_count}</source>
+        <translation>variables d'estat={variable_count}, equacions d'estat={equation_count}</translation>
+    </message>
+    <message>
+        <source>variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>variables sense inicialització o una font de flux de potència: {variable_names}</translation>
+    </message>
+    <message>
+        <source>variables: {variable_names}</source>
+        <translation>variables: {variable_names}</translation>
     </message>
 </context>
 <context>
@@ -3356,7 +3611,7 @@ Referència: {status}</translation>
     </message>
     <message>
         <source>Enter a valid Python symbol name.</source>
-        <translation>Introduir un nom de símbol Python vàlid.</translation>
+        <translation type="vanished">Introduir un nom de símbol Python vàlid.</translation>
     </message>
     <message>
         <source>Equation PDF created: {path}</source>
@@ -3459,7 +3714,7 @@ Referència: {status}</translation>
     </message>
     <message>
         <source>None</source>
-        <translation>Cap</translation>
+        <translation type="vanished">Cap</translation>
     </message>
     <message>
         <source>Nothing was applied: {message}</source>
@@ -3491,7 +3746,7 @@ Referència: {status}</translation>
     </message>
     <message>
         <source>Parameter whose value may change during the simulation.</source>
-        <translation>Paràmetre que el seu valor pot canviar durant la simulació.</translation>
+        <translation type="vanished">Paràmetre que el seu valor pot canviar durant la simulació.</translation>
     </message>
     <message>
         <source>Parameters</source>
@@ -3540,11 +3795,11 @@ Referència: {status}</translation>
     </message>
     <message>
         <source>Select a valid owner block.</source>
-        <translation>Triar un bloc propietari vàlid.</translation>
+        <translation type="vanished">Triar un bloc propietari vàlid.</translation>
     </message>
     <message>
         <source>Select a valid symbol type.</source>
-        <translation>Triar un tipus de símbol vàlid.</translation>
+        <translation type="vanished">Triar un tipus de símbol vàlid.</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="319"/>
@@ -3645,7 +3900,7 @@ Referència: {status}</translation>
     </message>
     <message>
         <source>Retained mode</source>
-        <translation>Mode conservat</translation>
+        <translation type="vanished">Mode conservat</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="82"/>
@@ -3700,7 +3955,7 @@ Referència: {status}</translation>
     </message>
     <message>
         <source>Nothing was added: {message}</source>
-        <translation>No s&apos;ha afegit res: {message}</translation>
+        <translation type="vanished">No s&apos;ha afegit res: {message}</translation>
     </message>
     <message>
         <source>Add to plot...</source>
@@ -4957,74 +5212,60 @@ triar el format de processament esperat</translation>
 <context>
     <name>Form</name>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="14"/>
         <source>Add block property</source>
-        <translation>Afegir propietat del bloc</translation>
+        <translation type="vanished">Afegir propietat del bloc</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
         <source>Add symbol to selected block</source>
-        <translation>Afegir símbol al bloc seleccionat</translation>
+        <translation type="vanished">Afegir símbol al bloc seleccionat</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="71"/>
         <source>Output</source>
-        <translation>Sortida</translation>
+        <translation type="vanished">Sortida</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="78"/>
         <source>Create derivative variable</source>
-        <translation>Crear variable derivativa</translation>
+        <translation type="vanished">Crear variable derivativa</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="144"/>
         <source>New symbol name</source>
-        <translation>Nom nou de símbol</translation>
+        <translation type="vanished">Nom nou de símbol</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="151"/>
         <source>Symbol category</source>
-        <translation>Categoria de símbol</translation>
+        <translation type="vanished">Categoria de símbol</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="158"/>
         <source>Owner block</source>
-        <translation>Bloc propietari</translation>
+        <translation type="vanished">Bloc propietari</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="165"/>
         <source>Type</source>
-        <translation>Tipus</translation>
+        <translation type="vanished">Tipus</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="172"/>
         <source>Add symbol</source>
-        <translation>Afegir símbol</translation>
+        <translation type="vanished">Afegir símbol</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="195"/>
         <source>Static device mapping</source>
-        <translation>Mapegegege de dispositius estàtics</translation>
+        <translation type="vanished">Mapegegege de dispositius estàtics</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="202"/>
         <source>Power-flow variable used to initialize this dynamic variable.</source>
-        <translation>Variable de flux de potència utilitzada per inicialitzar aquesta variable dinàmica.</translation>
+        <translation type="vanished">Variable de flux de potència utilitzada per inicialitzar aquesta variable dinàmica.</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="205"/>
         <source>Power-flow variable</source>
-        <translation>Variable de flux de potència</translation>
+        <translation type="vanished">Variable de flux de potència</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="266"/>
         <source>Enter a name</source>
-        <translation>Introduir un nom</translation>
+        <translation type="vanished">Introduir un nom</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="273"/>
         <source>Initial numeric value</source>
-        <translation>Valor numèric inicial</translation>
+        <translation type="vanished">Valor numèric inicial</translation>
     </message>
 </context>
 <context>
@@ -7722,6 +7963,195 @@ Si us plau, corregiu les dades i proveu de nou.</translation>
     </message>
 </context>
 <context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>Amtes declaracions formen part del contracte de lliurament del fabricant i són requerides abans de la qualificació.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Navega...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>Escollir un binari de fabricant existent.</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>Completar les declaracions del fabricant requerides per l&apos;interfecciòn seleccionada.</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>Proveïdor de destinació</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>Cada valor separat per coma és l&apos;ordinal de destinació per a l&apos;ordinal de font en aquesta posició. Exemple: 1,0 mapeja la font 0 a la destinació 1 i la font 1 a la destinació 0.</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>Exemple: 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>Exemple: 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>Exemple: 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>Importar model natiu del fabricant</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>Ordinals de destinació d&apos;entrada</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>Inspeccionar i adjuntar variant</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>Inspeccionar i importar</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>Inspeccionant el binari en un treballador aïllat...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>Biblioteques Linux (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>Binari del fabricant</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>Interface del fabricant</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>Model natiu del fabricant preparat</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>Variantes del model natiu del fabricant</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>No s&apos;ha importat cap proveïdor encara.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Cap</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>Ordinals de destinació de sortida</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>Ordinals de destinació de paràmetre</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>Variant de plataforma</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>Proveïdor: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>Proveïdor: {provider}
+Plataforma adjuntada: {platform}
+Plantilles creades: Ninguna (plantilles existents conservades).</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>Proveïdor: {provider}
+Plataforma: {platform}
+Plantilles RMS creades: {rms}
+Plantilles EMT creades: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>Qualificat i adjuntat {platform}: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>Qualificat i importat {name}. Creat {rms} plantilla(s) RMS i {emt} plantilla(s) EMT.</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>Reconnectar una plantilla existent</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>Reconnectar la plantilla seleccionada</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>Reconnectat {consumer} a {provider}.</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>Seleccioneu una font, una destinació i una plantilla.</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>Seleccionar la biblioteca del fabricant</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>Seleccioneu el contracte del fabricant i la seva biblioteca de plataforma precompilada. VeraGrid valida i executa el binari en un treballador aïllat.</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>Plantilla</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>El fabricant declara que tot l&apos;estat del model mutable és propietat de cada Instància.</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>El fabricant declara que la biblioteca no realitza càrrega nativa tardana.</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>Bibliothèques de Windows (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: faltant</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
+    </message>
+    <message>
+        <source>Choose the LLVM bin directory</source>
+        <translation>Escollir el directori bin de LLVM</translation>
+    </message>
+    <message>
+        <source>Choose the MinGW/UCRT support directory</source>
+        <translation>Escollir el directori de suport MinGW/UCRT</translation>
+    </message>
+    <message>
+        <source>LLVM selection was cancelled; the manufacturer model was not imported.</source>
+        <translation>La selecció de LLVM s'ha cancelat; el model del fabricant no s'ha importat.</translation>
+    </message>
+</context>
+<context>
     <name>MapGeneratorGraphicItem</name>
     <message>
         <source>Are you sure that you want to convert this generator into a battery?</source>
@@ -8555,7 +8985,7 @@ Estàs d&apos;acord amb potencialment esperar molt?</translation>
     </message>
     <message>
         <source>5% damping ratio</source>
-        <translation>Ràtio d'amortiment del 5%</translation>
+        <translation>Ràtio d&apos;amortiment del 5%</translation>
     </message>
     <message>
         <source>Select at least one valid X and Y column.</source>
@@ -10601,6 +11031,10 @@ Modifica el nombre de clusters a la configuració d&apos;ML.</translation>
         <source>The short-circuit worker finished without results.</source>
         <translation>L&apos;operari de circuit curt va acabar sense resultats.</translation>
     </message>
+    <message>
+        <source>Power flow 3ph failed</source>
+        <translation>El flux de potència 3f ha fallat</translation>
+    </message>
 </context>
 <context>
     <name>SolarPvWizard</name>
@@ -11532,12 +11966,91 @@ Ha de carregar o crear una xarxa!</translation>
         <translation type="vanished">Problemes trobats en aquesta secció</translation>
     </message>
     <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="20"/>
         <source>Model Consistency Validation</source>
-        <translation type="vanished">Validació de Consistència del Model</translation>
+        <translation>Validació de Consistència del Model</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="31"/>
+        <source>Check the edited model&apos;s equation counts, variable names, parameter mappings, and variable initialization. This report is informational and does not block saving the model.</source>
+        <translation>Comproveu els comptes d'equacions, els noms de variables, les assignacions de paràmetres i l'inicialització de variables del model editat. Aquest informe és informatiu i no impedeix guardar el model.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="53"/>
+        <source>Show:</source>
+        <translation>Mostrar:</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="60"/>
+        <source>Filter validation results by check</source>
+        <translation>Filtrar els resultats de validació per comprovació</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="85"/>
+        <source>No validation results match this filter.</source>
+        <translation>Cap resultat de validació coincideix amb aquest filtre.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="95"/>
+        <source>Show issues in the model</source>
+        <translation>Mostrar problemes al model</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="96"/>
+        <source>Show Issues</source>
+        <translation>Mostrar Problemes</translation>
     </message>
     <message>
         <source>Run an informational validation of the edited model structure, mappings, initialization, and port connectivity. This check reports issues but does not block saving the model.</source>
         <translation type="vanished">Executar una validació informativa de la estructura del model editat, els mapejats, l&apos;inicialització i la connectivitat dels ports. Aquesta revisió informa sobre problemes però no impedeix guardar el model.</translation>
+    </message>
+    <message>
+        <source>All checks</source>
+        <translation>Totes les comprovacions</translation>
+    </message>
+    <message>
+        <source>Block</source>
+        <translation>Bloquejar</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Comprovar</translation>
+    </message>
+    <message>
+        <source>Details</source>
+        <translation>Detalls</translation>
+    </message>
+    <message>
+        <source>Issue</source>
+        <translation>Problema</translation>
+    </message>
+    <message>
+        <source>Issues only</source>
+        <translation>Només problemes</translation>
+    </message>
+    <message>
+        <source>No issues found</source>
+        <translation>No s'han trobat problemes</translation>
+    </message>
+    <message>
+        <source>No issues found.</source>
+        <translation>No s'han trobat problemes.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>D'acord</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Estatut</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · No issues found</source>
+        <translation>{check_count} comprovacions · No s'han trobat problemes</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · {issue_section_count} checks with issues · {finding_count} findings</source>
+        <translation>{check_count} comprovacions · {issue_section_count} comprovacions amb problemes · {finding_count} troballes</translation>
     </message>
 </context>
 <context>
@@ -17490,183 +18003,6 @@ Ha de carregar o crear una xarxa!</translation>
     <message>
         <source>Question</source>
         <translation>Pregunta</translation>
-    </message>
-</context>
-<context>
-    <name>ManufacturerNativeImporterDialog</name>
-    <message>
-        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
-        <translation>Amtes declaracions formen part del contracte de lliurament del fabricant i són requerides abans de la qualificació.</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>Navega...</translation>
-    </message>
-    <message>
-        <source>Choose an existing manufacturer binary.</source>
-        <translation>Escollir un binari de fabricant existent.</translation>
-    </message>
-    <message>
-        <source>Complete the manufacturer declarations required by the selected interface.</source>
-        <translation>Completar les declaracions del fabricant requerides per l'interfecciòn seleccionada.</translation>
-    </message>
-    <message>
-        <source>Destination provider</source>
-        <translation>Proveïdor de destinació</translation>
-    </message>
-    <message>
-        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
-        <translation>Cada valor separat per coma és l'ordinal de destinació per a l'ordinal de font en aquesta posició. Exemple: 1,0 mapeja la font 0 a la destinació 1 i la font 1 a la destinació 0.</translation>
-    </message>
-    <message>
-        <source>Example: 0,1</source>
-        <translation>Exemple: 0,1</translation>
-    </message>
-    <message>
-        <source>Example: 1,0</source>
-        <translation>Exemple: 1,0</translation>
-    </message>
-    <message>
-        <source>Example: 2,0,1</source>
-        <translation>Exemple: 2,0,1</translation>
-    </message>
-    <message>
-        <source>Import manufacturer native model</source>
-        <translation>Importar model natiu del fabricant</translation>
-    </message>
-    <message>
-        <source>Input destination ordinals</source>
-        <translation>Ordinals de destinació d'entrada</translation>
-    </message>
-    <message>
-        <source>Inspect and attach variant</source>
-        <translation>Inspeccionar i adjuntar variant</translation>
-    </message>
-    <message>
-        <source>Inspect and import</source>
-        <translation>Inspeccionar i importar</translation>
-    </message>
-    <message>
-        <source>Inspecting the binary in an isolated worker...</source>
-        <translation>Inspeccionant el binari en un treballador aïllat...</translation>
-    </message>
-    <message>
-        <source>Linux libraries (*.so)</source>
-        <translation>Biblioteques Linux (*.so)</translation>
-    </message>
-    <message>
-        <source>Manufacturer binary</source>
-        <translation>Binari del fabricant</translation>
-    </message>
-    <message>
-        <source>Manufacturer interface</source>
-        <translation>Interface del fabricant</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model ready</source>
-        <translation>Model natiu del fabricant preparat</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model variants</source>
-        <translation>Variantes del model natiu del fabricant</translation>
-    </message>
-    <message>
-        <source>No provider has been imported yet.</source>
-        <translation>No s'ha importat cap proveïdor encara.</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Cap</translation>
-    </message>
-    <message>
-        <source>Output destination ordinals</source>
-        <translation>Ordinals de destinació de sortida</translation>
-    </message>
-    <message>
-        <source>Parameter destination ordinals</source>
-        <translation>Ordinals de destinació de paràmetre</translation>
-    </message>
-    <message>
-        <source>Platform variant</source>
-        <translation>Variant de plataforma</translation>
-    </message>
-    <message>
-        <source>Provider: {name}</source>
-        <translation>Proveïdor: {name}</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform attached: {platform}
-Templates created: None (existing templates retained).</source>
-        <translation>Proveïdor: {provider}
-Plataforma adjuntada: {platform}
-Plantilles creades: Ninguna (plantilles existents conservades).</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform: {platform}
-RMS templates created: {rms}
-EMT templates created: {emt}</source>
-        <translation>Proveïdor: {provider}
-Plataforma: {platform}
-Plantilles RMS creades: {rms}
-Plantilles EMT creades: {emt}</translation>
-    </message>
-    <message>
-        <source>Qualified and attached {platform}: {digest}</source>
-        <translation>Qualificat i adjuntat {platform}: {digest}</translation>
-    </message>
-    <message>
-        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
-        <translation>Qualificat i importat {name}. Creat {rms} plantilla(s) RMS i {emt} plantilla(s) EMT.</translation>
-    </message>
-    <message>
-        <source>Rebind an existing template</source>
-        <translation>Reconnectar una plantilla existent</translation>
-    </message>
-    <message>
-        <source>Rebind selected template</source>
-        <translation>Reconnectar la plantilla seleccionada</translation>
-    </message>
-    <message>
-        <source>Rebound {consumer} to {provider}.</source>
-        <translation>Reconnectat {consumer} a {provider}.</translation>
-    </message>
-    <message>
-        <source>Select a source, destination and template.</source>
-        <translation>Seleccioneu una font, una destinació i una plantilla.</translation>
-    </message>
-    <message>
-        <source>Select manufacturer library</source>
-        <translation>Seleccionar la biblioteca del fabricant</translation>
-    </message>
-    <message>
-        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
-        <translation>Seleccioneu el contracte del fabricant i la seva biblioteca de plataforma precompilada. VeraGrid valida i executa el binari en un treballador aïllat.</translation>
-    </message>
-    <message>
-        <source>Template</source>
-        <translation>Plantilla</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
-        <translation>El fabricant declara que tot l'estat del model mutable és propietat de cada Instància.</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that the library performs no late native loading.</source>
-        <translation>El fabricant declara que la biblioteca no realitza càrrega nativa tardana.</translation>
-    </message>
-    <message>
-        <source>Windows libraries (*.dll)</source>
-        <translation>Bibliothèques de Windows (*.dll)</translation>
-    </message>
-    <message>
-        <source>{platform}: missing</source>
-        <translation>{platform}: faltant</translation>
-    </message>
-    <message>
-        <source>{platform}: {status}, SHA-256 {digest}</source>
-        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

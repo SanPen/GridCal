@@ -1,0 +1,17 @@
+{
+  "schema": "veragrid.fmi-tools-list-submission-gates/1",
+  "status": "READY_FOR_CTO_INTEGRATION",
+  "distribution_status": "PENDING_PUBLIC_URL_ACTIVATION_AFTER_INTEGRATION",
+  "candidate_entry": "tools-list-entry.candidate.json",
+  "unresolved_gates": [
+    "PUBLIC_URL_ACTIVATION_AFTER_INTEGRATION"
+  ],
+  "deferred_actions": [
+    "UPSTREAM_PULL_REQUEST_AUTHORIZATION"
+  ],
+  "pinned_upstream": {
+    "repository_commit": "b25ad9e88db1f635c52afc2829b90abbbea43db1",
+    "contributing_sha256": "d3086ef036b2406ca9b42f81effb7fcc5c075625286ed15b9ff3e76bc7e688cd",
+    "tools_json_sha256": "e66f9121634c238b7e8910e4c72ea1656469a72f5f421d768c27c615ed345d0e"
+  }
+}

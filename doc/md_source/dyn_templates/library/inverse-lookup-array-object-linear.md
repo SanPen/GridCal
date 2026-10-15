@@ -1,15 +1,15 @@
-# Inverse Lookup array object (linear)
+# Inverse linear lookup table
 
 <!-- veragrid-block-introduction:start -->
-**Inverse Lookup array object (linear)** represents passive network physics through resistance, inductance, capacitance, coupling, or switching topology. Its equations enforce voltage-current constitutive relations and therefore affect energy storage, damping, propagation, fault current, or grounding behavior.
+**Inverse linear lookup table** finds the independent value that corresponds to a supplied tabulated output.
 
 ## Typical use
 
-- Use it to reproduce the electrical path between sources, converters, machines, and loads.
-- Keep phases, terminal orientation, connection type, and SI/per-unit parameter bases consistent.
+- Use it to invert a calibrated one-dimensional characteristic without deriving a closed-form inverse.
+- Keep the table's y values strictly monotonic so that every input has at most one result.
 <!-- veragrid-block-introduction:end -->
 
-Inverse Lookup array object (linear) maps an input back through a stored one-dimensional lookup object using linear interpolation. Use it when you need the inverse of a tabulated nonlinear relation.
+The block swaps the role of the stored axes and applies clipped linear interpolation. Increasing and decreasing output tables are both accepted; decreasing tables are normalized internally.
 
 ## Interface table
 
@@ -17,4 +17,4 @@ Inverse Lookup array object (linear) maps an input back through a stored one-dim
 | --- | --- | --- | --- |
 | Input | `yi` | Input value to invert through the table | model-dependent |
 | Output | `yo` | Interpolated inverse lookup result | model-dependent |
-| Parameter | `oarray_K` | Stored lookup-array object | data object |
+| Setting | `points` | Stored `(x, y)` table; y must be strictly monotonic | model-dependent |

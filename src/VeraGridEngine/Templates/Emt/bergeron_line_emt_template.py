@@ -466,7 +466,9 @@ class BergeronHistoryRuntime:
         self.idx_p_ht = [uid2idx_event_params[p.uid] + params_offset for p in self.Ih_t]
 
     def update_history(self, step_counter: int, x_prev: np.ndarray, full_params: np.ndarray) -> None:
-        k_curr = step_counter % (self.n_delay + 1)
+        # The solver calls once at t=0, then before solving t=k*h with
+        # x_prev at (k-1)*h. Store that accepted state at its own time index.
+        k_curr = max(0, step_counter - 1) % (self.n_delay + 1)
         k_tau = (step_counter - self.n_delay) % (self.n_delay + 1)
 
         v_f_now = np.array([x_prev[i] if i >= 0 else 0.0 for i in self.idx_vf], dtype=float)

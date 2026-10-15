@@ -64,9 +64,12 @@ def test_acha():
     Ysh = tower.y_nabc * 1e6  # pass from S/km to uS/km
     print("Y [uS/km] =\n", Ysh)
 
-    Z_expected = np.array([[0.08034301 + 0.53832056j, 0.04625667 + 0.27333481j, 0.04622869 + 0.22981391j],
-                           [0.04624575 + 0.27333481j, 0.08034882 + 0.53830903j, 0.04625667 + 0.27333481j],
-                           [0.04618743 + 0.22981395j, 0.04624575 + 0.27333481j, 0.08034301 + 0.53832056j]])
+    # Regression values updated after repairing the Carson series recurrence.
+    # Independent physical validation is in test_ieee4_carson_geometry.py;
+    # this fixture checks that bundling still produces the expected matrix.
+    Z_expected = np.array([[0.080534196503 + 0.538288273298j, 0.046442695766 + 0.273303461571j, 0.046399260723 + 0.229785444370j],
+                           [0.046442695766 + 0.273303461571j, 0.080540000298 + 0.538276743314j, 0.046442695766 + 0.273303461571j],
+                           [0.046399260723 + 0.229785444370j, 0.046442695766 + 0.273303461571j, 0.080534196503 + 0.538288273298j]])
 
     # in [uS/km]
     Ysh_expected = np.array([[0. + 3.35962813j, 0. - 0.80958316j, 0. - 0.30514186j],
@@ -74,6 +77,7 @@ def test_acha():
                              [0. - 0.30514186j, 0. - 0.80958316j, 0. + 3.35962813j]])
 
     assert np.allclose(Z, Z_expected, atol=1e-4)
+    np.testing.assert_allclose(Z, Z.T, rtol=0, atol=1e-12)
     assert np.allclose(Ysh, Ysh_expected)
 
 

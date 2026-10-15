@@ -3,7 +3,6 @@ import random
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 from VeraGridEngine.IO.file_open import FileOpen
 import VeraGridEngine.Devices as dev
@@ -130,36 +129,6 @@ def obtain_random_points(grid, num_random_combinations, pf_options):
         results.append({'CAPEX (M€)': total_capex_opex, 'Technical criterion': technical_criterion})
 
     return pd.DataFrame(results)
-
-
-def plot_scatter_plot(df1, df2, title, plot_df2=True):
-    # Create a categorical variable based on the index of df1
-    df1['color_category'] = pd.Categorical(df1.index)
-
-    # Scatter plot for the first DataFrame (df1) with colors based on the original order
-    scatter = plt.scatter(df1['CAPEX (M€)'], df1['Technical criterion'], marker='o', alpha=0.5,
-                          label='Optimization algorithm',
-                          c=df1['color_category'].cat.codes, cmap='viridis')
-
-    # Add colorbar for the association between index numbers and colors
-    cbar = plt.colorbar(scatter, label='Index Numbers')
-    # cbar.set_ticks([])  # Remove ticks from the colorbar
-
-    # Scatter plot for the second DataFrame (df2) if plot_df2 is True
-    if plot_df2:
-        plt.scatter(df2['CAPEX (M€)'], df2['Technical criterion'], marker='o', alpha=0.5, label='Random points',
-                    color='green')
-
-    # Set axis labels and title
-    plt.xlabel('CAPEX + OPEX (M€)')
-    plt.ylabel('Losses + Over/undervoltage + Overload')
-    plt.title(title)
-
-    # Show legend
-    plt.legend()
-
-    # Show the plot
-    plt.show()
 
 
 if __name__ == "__main__":

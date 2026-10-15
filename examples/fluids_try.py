@@ -1,12 +1,7 @@
-import matplotlib.pyplot as plt
-import networkx as nx
-import matplotlib
 import sys
 from VeraGridEngine.Utils.MIP.selected_interface import *
 from VeraGridEngine.enumerations import MIPSolvers
 
-
-matplotlib.use('TkAgg')
 
 """
 This script models a hydro network with:
@@ -367,89 +362,10 @@ def hydro_dispatch_transport(fluid_nodes: List[FluidNode],
         print()
         print(f'Total Power Generated: {solver.get_value(total_power_balance)}')
 
-        # Plot the result
-        plot_hydro_dispatch(solver=solver,
-                            nodes=fluid_nodes,
-                            turbines=turbines,
-                            pumps=pumps,
-                            power2xs=power2xs,
-                            rivers=flow_transporters)
     else:
         # fix(solver=solver)
         print('The problem does not have an optimal solution.')
         print(solver.logger)
-
-
-def plot_hydro_dispatch(solver: OrToolsLpModel,
-                        nodes: List[FluidNode],
-                        turbines: List[Turbine],
-                        pumps: List[Pump],
-                        power2xs: List[Power2X],
-                        rivers: List[FluidPath], ):
-    """
-
-    :param solver
-    :param nodes:
-    :param turbines:
-    :param pumps:
-    :param power2xs:
-    :param rivers:
-    :return:
-    """
-    G = nx.DiGraph()
-
-    plants_turbine_dict = make_node_device_relationship(devices=turbines, nodes=nodes)
-    plants_pump_dict = make_node_device_relationship(devices=pumps, nodes=nodes)
-    plants_power2x_dict = make_node_device_relationship(devices=power2xs, nodes=nodes)
-    for node in nodes:
-
-        plant_power_output = 0.0
-        turbines_at_the_plant = plants_turbine_dict[node]
-        pumps_at_the_plant = plants_pump_dict[node]
-        power2xs_at_the_plant = plants_power2x_dict[node]
-
-        for turbine in turbines_at_the_plant:
-            plant_power_output += solver.get_value(turbine.power_output)
-
-        for pump in pumps_at_the_plant:
-            plant_power_output -= solver.get_value(pump.power_input)
-
-        for power2x in power2xs_at_the_plant:
-            plant_power_output += solver.get_value(power2x.power_input)
-
-        power = '{:.1f}'.format(plant_power_output)
-        flow = '{:.1f}'.format(node.get_outflow_value(solver))
-        spill = '{:.1f}'.format(solver.get_value(node.spillage))
-        level = '{:.1f}'.format(solver.get_value(node.level))
-
-        label = (f"{node.name}\n"
-                 f"p:{power} MW \n"
-                 f"f:{flow} m3/s\n"
-                 f"s:{spill} m3/s\n"
-                 f"l:{level}/{node.max_level} m3")
-
-        G.add_node(node.name, label=label)
-
-    for river in rivers:
-        flow = '{:.1f}'.format(solver.get_value(river.flow))
-        G.add_edge(river.source.name, river.target.name,
-                   label=f"{river.name}\n{flow} m3/s")
-
-    pos = nx.spectral_layout(G)
-    labels = nx.get_edge_attributes(G, 'label')
-    node_labels = nx.get_node_attributes(G, 'label')
-
-    nx.draw(G, pos,
-            with_labels=True, labels=node_labels,
-            node_size=2500, node_color='skyblue',
-            font_size=7, font_color='black')
-
-    nx.draw_networkx_edge_labels(G, pos,
-                                 edge_labels=labels,
-                                 font_color='red',
-                                 font_size=7)
-
-    plt.show()
 
 
 def example_1():

@@ -504,6 +504,7 @@ def stability_kundur_no_shunt():
                                                         sss_options=ss_options,
                                                         pf_results=power_flow.results)
 
+    assert small_signal_driver.problem.logger is small_signal_driver.logger
     initial_point: np.ndarray = small_signal_driver.problem.get_x0()
     initial_derivatives: np.ndarray = np.zeros_like(initial_point)
     static_state_matrix: sp.csc_matrix = small_signal_driver.problem.get_static_state_matrix(

@@ -11,7 +11,12 @@ twine upload dist/VeraGrid-2.30.tar.gz
 """
 import os
 import fnmatch
-from veragrid_packaging import publish, collect_extra_package_files, read_module_constant
+from veragrid_packaging import (
+    collect_extra_package_files,
+    publish,
+    read_module_constant,
+    wait_for_pypi_release_index,
+)
 from VeraGrid.Gui.update_gui_common import convert_resource_file, convert_ui_file
 
 SRC_ROOT = os.path.abspath(os.path.dirname(__file__))
@@ -52,7 +57,7 @@ def update_gui_to_make_sure():
     __here__ = os.path.abspath(os.path.dirname(__file__))
     path = os.path.join(__here__, 'VeraGrid', 'Gui', 'Main')
 
-    convert_resource_file(source=os.path.join(path, 'icons.qrc'), rcc_cmd=rcc_cmd)
+    convert_resource_file(source=os.path.join(os.path.dirname(path), 'Icons', 'icons.qrc'), rcc_cmd=rcc_cmd)
 
     for f in ['MainWindow.ui']:
         convert_ui_file(source=os.path.join(path, f), uic_cmd=uic_cmd)
@@ -135,10 +140,10 @@ if __name__ == "__main__":
         'import tests',
     ]
 
-    search_text_in_python_files(directory="VeraGrid", search_terms=forbidden_text)
-    search_text_in_python_files(directory="VeraGridEngine", search_terms=forbidden_text)
-    search_text_in_python_files(directory="VeraGridServer", search_terms=forbidden_text)
-    search_text_in_python_files(directory="VeraGridMcp", search_terms=forbidden_text)
+    search_text_in_python_files(directory=os.path.join(SRC_ROOT, "VeraGrid"), search_terms=forbidden_text)
+    search_text_in_python_files(directory=os.path.join(SRC_ROOT, "VeraGridEngine"), search_terms=forbidden_text)
+    search_text_in_python_files(directory=os.path.join(SRC_ROOT, "VeraGridServer"), search_terms=forbidden_text)
+    search_text_in_python_files(directory=os.path.join(SRC_ROOT, "VeraGridMcp"), search_terms=forbidden_text)
 
     update_gui_to_make_sure()
 
@@ -147,6 +152,10 @@ if __name__ == "__main__":
             pkg_name='VeraGridEngine',
             relative_folder=os.path.join('data', 'fmu'),
             suffixes=['.c', '.h'],
+        ) + collect_extra_package_files(
+            pkg_name='VeraGridEngine',
+            relative_folder=os.path.join('data', 'native_worker'),
+            suffixes=['.c', '.h', '.exe', '.json'],
         )
         veragrid_extra_files: list[str] = list()
         veragrid_translation_files: list[str] = collect_extra_package_files(
@@ -204,7 +213,7 @@ if __name__ == "__main__":
 
         publish(
             pkg_name='VeraGridEngine',
-            setup_path=os.path.join('VeraGridEngine', 'setup.py'),
+            setup_path=os.path.join(SRC_ROOT, 'VeraGridEngine', 'setup.py'),
             version=__VeraGridEngine_VERSION__,
             summary=_summary,
             home_page=_home_page,
@@ -218,13 +227,15 @@ if __name__ == "__main__":
             provides_extra=_provides_extra,
             long_description=_long_description,
             ext_filter=['.py', '.csv', '.txt'],
-            exeption_paths=('__pycache__', os.path.join('data', 'fmu')),
+            exeption_paths=('__pycache__', os.path.join('data', 'fmu'),
+                            os.path.join('data', 'native_worker')),
             extra_files=veragridengine_extra_files,
+            flatten_package_root=True,
         )
 
         publish(
             pkg_name='VeraGrid',
-            setup_path=os.path.join('VeraGrid', 'setup.py'),
+            setup_path=os.path.join(SRC_ROOT, 'VeraGrid', 'setup.py'),
             version=__VeraGrid_VERSION__,
             summary=_summary,
             home_page=_home_page,
@@ -239,12 +250,13 @@ if __name__ == "__main__":
             long_description=_long_description,
             ext_filter=['.py', '.csv', '.txt'],
             exeption_paths=('__pycache__', 'icons', 'svg'),
-            extra_files=veragrid_extra_files
+            extra_files=veragrid_extra_files,
+            flatten_package_root=True,
         )
 
         publish(
             pkg_name='VeraGridServer',
-            setup_path=os.path.join('VeraGridServer', 'setup.py'),
+            setup_path=os.path.join(SRC_ROOT, 'VeraGridServer', 'setup.py'),
             version=__VeraGridServer_VERSION__,
             summary=_summary,
             home_page=_home_page,
@@ -263,7 +275,7 @@ if __name__ == "__main__":
 
         publish(
             pkg_name='VeraGridMcp',
-            setup_path=os.path.join('VeraGridMcp', 'setup.py'),
+            setup_path=os.path.join(SRC_ROOT, 'VeraGridMcp', 'setup.py'),
             version=__VeraGridMcp_VERSION__,
             summary=_summary,
             home_page=_home_page,
@@ -279,6 +291,18 @@ if __name__ == "__main__":
             ext_filter=['.py', '.txt', '.md'],
             exeption_paths=('__pycache__',),
         )
+
+        published_releases: tuple[tuple[str, str], ...] = (
+            ('VeraGridEngine', __VeraGridEngine_VERSION__),
+            ('VeraGrid', __VeraGrid_VERSION__),
+            ('VeraGridServer', __VeraGridServer_VERSION__),
+            ('VeraGridMcp', __VeraGridMcp_VERSION__),
+        )
+        published_release: tuple[str, str]
+        for published_release in published_releases:
+            package_name: str = published_release[0]
+            package_version: str = published_release[1]
+            wait_for_pypi_release_index(pkg_name=package_name, version=package_version)
 
     else:
         print("Failed because of versions incompatibility")

@@ -1,0 +1,9 @@
+# VeraGrid standard electrical FMU examples
+
+Three physical families (GENSAL, TGOV1, ESDC2A), each exported as FMI 1.0, 2.0, and 3.0 for Co-Simulation and Model Exchange, provide 18 downloadable win64 FMUs. All 18 cells passed the local FMPy preflight. MATLAB/Simulink imported 18/18 cells, and DIgSILENT PowerFactory imported the 12 applicable FMI 2.0/3.0 cells. The complete exporter and importer evidence is maintained in [`INTEROPERABILITY_STATUS.md`](../../../INTEROPERABILITY_STATUS.md).
+
+The archives in this directory contain win64 binaries. Native generation and execution were also verified independently on Windows, Linux, and macOS (54/54 cells), but this catalog does not claim downloadable Linux or macOS binaries. The stable public `examplesURL` becomes active after integration into the public default branch.
+
+Rebuild from a clean VeraGrid checkout with `examples/fmi/veragrid_standard_examples/generate_standard_examples.py`. Run it as a Python module with `--repository-root`, `--git-executable`, an empty `--work-dir` outside Git, the exact `--publication-root` under `published/win64`, `--expected-head` from `git rev-parse HEAD`, and `--expected-source-tree-sha256` equal to SHA-256 of the binary `git ls-tree -r -z HEAD` output. The publication root must be absent. The generator checks all 18 executions and every staged file before publication.
+
+The `_in.csv` files retain right-continuous events; `_ref.csv` files retain raw 0.01 s output samples, including CS pre-first-step visibility at t=0. The manifest records same-interface all-sample errors, cross-interface non-boundary errors, both pre/post errors and causal-envelope gates at each event. CS t=0 is reported but is not claimed as initialized physical output. Every cell uses the FMI tools-list `Readme.txt` and CSV presentation rules. These are vendor-provided compatibility results, not official certification by the Modelica Association or FMI Project.

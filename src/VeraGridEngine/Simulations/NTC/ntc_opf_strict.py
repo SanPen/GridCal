@@ -309,6 +309,7 @@ class BranchNtcVars:
         "worst_contingency_flow",
         "worst_contingency_loading",
         "alpha_n1_worst",
+        "worst_contingency_ties",
     )
 
     def __init__(self, nt: int, n_elm: int):
@@ -341,6 +342,9 @@ class BranchNtcVars:
         self.worst_contingency_loading = np.zeros((nt, n_elm), dtype=float)
         self.alpha_n1_worst = np.zeros((nt, n_elm), dtype=float)
 
+        # branch, group, N-1 flow (MW), N-1 loading (p.u.), alpha N-1 of the groups tied with the worst
+        self.worst_contingency_ties: List[Tuple[int, int, float, float, float]] = list()
+
     def get_values(self, Sbase: float, model: OrToolsLpModel) -> "BranchNtcVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
@@ -360,6 +364,7 @@ class BranchNtcVars:
         data.worst_contingency_flow = self.worst_contingency_flow
         data.worst_contingency_loading = self.worst_contingency_loading
         data.alpha_n1_worst = self.alpha_n1_worst
+        data.worst_contingency_ties = self.worst_contingency_ties
 
         for t in range(nt):
             for i in range(n_elm):
@@ -1144,9 +1149,6 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                 structural_ntc=structural_ntc, ntc_load_rule=ntc_load_rule,
                 alpha_threshold=alpha_threshold, alpha_n1_abs=alpha_n1_abs, prob=prob)
 
-    # copy the contingency rates
-    branch_vars.contingency_rates[t_idx, :] = branch_data_t.contingency_rates
-
     return f_obj
 
 
@@ -1584,6 +1586,10 @@ def run_linear_ntc_opf_strict(grid: MultiCircuit,
                                                         areas_dict=areas_dict,
                                                         logger=logger)
 
+    # The N-1 report divides by these ratings even when no contingency row enters the LP
+    # so copy them unconditionally
+    mip_vars.branch_vars.contingency_rates[t_idx, :] = nc.passive_branch_data.contingency_rates
+
     # branch index, branch object, flow sense w.r.t the area exchange
     bus_a1_idx_set = set(bus_a1_idx)
     bus_a2_idx_set = set(bus_a2_idx)
@@ -1887,6 +1893,8 @@ def run_linear_ntc_opf_strict(grid: MultiCircuit,
         worst_flow=vars_v.branch_vars.worst_contingency_flow[t_idx, :],
         worst_loading=vars_v.branch_vars.worst_contingency_loading[t_idx, :],
         alpha_n1_worst=vars_v.branch_vars.alpha_n1_worst[t_idx, :],
+        tied_groups=vars_v.branch_vars.worst_contingency_ties,
+        branch_data=nc.passive_branch_data,
         solved_flows=solved_flows,
         corrective_addons_mw=corrective_addons_mw,
     )

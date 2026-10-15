@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Rms.rms_options &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.Rms.rms_options &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -133,6 +134,7 @@
         <span class="s2">&quot;tolerance&quot;</span><span class="p">,</span>
         <span class="s2">&quot;use_init_values&quot;</span><span class="p">,</span>
         <span class="s2">&quot;max_iter&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;init_fix_pf_bus_voltages&quot;</span><span class="p">,</span>
         <span class="s2">&quot;fmi_state_event_time_tolerance&quot;</span><span class="p">,</span>
         <span class="s2">&quot;fmi_state_event_max_iterations&quot;</span><span class="p">,</span>
         <span class="s2">&quot;fmi_me_newton_absolute_tolerance&quot;</span><span class="p">,</span>
@@ -153,6 +155,7 @@
         <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;use_init_values&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;max_iter&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;init_fix_pf_bus_voltages&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_state_event_time_tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_state_event_max_iterations&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;fmi_me_newton_absolute_tolerance&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
@@ -172,6 +175,7 @@
                  <span class="n">problem_type</span><span class="p">:</span> <span class="n">RmsProblemTypes</span> <span class="o">=</span> <span class="n">RmsProblemTypes</span><span class="o">.</span><span class="n">PowerBalance</span><span class="p">,</span>
                  <span class="n">use_init_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+                 <span class="n">init_fix_pf_bus_voltages</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                  <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                  <span class="n">fmi_state_event_time_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-9</span><span class="p">,</span>
                  <span class="n">fmi_state_event_max_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span>
@@ -185,6 +189,7 @@
 <span class="sd">        :param time_step: time step of the simulations (s)</span>
 <span class="sd">        :param simulation_time: simulation time (s)</span>
 <span class="sd">        :param max_iter: max number of iterations</span>
+<span class="sd">        :param init_fix_pf_bus_voltages: Keep RMS bus voltages fixed at their power-flow seeds during consistent initialization.</span>
 <span class="sd">        :param tolerance: Integration tolerance</span>
 <span class="sd">        :param integration_method: Integration method (default Backward Euler)</span>
 <span class="sd">        :param fmi_state_event_time_tolerance: Absolute FMI ME event-time tolerance in seconds.</span>
@@ -207,6 +212,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">tolerance</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_init_values</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">use_init_values</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">max_iter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_fix_pf_bus_voltages</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">init_fix_pf_bus_voltages</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">fmi_state_event_time_tolerance</span><span class="p">)</span>
             <span class="ow">and</span> <span class="n">fmi_state_event_time_tolerance</span> <span class="o">&gt;</span> <span class="mf">0.0</span>

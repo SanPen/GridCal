@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms.genrow4_rms_template &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Templates.Rms.genrow4_rms_template &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -69,7 +69,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -116,44 +117,44 @@
 
 <div class="viewcode-block" id="get_genrow4_rms_template">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Rms.html#VeraGridEngine.Templates.Rms.genrow4_rms_template.get_genrow4_rms_template">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_genrow4_rms_template</span><span class="p">(</span><span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">"Genrow rms template"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_genrow4_rms_template</span><span class="p">(</span><span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Genrow rms template&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Get the RMS template model of the Genrow</span>
 <span class="sd">    :return: RmsModelTemplate</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">()</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">GeneratorDevice</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
-    <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vm"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">),</span>
-              <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Va"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">)]</span>
+    <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span><span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vm&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">),</span>
+              <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Va&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">)]</span>
 
-    <span class="n">P_g</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'P_g'</span><span class="p">)</span>
-    <span class="n">Q_g</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Q_g'</span><span class="p">)</span>
+    <span class="n">P_g</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;P_g&#39;</span><span class="p">)</span>
+    <span class="n">Q_g</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Q_g&#39;</span><span class="p">)</span>
 
-    <span class="n">delta</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"delta"</span><span class="p">)</span>
-    <span class="n">omega</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"omega"</span><span class="p">)</span>
-    <span class="n">psid</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"psid"</span><span class="p">)</span>
-    <span class="n">psiq</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"psiq"</span><span class="p">)</span>
-    <span class="n">i_d</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"i_d"</span><span class="p">)</span>
-    <span class="n">i_q</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"i_q"</span><span class="p">)</span>
-    <span class="n">v_d</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"v_d"</span><span class="p">)</span>
-    <span class="n">v_q</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"v_q"</span><span class="p">)</span>
-    <span class="n">te</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"te"</span><span class="p">)</span>
-    <span class="n">et</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"et"</span><span class="p">)</span>
-    <span class="n">tm</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"tm"</span><span class="p">)</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;delta&quot;</span><span class="p">)</span>
+    <span class="n">omega</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;omega&quot;</span><span class="p">)</span>
+    <span class="n">psid</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;psid&quot;</span><span class="p">)</span>
+    <span class="n">psiq</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;psiq&quot;</span><span class="p">)</span>
+    <span class="n">i_d</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;i_d&quot;</span><span class="p">)</span>
+    <span class="n">i_q</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;i_q&quot;</span><span class="p">)</span>
+    <span class="n">v_d</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;v_d&quot;</span><span class="p">)</span>
+    <span class="n">v_q</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;v_q&quot;</span><span class="p">)</span>
+    <span class="n">te</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;te&quot;</span><span class="p">)</span>
+    <span class="n">et</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;et&quot;</span><span class="p">)</span>
+    <span class="n">tm</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;tm&quot;</span><span class="p">)</span>
 
-    <span class="n">R1</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"R1"</span><span class="p">)</span>
-    <span class="n">X1</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"X1"</span><span class="p">)</span>
-    <span class="n">freq</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"frequ"</span><span class="p">)</span>
-    <span class="n">M</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"M"</span><span class="p">)</span>
-    <span class="n">D</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"D"</span><span class="p">)</span>
-    <span class="n">omega_ref</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"omega_ref"</span><span class="p">)</span>
-    <span class="n">Kp</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Kp"</span><span class="p">)</span>
-    <span class="n">Ki</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Ki"</span><span class="p">)</span>
+    <span class="n">R1</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;R1&quot;</span><span class="p">)</span>
+    <span class="n">X1</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;X1&quot;</span><span class="p">)</span>
+    <span class="n">freq</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;frequ&quot;</span><span class="p">)</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;M&quot;</span><span class="p">)</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">)</span>
+    <span class="n">omega_ref</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;omega_ref&quot;</span><span class="p">)</span>
+    <span class="n">Kp</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Kp&quot;</span><span class="p">)</span>
+    <span class="n">Ki</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Ki&quot;</span><span class="p">)</span>
     
-    <span class="n">vf</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"vf"</span><span class="p">)</span>
-    <span class="n">tm0</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"tm0"</span><span class="p">)</span>
+    <span class="n">vf</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vf&quot;</span><span class="p">)</span>
+    <span class="n">tm0</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;tm0&quot;</span><span class="p">)</span>
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">R1</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">api_obj_mapping</span><span class="p">[</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">R1</span><span class="p">]</span> <span class="o">=</span> <span class="n">R1</span>
@@ -221,7 +222,7 @@
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">in_vars</span> <span class="o">=</span> <span class="n">inputs</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">out_vars</span> <span class="o">=</span> <span class="p">[</span><span class="n">P_g</span><span class="p">,</span> <span class="n">Q_g</span><span class="p">]</span>
 
-    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">'Generator GENROW4 RMS model'</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">comment</span> <span class="o">=</span> <span class="s1">&#39;Generator GENROW4 RMS model&#39;</span>
     <span class="k">return</span> <span class="n">templ</span></div>
 
 </pre></div>

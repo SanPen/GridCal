@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Emt.vsc_gfm_upc_emt &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Templates.Emt.vsc_gfm_upc_emt &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -301,7 +302,6 @@
             <span class="n">i_a</span><span class="p">,</span> <span class="n">i_b</span><span class="p">,</span> <span class="n">i_c</span><span class="p">,</span> <span class="n">i_dc</span><span class="p">,</span> <span class="n">P_conv</span><span class="p">,</span> <span class="n">Pt_vsc</span><span class="p">,</span> <span class="n">Qt_vsc</span><span class="p">,</span> <span class="n">Pf_vsc</span><span class="p">,</span> <span class="n">Qf_vsc</span><span class="p">,</span>
         <span class="p">],</span>
         <span class="n">event_dict</span><span class="o">=</span><span class="p">{</span>
-            <span class="n">omega_base</span><span class="p">:</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">50.0</span><span class="p">),</span>
             <span class="n">omega_ref</span><span class="p">:</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">),</span>
             <span class="n">Kdp</span><span class="p">:</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.005</span><span class="p">),</span>
             <span class="n">Kdq</span><span class="p">:</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.005</span><span class="p">),</span>
@@ -350,11 +350,19 @@
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_A</span><span class="p">:</span> <span class="n">vc_a</span><span class="p">,</span>
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_B</span><span class="p">:</span> <span class="n">vc_b</span><span class="p">,</span>
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_C</span><span class="p">:</span> <span class="n">vc_c</span><span class="p">,</span>
+            <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">vt_A</span><span class="p">:</span> <span class="n">vc_a</span><span class="p">,</span>
+            <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">vt_B</span><span class="p">:</span> <span class="n">vc_b</span><span class="p">,</span>
+            <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">vt_C</span><span class="p">:</span> <span class="n">vc_c</span><span class="p">,</span>
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">i_A</span><span class="p">:</span> <span class="n">i_a</span><span class="p">,</span>
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">i_B</span><span class="p">:</span> <span class="n">i_b</span><span class="p">,</span>
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">i_C</span><span class="p">:</span> <span class="n">i_c</span><span class="p">,</span>
+            <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">it_A</span><span class="p">:</span> <span class="n">i_a</span><span class="p">,</span>
+            <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">it_B</span><span class="p">:</span> <span class="n">i_b</span><span class="p">,</span>
+            <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">it_C</span><span class="p">:</span> <span class="n">i_c</span><span class="p">,</span>
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vdc</span><span class="p">:</span> <span class="n">v_dc</span><span class="p">,</span>
+            <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vf_dc</span><span class="p">:</span> <span class="n">v_dc</span><span class="p">,</span>
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Idc</span><span class="p">:</span> <span class="n">i_dc</span><span class="p">,</span>
+            <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">If_dc</span><span class="p">:</span> <span class="n">i_dc</span><span class="p">,</span>
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pt</span><span class="p">:</span> <span class="n">Pt_vsc</span><span class="p">,</span>
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Qt</span><span class="p">:</span> <span class="n">Qt_vsc</span><span class="p">,</span>
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Pf</span><span class="p">:</span> <span class="n">Pf_vsc</span><span class="p">,</span>
@@ -366,6 +374,7 @@
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Ipk</span><span class="p">:</span> <span class="n">Ipk_ref</span><span class="p">,</span>
             <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">phi</span><span class="p">:</span> <span class="n">phi_ref</span><span class="p">,</span>
         <span class="p">},</span>
+        <span class="n">parameters</span><span class="o">=</span><span class="p">{</span><span class="n">omega_base</span><span class="p">:</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">50.0</span><span class="p">)},</span>
         <span class="n">api_obj_mapping</span><span class="o">=</span><span class="p">{</span>
             <span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">omega_base</span><span class="p">:</span> <span class="n">omega_base</span><span class="p">,</span>
         <span class="p">},</span>

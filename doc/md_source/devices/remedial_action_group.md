@@ -9,15 +9,18 @@ This device defines study events, outages, switching actions, or remedial action
 ### Registered properties
 Profile-enabled properties: none.
 
-|      name       |   class_type    |unit|mandatory|max_chars|                      descriptions                      |has_profile|comment|
-|-----------------|-----------------|----|---------|---------|--------------------------------------------------------|-----------|-------|
-|idtag            |str              |    |False    |         |Unique ID                                               |False      |       |
-|name             |str              |    |False    |         |Name of the device.                                     |False      |       |
-|code             |str              |    |False    |         |Secondary ID                                            |False      |       |
-|rdfid            |str              |    |False    |         |RDF ID for further compatibility                        |False      |       |
-|action           |enum ActionType  |    |False    |         |Object action to perform. Only used for model merging.  |False      |       |
-|selected_to_merge|bool             |    |False    |         |Whether this object should be applied during diff merge.|False      |       |
-|comment          |str              |    |False    |         |User comment                                            |False      |       |
-|diff_changes     |MergeInformation |    |False    |         |                                                        |False      |       |
-|category         |str              |    |False    |         |Some tag to category the contingency group              |False      |       |
-|conn_group       |Contingency Group|    |False    |         |Contingency group                                       |False      |       |
+|      name       |          class_type           |unit|mandatory|max_chars|                       descriptions                        |has_profile|comment|
+|-----------------|-------------------------------|----|---------|---------|-----------------------------------------------------------|-----------|-------|
+|idtag            |str                            |    |False    |         |Unique ID                                                  |False      |       |
+|name             |str                            |    |False    |         |Name of the device.                                        |False      |       |
+|code             |str                            |    |False    |         |Secondary ID                                               |False      |       |
+|rdfid            |str                            |    |False    |         |RDF ID for further compatibility                           |False      |       |
+|action           |enum ActionType                |    |False    |         |Object action to perform. Only used for model merging.     |False      |       |
+|selected_to_merge|bool                           |    |False    |         |Whether this object should be applied during diff merge.   |False      |       |
+|comment          |str                            |    |False    |         |User comment                                               |False      |       |
+|diff_changes     |MergeInformation               |    |False    |         |                                                           |False      |       |
+|category         |str                            |    |False    |         |Some tag to category the contingency group                 |False      |       |
+|conn_group       |Contingency Group              |    |False    |         |Optional contingency scenario associated with this group   |False      |       |
+|prev_ra          |Remedial action Group          |    |False    |         |Optional remedial action group that must precede this group|False      |       |
+|monitored_device |PhysicalDeviceType             |    |False    |         |Physical model element whose result is monitored           |False      |       |
+|property_type    |enum RemedialActionPropertyEnum|    |False    |         |Limit of the monitored device used by the condition        |False      |       |

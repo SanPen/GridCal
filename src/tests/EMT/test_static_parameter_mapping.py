@@ -24,8 +24,13 @@ from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Compilers.circuit_to_data import compile_numerical_circuit_at
 from VeraGridEngine.DataStructures.numerical_circuit import NumericalCircuit
 from VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified import (
+    StaticParameterMappingDiagnostics,
     assign_api_mapping_value_if_present,
     assign_static_api_object_mapping_for_device,
+    get_all_line_matrix_keys,
+    get_line_c_keys,
+    get_line_linv_keys,
+    get_line_r_keys,
     get_line_g_keys,
 )
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
@@ -44,8 +49,10 @@ from VeraGridEngine.Templates.Emt.converter_switched_emt_template import (
 )
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Var
+from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.enumerations import (
     ConverterControlType,
+    DynamicSimulationMode,
     ExternalGridMode,
     ParamPowerFlowReferenceType,
     WindingType,
@@ -132,6 +139,218 @@ def test_assign_api_mapping_initializes_event_target_without_mutating_block() ->
     assert float(problem_mapping[target].value) == 1.0
 
 
+def test_assign_api_mapping_initializes_mode_target_without_mutating_block() -> None:
+    """API mapping must seed a mode target only in problem-side storage.
+
+    :return: None.
+    """
+    target: Var = _make_var("mode_param")
+    fallback: Const = Const(0.0)
+    block: Block = Block(
+        api_obj_mapping=dict({ParamPowerFlowReferenceType.converter_control_mode_1: target}),
+        mode_dict=dict({target: fallback}),
+    )
+    problem_mapping: dict[Var, Const] = dict()
+
+    assigned: bool = assign_api_mapping_value_if_present(
+        mdl=block,
+        key=ParamPowerFlowReferenceType.converter_control_mode_1,
+        value=1.0,
+        logger=None,
+        device_name="device",
+        problem_mapping=problem_mapping,
+    )
+
+    assert assigned is True
+    assert target not in block.parameters
+    assert target not in block.event_dict
+    assert block.mode_dict[target] is fallback
+    assert float(problem_mapping[target].value) == 1.0
+
+
+def test_api_mapping_reports_when_device_value_overrides_template_fallback() -> None:
+    """Report a resolved API value that replaces a concrete local fallback.
+
+    :return: None.
+    """
+    grid: SimpleNamespace = _make_grid(sbase=100.0)
+    bus: Bus = Bus(name="bus", Vnom=20.0)
+    load: Load = Load(name="load", P=30.0)
+    load.bus = bus
+    target: Var = _make_var("mapped_with_fallback")
+    block: Block = Block(
+        name="fallback_block",
+        api_obj_mapping=dict({ParamPowerFlowReferenceType.Pl0: target}),
+        event_dict=dict({target: Const(9.0)}),
+    )
+    problem_mapping: dict[Var, Const] = dict()
+    logger: Logger = Logger()
+    diagnostics: StaticParameterMappingDiagnostics = StaticParameterMappingDiagnostics(
+        logger=logger,
+        simulation_mode=DynamicSimulationMode.RMS,
+    )
+
+    assign_static_api_object_mapping_for_device(
+        grid=grid,
+        device=load,
+        mdl=block,
+        logger=diagnostics,
+        problem_mapping=problem_mapping,
+    )
+
+    assert float(problem_mapping[target].value) == -0.3
+    assert float(block.event_dict[target].value) == 9.0
+    assert len(logger.entries) == 1
+    assert logger.entries[0].msg == "API-object initial value overrides the model-template fallback."
+    assert logger.entries[0].device_class == DynamicSimulationMode.RMS.value
+
+
+def test_api_mapping_required_device_source_does_not_report_override() -> None:
+    """Treat ``Const(None)`` as a required source rather than a fallback.
+
+    :return: None.
+    """
+    grid: SimpleNamespace = _make_grid(sbase=100.0)
+    bus: Bus = Bus(name="bus", Vnom=20.0)
+    load: Load = Load(name="load", P=30.0)
+    load.bus = bus
+    target: Var = _make_var("required_device_value")
+    block: Block = Block(
+        name="required_source_block",
+        api_obj_mapping=dict({ParamPowerFlowReferenceType.Pl0: target}),
+        parameters=dict({target: Const(None)}),
+    )
+    problem_mapping: dict[Var, Const] = dict()
+    logger: Logger = Logger()
+
+    assign_static_api_object_mapping_for_device(
+        grid=grid,
+        device=load,
+        mdl=block,
+        logger=logger,
+        problem_mapping=problem_mapping,
+    )
+
+    assert float(problem_mapping[target].value) == -0.3
+    assert len(logger.entries) == 0
+
+
+def test_api_mapping_rejects_conflicting_values_for_one_symbolic_uid() -> None:
+    """Keep the first value when two API sources disagree for one target.
+
+    :return: None.
+    """
+    grid: SimpleNamespace = _make_grid(sbase=100.0)
+    bus: Bus = Bus(name="bus", Vnom=20.0)
+    load: Load = Load(name="load", P=30.0, Q=12.0)
+    load.bus = bus
+    first_target: Var = _make_var("first_conflicting_target")
+    cloned_target: Var = Var(
+        name="cloned_conflicting_target",
+        uid=first_target.uid,
+        non_mutable_uid=first_target.non_mutable_uid,
+    )
+    first_block: Block = Block(
+        name="first_conflicting_block",
+        api_obj_mapping=dict({ParamPowerFlowReferenceType.Pl0: first_target}),
+        parameters=dict({first_target: Const(None)}),
+    )
+    cloned_block: Block = Block(
+        name="cloned_conflicting_block",
+        api_obj_mapping=dict({ParamPowerFlowReferenceType.Ql0: cloned_target}),
+        parameters=dict({cloned_target: Const(None)}),
+    )
+    root_block: Block = Block(children=list([first_block, cloned_block]))
+    problem_mapping: dict[Var, Const] = dict()
+    logger: Logger = Logger()
+
+    assign_static_api_object_mapping_for_device(
+        grid=grid,
+        device=load,
+        mdl=root_block,
+        logger=logger,
+        problem_mapping=problem_mapping,
+    )
+
+    assert float(problem_mapping[first_target].value) == -0.3
+    assert float(problem_mapping[cloned_target].value) == -0.3
+    assert len(logger.entries) == 1
+    assert logger.entries[0].msg == (
+        "Conflicting API-object initial values target the same symbolic parameter; later value skipped."
+    )
+
+
+def test_api_mapping_accepts_repeated_identical_value_for_one_symbolic_uid() -> None:
+    """Allow several API references when their resolved value is identical.
+
+    :return: None.
+    """
+    grid: SimpleNamespace = _make_grid(sbase=100.0)
+    bus: Bus = Bus(name="bus", Vnom=20.0)
+    load: Load = Load(name="load", P=30.0, Q=30.0)
+    load.bus = bus
+    first_target: Var = _make_var("first_idempotent_target")
+    cloned_target: Var = Var(
+        name="cloned_idempotent_target",
+        uid=first_target.uid,
+        non_mutable_uid=first_target.non_mutable_uid,
+    )
+    first_block: Block = Block(
+        name="first_idempotent_block",
+        api_obj_mapping=dict({ParamPowerFlowReferenceType.Pl0: first_target}),
+        parameters=dict({first_target: Const(None)}),
+    )
+    cloned_block: Block = Block(
+        name="cloned_idempotent_block",
+        api_obj_mapping=dict({ParamPowerFlowReferenceType.Ql0: cloned_target}),
+        parameters=dict({cloned_target: Const(None)}),
+    )
+    root_block: Block = Block(children=list([first_block, cloned_block]))
+    problem_mapping: dict[Var, Const] = dict()
+    logger: Logger = Logger()
+
+    assign_static_api_object_mapping_for_device(
+        grid=grid,
+        device=load,
+        mdl=root_block,
+        logger=logger,
+        problem_mapping=problem_mapping,
+    )
+
+    assert float(problem_mapping[first_target].value) == -0.3
+    assert float(problem_mapping[cloned_target].value) == -0.3
+    assert len(logger.entries) == 0
+
+
+def test_mapping_context_without_logger_keeps_numeric_assignment() -> None:
+    """Keep static mapping active when a problem is constructed silently.
+
+    :return: None.
+    """
+    target: Var = _make_var("silent_static_parameter")
+    block: Block = Block(
+        api_obj_mapping=dict({ParamPowerFlowReferenceType.device_active: target}),
+        parameters=dict({target: Const(0.0)}),
+    )
+    problem_mapping: dict[Var, Const] = dict()
+    diagnostics: StaticParameterMappingDiagnostics = StaticParameterMappingDiagnostics(
+        logger=None,
+        simulation_mode=DynamicSimulationMode.RMS,
+    )
+
+    assigned: bool = assign_api_mapping_value_if_present(
+        mdl=block,
+        key=ParamPowerFlowReferenceType.device_active,
+        value=1.0,
+        logger=diagnostics,
+        device_name="device",
+        problem_mapping=problem_mapping,
+    )
+
+    assert assigned is True
+    assert float(problem_mapping[target].value) == 1.0
+
+
 def test_missing_keys_are_skipped_silently() -> None:
     """Missing ``api_obj_mapping`` keys must not create parameters."""
     block: Block = _make_block(dict())
@@ -170,6 +389,44 @@ def test_api_mapping_requires_same_block_parameter_owner() -> None:
 
     assert assigned is False
     assert problem_mapping == dict()
+
+
+def test_mapping_diagnostics_report_the_requesting_simulation_domain() -> None:
+    """Label identical mapping-contract warnings as RMS or EMT by caller.
+
+    :return: None.
+    """
+    simulation_modes: tuple[DynamicSimulationMode, DynamicSimulationMode] = (
+        DynamicSimulationMode.RMS,
+        DynamicSimulationMode.EMT,
+    )
+    simulation_mode: DynamicSimulationMode
+
+    for simulation_mode in simulation_modes:
+        target: Var = _make_var(f"undeclared_{simulation_mode.value}")
+        block: Block = Block(
+            api_obj_mapping=dict({
+                ParamPowerFlowReferenceType.device_active: target,
+            }),
+        )
+        logger: Logger = Logger()
+        diagnostics: StaticParameterMappingDiagnostics = StaticParameterMappingDiagnostics(
+            logger=logger,
+            simulation_mode=simulation_mode,
+        )
+
+        assigned: bool = assign_api_mapping_value_if_present(
+            mdl=block,
+            key=ParamPowerFlowReferenceType.device_active,
+            value=1.0,
+            logger=diagnostics,
+            device_name="device",
+            problem_mapping=dict(),
+        )
+
+        assert assigned is False
+        assert len(logger.entries) == 1
+        assert logger.entries[0].device_class == simulation_mode.value
 
 
 def test_converter_templates_keep_api_mappings_on_local_parameter_owners() -> None:
@@ -812,6 +1069,135 @@ def test_overhead_line_mapping_matches_original_template_based_values() -> None:
 
     assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.Linv_aa), float(linv_expected[0, 0]))
     assert np.isclose(_const_value(problem_mapping, block, ParamPowerFlowReferenceType.Caa), float(c_expected[0, 0]))
+
+
+def _assert_line_matrix_mapping_for_phase_mask(
+        phase_mask: tuple[bool, bool, bool, bool],
+) -> None:
+    """Check the complete fixed NABC mapping for one physical phase mask.
+
+    Distinct diagonal and mutual entries make row, column and phase permutation
+    errors observable. The stored shunt matrix includes the historical ``1e6``
+    factor expected by the line persistence contract.
+
+    :param phase_mask: Active NABC conductors of the physical line.
+    :return: None.
+    """
+    grid: SimpleNamespace = _make_grid(sbase=100.0, fbase=50.0)
+    bus_from: Bus = Bus(name="from", Vnom=10.0)
+    bus_to: Bus = Bus(name="to", Vnom=10.0)
+    line: Line = Line(name="matrix_line", bus_from=bus_from, bus_to=bus_to)
+    line.disable_auto_updates()
+
+    resistance_pu: np.ndarray = np.array(
+        [
+            [0.40, 0.01, 0.02, 0.03],
+            [0.01, 0.50, 0.04, 0.05],
+            [0.02, 0.04, 0.60, 0.06],
+            [0.03, 0.05, 0.06, 0.70],
+        ],
+        dtype=np.float64,
+    )
+    reactance_pu: np.ndarray = np.array(
+        [
+            [0.80, 0.07, 0.08, 0.09],
+            [0.07, 0.90, 0.10, 0.11],
+            [0.08, 0.10, 1.00, 0.12],
+            [0.09, 0.11, 0.12, 1.10],
+        ],
+        dtype=np.float64,
+    )
+    susceptance_pu: np.ndarray = np.array(
+        [
+            [0.40, -0.01, -0.02, -0.03],
+            [-0.01, 0.50, -0.04, -0.05],
+            [-0.02, -0.04, 0.60, -0.06],
+            [-0.03, -0.05, -0.06, 0.70],
+        ],
+        dtype=np.float64,
+    )
+    impedance_pu: np.ndarray = resistance_pu + 1.0j * reactance_pu
+    stored_series_admittance_pu: np.ndarray = np.linalg.inv(impedance_pu).astype(np.complex128)
+    stored_shunt_admittance_pu: np.ndarray = (
+        1.0j * susceptance_pu * 1.0e6
+    ).astype(np.complex128)
+    line.ys.values = stored_series_admittance_pu
+    line.ysh.values = stored_shunt_admittance_pu
+    line.ys.phN = phase_mask[0]
+    line.ys.phA = phase_mask[1]
+    line.ys.phB = phase_mask[2]
+    line.ys.phC = phase_mask[3]
+    line.ysh.phN = phase_mask[0]
+    line.ysh.phA = phase_mask[1]
+    line.ysh.phB = phase_mask[2]
+    line.ysh.phC = phase_mask[3]
+
+    api_mapping: dict[ParamPowerFlowReferenceType, Var | None] = dict()
+    mapping_key: ParamPowerFlowReferenceType
+    for mapping_key in get_all_line_matrix_keys():
+        api_mapping[mapping_key] = _make_var(f"mapped_{mapping_key.name}")
+
+    block: Block = _make_block(api_mapping)
+    problem_mapping: dict[Var, Const] = dict()
+    assign_static_api_object_mapping_for_device(
+        grid=grid,
+        device=line,
+        mdl=block,
+        problem_mapping=problem_mapping,
+        logger=None,
+    )
+
+    active_indices: np.ndarray = np.flatnonzero(np.asarray(phase_mask, dtype=bool))
+    active_selector: tuple[np.ndarray, np.ndarray] = np.ix_(active_indices, active_indices)
+    omega_base: float = 2.0 * np.pi * float(grid.fBase)
+    resistance_active: np.ndarray = resistance_pu[active_selector]
+    inductance_active: np.ndarray = reactance_pu[active_selector] / omega_base
+    inverse_inductance_active: np.ndarray = np.linalg.inv(inductance_active)
+    capacitance_active: np.ndarray = susceptance_pu[active_selector] / (2.0 * omega_base)
+    expected_resistance: np.ndarray = np.zeros((4, 4), dtype=np.float64)
+    expected_inverse_inductance: np.ndarray = np.zeros((4, 4), dtype=np.float64)
+    expected_capacitance: np.ndarray = np.zeros((4, 4), dtype=np.float64)
+    expected_resistance[active_selector] = resistance_active
+    expected_inverse_inductance[active_selector] = inverse_inductance_active
+    expected_capacitance[active_selector] = capacitance_active
+
+    resistance_keys: list[list[ParamPowerFlowReferenceType]] = get_line_r_keys()
+    inverse_inductance_keys: list[list[ParamPowerFlowReferenceType]] = get_line_linv_keys()
+    capacitance_keys: list[list[ParamPowerFlowReferenceType]] = get_line_c_keys()
+    row_index: int = 0
+    while row_index < 4:
+        column_index: int = 0
+        while column_index < 4:
+            assert np.isclose(
+                _const_value(problem_mapping, block, resistance_keys[row_index][column_index]),
+                expected_resistance[row_index, column_index],
+            )
+            assert np.isclose(
+                _const_value(problem_mapping, block, inverse_inductance_keys[row_index][column_index]),
+                expected_inverse_inductance[row_index, column_index],
+            )
+            assert np.isclose(
+                _const_value(problem_mapping, block, capacitance_keys[row_index][column_index]),
+                expected_capacitance[row_index, column_index],
+            )
+            column_index += 1
+        row_index += 1
+
+
+def test_line_matrix_mapping_covers_every_nabc_term() -> None:
+    """Map all R, inverse-L and C diagonal and mutual NABC entries.
+
+    :return: None.
+    """
+    _assert_line_matrix_mapping_for_phase_mask((True, True, True, True))
+
+
+def test_line_matrix_mapping_projects_noncontiguous_active_phases() -> None:
+    """Project N, A and C terms while keeping every inactive-B slot zero.
+
+    :return: None.
+    """
+    _assert_line_matrix_mapping_for_phase_mask((True, True, False, True))
 
 
 def test_shunt_phase_keys_fall_back_to_balanced_totals() -> None:

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Data Models &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>Data Models &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -73,6 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
@@ -1189,7 +1190,7 @@
 <td><p></p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Is the injection scalable?</p></td>
+<td><p>Is the injection scalable? (only for data compatibility)</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -1713,6 +1714,15 @@
 <td><p></p></td>
 <td><p></p></td>
 <td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>dispatch_mode</p></td>
+<td><p>enum BatteryDispatchMode</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Battery dispatch behaviour.</p></td>
+<td><p>True</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -3826,7 +3836,7 @@
 <td><p></p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Is the injection scalable?</p></td>
+<td><p>Is the injection scalable? (only for data compatibility)</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -4573,7 +4583,7 @@
 <td><p></p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Is the injection scalable?</p></td>
+<td><p>Is the injection scalable? (only for data compatibility)</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -6409,7 +6419,7 @@
 <td><p></p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Is the injection scalable?</p></td>
+<td><p>Is the injection scalable? (only for data compatibility)</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -8299,7 +8309,7 @@
 <td><p></p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Is the injection scalable?</p></td>
+<td><p>Is the injection scalable? (only for data compatibility)</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -10855,7 +10865,7 @@
 <td><p></p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Is the injection scalable?</p></td>
+<td><p>Is the injection scalable? (only for data compatibility)</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -13609,7 +13619,34 @@
 <td><p></p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Contingency group</p></td>
+<td><p>Optional contingency scenario associated with this group</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>prev_ra</p></td>
+<td><p>Remedial action Group</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Optional remedial action group that must precede this group</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>monitored_device</p></td>
+<td><p>PhysicalDeviceType</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Physical model element whose result is monitored</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p>property_type</p></td>
+<td><p>enum RemedialActionPropertyEnum</p></td>
+<td><p></p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Limit of the monitored device used by the condition</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -15391,7 +15428,7 @@
 <td><p></p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Is the injection scalable?</p></td>
+<td><p>Is the injection scalable? (only for data compatibility)</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -15904,7 +15941,7 @@
 <td><p></p></td>
 <td><p>False</p></td>
 <td><p></p></td>
-<td><p>Is the injection scalable?</p></td>
+<td><p>Is the injection scalable? (only for data compatibility)</p></td>
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
@@ -22145,7 +22182,16 @@
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p>diameter_internal</p></td>
+<tr class="row-even"><td><p>gmr</p></td>
+<td><p>float</p></td>
+<td><p>mm</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+<td><p>Geometric mean radius in mm for series impedance. 0 = automatic from conductor geometry; positive = specified GMR. The physical diameter still determines capacitance.</p></td>
+<td><p>False</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p>diameter_internal</p></td>
 <td><p>float</p></td>
 <td><p>mm</p></td>
 <td><p>False</p></td>
@@ -22154,7 +22200,7 @@
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p>is_tube</p></td>
+<tr class="row-even"><td><p>is_tube</p></td>
 <td><p>bool</p></td>
 <td><p></p></td>
 <td><p>False</p></td>
@@ -22163,7 +22209,7 @@
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p>max_current</p></td>
+<tr class="row-odd"><td><p>max_current</p></td>
 <td><p>float</p></td>
 <td><p>kA</p></td>
 <td><p>False</p></td>
@@ -22172,7 +22218,7 @@
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p>stranding</p></td>
+<tr class="row-even"><td><p>stranding</p></td>
 <td><p>str</p></td>
 <td><p></p></td>
 <td><p>False</p></td>
@@ -22181,7 +22227,7 @@
 <td><p>False</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p>material</p></td>
+<tr class="row-odd"><td><p>material</p></td>
 <td><p>str</p></td>
 <td><p></p></td>
 <td><p>False</p></td>

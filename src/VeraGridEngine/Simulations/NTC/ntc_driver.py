@@ -3,7 +3,7 @@
 # file, You can obtain one at https://mozilla.org/MPL/2.0/.  
 # SPDX-License-Identifier: MPL-2.0
 
-from typing import List
+from typing import List, Tuple
 import numpy as np
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Devices.Events.contingency_group import ContingencyGroup
@@ -246,6 +246,18 @@ class OptimalNetTransferCapacityDriver(DriverTemplate):
         self.results.worst_contingency_flow = opf_vars.branch_vars.worst_contingency_flow[0, :]
         self.results.worst_contingency_loading = opf_vars.branch_vars.worst_contingency_loading[0, :]
         self.results.alpha_n1_worst = opf_vars.branch_vars.alpha_n1_worst[0, :]
+        # keep only the ties of rows the report can show
+        tie: Tuple[int, int, float, float, float]
+        for tie in opf_vars.branch_vars.worst_contingency_ties:
+            tie_branch: int = tie[0]
+            row_loading_pct: float = 100.0 * max(
+                float(opf_vars.branch_vars.worst_contingency_loading[0, tie_branch]),
+                abs(float(opf_vars.branch_vars.loading[0, tie_branch])))
+            if (opf_vars.branch_vars.monitor_logic[0, tie_branch]
+                    and row_loading_pct >= self.options.loading_threshold_to_report):
+                self.results.worst_contingency_ties.append((0,) + tie)
+            else:
+                pass  # the report never displays this branch
 
         self.results.converged = opf_vars.acceptable_solution
 

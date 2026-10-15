@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Writing DAE models in VeraGrid &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>Writing DAE models in VeraGrid &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -74,8 +74,9 @@
 <li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-simulation-theory">1. Dynamic simulation theory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-editor-and-model-construction">2. Dynamic editor and model construction</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="dynamic_simulations.html#dynamic-model-library">3. Dynamic model library</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#benchmarking-against-other-software">2. Benchmarking against other software</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-editor-and-model-construction">3. Dynamic editor and model construction</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dynamic_simulations.html#dynamic-model-library">4. Dynamic model library</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="dynamic_model_library_index.html">📚 Dynamic model library</a><ul class="current">
 <li class="toctree-l4 current"><a class="reference internal" href="dynamic_model_library_index.html#authoring-models">Authoring models</a></li>
 <li class="toctree-l4"><a class="reference internal" href="dynamic_model_library_index.html#device-templates">Device templates</a></li>
@@ -88,6 +89,7 @@
 <li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#end-to-end-workflow">End-to-end workflow</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
@@ -269,10 +271,10 @@
 <h2>Variables and symbolic expressions<a class="headerlink" href="#variables-and-symbolic-expressions" title="Link to this heading"></a></h2>
 <p>Create variables and constants through the <code class="docutils literal notranslate"><span class="pre">VarFactory</span></code> associated with the grid:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">voltage</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">"Vm"</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Vm&quot;</span><span class="p">,</span>
     <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="n">gain</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"K"</span><span class="p">)</span>
+<span class="n">gain</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;K&quot;</span><span class="p">)</span>
 <span class="n">gain_value</span><span class="p">:</span> <span class="n">Const</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
 <span class="n">epsilon</span><span class="p">:</span> <span class="n">Const</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1e-9</span><span class="p">)</span>
 </pre></div>
@@ -336,7 +338,7 @@
 </tr>
 </tbody>
 </table>
-<p>For each dictionary, the key is the symbolic variable and the value is its initial expression or constant. <code class="docutils literal notranslate"><span class="pre">Const(None)</span></code> is useful for a dynamic parameter whose initial value must be recovered through <code class="docutils literal notranslate"><span class="pre">init_eqs</span></code>, for example from a solved active-power value. An unchanged unresolved value remains unset in the GUI until initialization supplies it.</p>
+<p>For each dictionary, the key is the symbolic variable and the value is its initial expression or constant. Parameter initialization belongs in <code class="docutils literal notranslate"><span class="pre">parameters</span></code> or <code class="docutils literal notranslate"><span class="pre">event_dict</span></code>, optionally with a device-backed source in <code class="docutils literal notranslate"><span class="pre">api_obj_mapping</span></code>. Do not place parameter targets in <code class="docutils literal notranslate"><span class="pre">init_eqs</span></code>: that collection initializes solved state and algebraic variables, not parameters. <code class="docutils literal notranslate"><span class="pre">Const(None)</span></code> marks a parameter whose value must be supplied by its mapped device source; if that source cannot be resolved, model assembly must report the unresolved parameter.</p>
 <p>Do not put every tunable number in <code class="docutils literal notranslate"><span class="pre">event_dict</span></code>. Dynamic parameters occupy the runtime parameter vector and form part of the public event interface. A fixed machine reactance belongs in <code class="docutils literal notranslate"><span class="pre">parameters</span></code>; an active-power reference intended for a step or ramp belongs in <code class="docutils literal notranslate"><span class="pre">event_dict</span></code>. Do not describe or create a retained runtime value as a “mode parameter”: <code class="docutils literal notranslate"><span class="pre">mode_dict</span></code> is the persisted engine field, while <strong>Retained mode</strong> is the current authoring concept.</p>
 </section>
 </section>
@@ -359,7 +361,6 @@
 <li><p>use power-flow quantities through <code class="docutils literal notranslate"><span class="pre">external_mapping</span></code> where appropriate;</p></li>
 <li><p>reconstruct internal controller and electrical variables from that operating point;</p></li>
 <li><p>provide consistent initial values for continuous states;</p></li>
-<li><p>initialize unresolved <code class="docutils literal notranslate"><span class="pre">Const(None)</span></code> dynamic parameters;</p></li>
 <li><p>avoid contradictory assignments and circular dependencies;</p></li>
 <li><p>use the same sign and per-unit conventions as the time-domain equations.</p></li>
 </ul>
@@ -425,9 +426,39 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">external_mapping</span></code> identifies operating-point and network-interface variables;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">api_obj_mapping</span></code> identifies configuration values copied from the associated API device.</p></li>
 </ul>
-<p>The mapping selects the source of the initial value; it does not select the parameter’s runtime role. The mapped <code class="docutils literal notranslate"><span class="pre">Var</span></code> must be declared by the same block in exactly one collection: <code class="docutils literal notranslate"><span class="pre">parameters</span></code> for a value that remains fixed, or <code class="docutils literal notranslate"><span class="pre">event_dict</span></code> for a value that scheduled events may change. A mapping-only variable is not registered by either RMS or EMT. New GUI-authored parameters use one explicit source: a concrete local <code class="docutils literal notranslate"><span class="pre">Const(value)</span></code>, or <code class="docutils literal notranslate"><span class="pre">Const(None)</span></code> together with <code class="docutils literal notranslate"><span class="pre">api_obj_mapping</span></code> when the associated grid device supplies the value.</p>
+<p>The mapping selects the source of the initial value; it does not select the parameter’s runtime role. The mapped <code class="docutils literal notranslate"><span class="pre">Var</span></code> must be declared by the same block in exactly one collection: <code class="docutils literal notranslate"><span class="pre">parameters</span></code> for a value that remains fixed, or <code class="docutils literal notranslate"><span class="pre">event_dict</span></code> for a value that scheduled events may change. A mapping-only variable is not registered by either RMS or EMT.</p>
+<p>Initial-value precedence is the same in RMS and EMT:</p>
+<ol class="arabic simple">
+<li><p>If <code class="docutils literal notranslate"><span class="pre">api_obj_mapping</span></code> is present and its device value is resolved, that device value is authoritative.</p></li>
+<li><p>Otherwise, the expression stored in <code class="docutils literal notranslate"><span class="pre">parameters</span></code> or <code class="docutils literal notranslate"><span class="pre">event_dict</span></code> is the authoritative local value.</p></li>
+<li><p>A scheduled event may subsequently replace an <code class="docutils literal notranslate"><span class="pre">event_dict</span></code> value during the simulation; it does not participate in initial-value source selection.</p></li>
+</ol>
+<p>The supported authoring patterns are therefore:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Declaration</p></th>
+<th class="head"><p>Mapping</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Concrete <code class="docutils literal notranslate"><span class="pre">Const(value)</span></code> or expression</p></td>
+<td><p>absent</p></td>
+<td><p>The model template owns the value.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Const(None)</span></code></p></td>
+<td><p>present</p></td>
+<td><p>The associated grid device must supply the value.</p></td>
+</tr>
+<tr class="row-even"><td><p>Concrete <code class="docutils literal notranslate"><span class="pre">Const(value)</span></code> or expression</p></td>
+<td><p>present</p></td>
+<td><p>The device value wins when it resolves; the declaration is a fallback and an information diagnostic records a different resolved value.</p></td>
+</tr>
+</tbody>
+</table>
+<p>The Dynamic Model Editor deliberately keeps the numeric-value control and device-source selector mutually exclusive, so its normal device-backed pattern is <code class="docutils literal notranslate"><span class="pre">Const(None)</span></code> plus <code class="docutils literal notranslate"><span class="pre">api_obj_mapping</span></code>. The concrete-fallback form exists for explicit scripted models and legacy compatibility; authors must not use it when the local value is intended to override the device. In that case, remove the mapping.</p>
 <p>Mappings follow block ownership recursively. When a child owns a parameter, declare both its storage entry and its <code class="docutils literal notranslate"><span class="pre">api_obj_mapping</span></code> entry on that child. Do not copy either entry to the root wrapper; the RMS and EMT problem builders traverse the hierarchy. A block flattened with <code class="docutils literal notranslate"><span class="pre">unify_blocks()</span></code> owns the merged declarations after its children have been consumed, so it also does not need a second wrapper copy.</p>
-<p>Use one semantic mapping key only once in the effective block hierarchy. The available keys and their intended units are defined by <code class="docutils literal notranslate"><span class="pre">ParamPowerFlowReferenceType</span></code>; use the GUI selector or inspect that enum rather than inventing a string key. The file loader repairs historical mapping-only static targets with <code class="docutils literal notranslate"><span class="pre">Const(None)</span></code> so old <code class="docutils literal notranslate"><span class="pre">.veragrid</span></code> files remain readable, but new templates must always declare the parameter explicitly.</p>
+<p>Use one semantic mapping key only once in the effective block hierarchy. The available keys and their intended units are defined by <code class="docutils literal notranslate"><span class="pre">ParamPowerFlowReferenceType</span></code>; use the GUI selector or inspect that enum rather than inventing a string key. Multiple sources may target one symbolic UID only when they resolve to the same value. VeraGrid keeps the first resolved value and reports a conflict instead of silently overwriting it when a later source differs. The file loader repairs historical mapping-only static targets with <code class="docutils literal notranslate"><span class="pre">Const(None)</span></code> so old <code class="docutils literal notranslate"><span class="pre">.veragrid</span></code> files remain readable, but new templates must always declare the parameter explicitly.</p>
 <p>Dynamic parameters may also expose a device initialization mapping in the GUI. The numeric-value control and device-source selector are mutually exclusive. Seeding a variable already owned by <code class="docutils literal notranslate"><span class="pre">event_dict</span></code> does not make it static: RMS and EMT use the mapped value as the pre-event baseline and retain the variable in their runtime parameter vectors. The loader preserves the serialized storage role and never promotes an event target into <code class="docutils literal notranslate"><span class="pre">parameters</span></code> merely because of its mapping key. Controller-specific gains with no corresponding device property should retain their template value; place them in <code class="docutils literal notranslate"><span class="pre">parameters</span></code> unless they are genuine event targets.</p>
 </section>
 <section id="ports-children-and-connections">
@@ -487,9 +518,9 @@
 <p>The following fragment creates an undervoltage latch. The continuous equations may read <code class="docutils literal notranslate"><span class="pre">trip_mode</span></code>, while the procedural entry is its only writer:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.procedural_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">flipflop</span>
 
-<span class="n">trip_mode</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"trip_mode"</span><span class="p">)</span>
-<span class="n">trip_voltage</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"V_trip"</span><span class="p">)</span>
-<span class="n">reset_voltage</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"V_reset"</span><span class="p">)</span>
+<span class="n">trip_mode</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;trip_mode&quot;</span><span class="p">)</span>
+<span class="n">trip_voltage</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;V_trip&quot;</span><span class="p">)</span>
+<span class="n">reset_voltage</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;V_reset&quot;</span><span class="p">)</span>
 
 <span class="n">block</span><span class="o">.</span><span class="n">mode_dict</span><span class="p">[</span><span class="n">trip_mode</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 <span class="n">block</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">trip_voltage</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.80</span><span class="p">)</span>
@@ -499,7 +530,7 @@
         <span class="n">boolset</span><span class="o">=</span><span class="n">voltage_magnitude</span> <span class="o">&lt;=</span> <span class="n">trip_voltage</span><span class="p">,</span>
         <span class="n">boolreset</span><span class="o">=</span><span class="n">voltage_magnitude</span> <span class="o">&gt;=</span> <span class="n">reset_voltage</span><span class="p">,</span>
         <span class="n">output</span><span class="o">=</span><span class="n">trip_mode</span><span class="p">,</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">"undervoltage_trip"</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;undervoltage_trip&quot;</span><span class="p">,</span>
     <span class="p">),</span>
 <span class="p">])</span>
 </pre></div>
@@ -538,47 +569,47 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">build_lagged_load_rms</span><span class="p">(</span>
     <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"Lagged RMS load"</span><span class="p">,</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Lagged RMS load&quot;</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RmsModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""Build a constant-Q load with a lagged active-power reference.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a constant-Q load with a lagged active-power reference.</span>
 
 <span class="sd">    :param var_factory: Grid-owned factory used to create symbolic identities.</span>
 <span class="sd">    :param name: Human-readable template and root-block name.</span>
 <span class="sd">    :return: RMS load template ready to attach to a load device.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">template</span><span class="p">:</span> <span class="n">RmsModelTemplate</span> <span class="o">=</span> <span class="n">RmsModelTemplate</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
     <span class="n">template</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">LoadDevice</span>
 
     <span class="c1"># The bus supplies voltage, while the load exposes solved active and</span>
     <span class="c1"># reactive power through the root contract.</span>
     <span class="n">voltage_magnitude</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">"Vm"</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Vm&quot;</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">voltage_angle</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">"Va"</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Va&quot;</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Va</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">active_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">"Pl"</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Pl&quot;</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">P</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">reactive_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">"Ql"</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ql&quot;</span><span class="p">,</span>
         <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Q</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># The filtered reference is a physical controller state. The two runtime</span>
     <span class="c1"># references are dynamic parameters because grid events may change them.</span>
-    <span class="n">filtered_active_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Pl_filtered"</span><span class="p">)</span>
-    <span class="n">active_power_reference</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Pl_ref"</span><span class="p">)</span>
-    <span class="n">reactive_power_reference</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Ql_ref"</span><span class="p">)</span>
+    <span class="n">filtered_active_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Pl_filtered&quot;</span><span class="p">)</span>
+    <span class="n">active_power_reference</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Pl_ref&quot;</span><span class="p">)</span>
+    <span class="n">reactive_power_reference</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ql_ref&quot;</span><span class="p">)</span>
 
     <span class="c1"># These particular API mappings populate fixed seed parameters. A mapped</span>
     <span class="c1"># event_dict target would instead remain event-capable after initialization.</span>
-    <span class="n">initial_active_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Pl0_device"</span><span class="p">)</span>
-    <span class="n">initial_reactive_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Ql0_device"</span><span class="p">)</span>
-    <span class="n">time_constant</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"T_p"</span><span class="p">)</span>
+    <span class="n">initial_active_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Pl0_device&quot;</span><span class="p">)</span>
+    <span class="n">initial_reactive_power</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Ql0_device&quot;</span><span class="p">)</span>
+    <span class="n">time_constant</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;T_p&quot;</span><span class="p">)</span>
 
     <span class="c1"># The time constant is required to be positive. A very small regularizer</span>
     <span class="c1"># protects evaluation at an accidental zero without replacing validation.</span>

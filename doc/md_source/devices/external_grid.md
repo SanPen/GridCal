@@ -44,7 +44,7 @@ Profile-enabled properties: `active`, `Cost`, `shift_key`, `P`, `Pa`, `Pb`, `Pc`
 |Cost                    |float                   |e/MWh  |False    |         |Cost of not served energy. Used in OPF.                                         |True       |       |
 |facility                |Facility                |       |False    |         |Facility where this is located                                                  |False      |       |
 |technologies            |AssociationsList        |p.u.   |False    |         |Technologies associations to injections                                         |False      |       |
-|scalable                |bool                    |       |False    |         |Is the injection scalable?                                                      |False      |       |
+|scalable                |bool                    |       |False    |         |Is the injection scalable? (only for data compatibility)                        |False      |       |
 |shift_key               |float                   |       |False    |         |Shift key for net transfer capacity                                             |True       |       |
 |longitude               |float                   |deg    |False    |         |longitude of the injection.                                                     |False      |       |
 |latitude                |float                   |deg    |False    |         |latitude of the injection.                                                      |False      |       |

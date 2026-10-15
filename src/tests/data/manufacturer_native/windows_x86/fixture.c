@@ -10,7 +10,7 @@
 #include <string.h>
 #include <windows.h>
 
-#include "../../../../VeraGridEngine/IO/manufacturer_native/native_worker/source/adapter_ieee_cigre_v1_1.h"
+#include "../../../../VeraGridEngine/data/native_worker/source/adapter_ieee_cigre_v1_1.h"
 
 __declspec(dllexport) IEEE_Cigre_DLLInterface_Model_Info *__cdecl Model_GetInfo(void) {
 #ifdef NULL_GET_INFO

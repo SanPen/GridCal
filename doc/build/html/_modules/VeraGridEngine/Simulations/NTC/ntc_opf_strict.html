@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.NTC.ntc_opf_strict &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.NTC.ntc_opf_strict &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -142,7 +143,11 @@
                                                     <span class="n">fill_worst_contingency_per_branch</span><span class="p">,</span>
                                                     <span class="n">evaluate_corrective_flow_addons</span><span class="p">,</span>
                                                     <span class="n">has_pmode3_control</span><span class="p">,</span>
-                                                    <span class="n">pmode3_formulation</span><span class="p">)</span>
+                                                    <span class="n">pmode3_formulation</span><span class="p">,</span>
+                                                    <span class="n">add_base_control_effort</span><span class="p">,</span>
+                                                    <span class="n">add_corrective_control_effort</span><span class="p">,</span>
+                                                    <span class="n">solve_least_control_effort</span><span class="p">,</span>
+                                                    <span class="n">get_exchange_proportions</span><span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.file_system</span><span class="w"> </span><span class="kn">import</span> <span class="n">opf_file_path</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.NTC.ntc_compact</span><span class="w"> </span><span class="kn">import</span> <span class="n">SolverProgress</span><span class="p">,</span> <span class="n">CompactContingencies</span>
 
@@ -320,92 +325,6 @@
 
 
 
-<div class="viewcode-block" id="get_sensed_proportions">
-<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.get_sensed_proportions">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_sensed_proportions</span><span class="p">(</span><span class="n">power</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
-                           <span class="n">idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
-                           <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-
-<span class="sd">    :param power:</span>
-<span class="sd">    :param idx:</span>
-<span class="sd">    :param logger:</span>
-<span class="sd">    :return:</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">nelem</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">power</span><span class="p">)</span>
-
-    <span class="c1"># bus area mask</span>
-    <span class="n">isin_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">nelem</span><span class="p">),</span> <span class="n">idx</span><span class="p">,</span> <span class="n">assume_unique</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-    <span class="n">p_ref</span> <span class="o">=</span> <span class="n">power</span> <span class="o">*</span> <span class="n">isin_</span>
-
-    <span class="c1"># get proportions of contribution by sense (gen or pump) and area</span>
-    <span class="c1"># the idea is both techs contributes to achieve the power shift goal in the same proportion</span>
-    <span class="c1"># that in base situation</span>
-
-    <span class="c1"># Filter positive and negative generators. Same vectors lenght, set not matched values to zero.</span>
-    <span class="n">gen_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">p_ref</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">p_ref</span><span class="p">)</span>
-    <span class="n">gen_neg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">p_ref</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">p_ref</span><span class="p">)</span>
-
-    <span class="n">denom</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">p_ref</span><span class="p">))</span>
-    <span class="k">if</span> <span class="n">denom</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
-        <span class="n">prop_up</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">gen_pos</span><span class="p">)</span> <span class="o">/</span> <span class="n">denom</span>
-        <span class="n">prop_dw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">gen_neg</span><span class="p">)</span> <span class="o">/</span> <span class="n">denom</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">prop_up</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gen_pos</span><span class="p">))</span>
-        <span class="n">prop_dw</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gen_neg</span><span class="p">))</span>
-
-    <span class="c1"># get proportion by production (ammount of power contributed by generator to his sensed area).</span>
-    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">gen_pos</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">prop_up_gen</span> <span class="o">=</span> <span class="n">gen_pos</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">gen_pos</span><span class="p">))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">prop_up_gen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">gen_pos</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">gen_neg</span><span class="p">))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="n">prop_dw_gen</span> <span class="o">=</span> <span class="n">gen_neg</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">gen_neg</span><span class="p">))</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">prop_dw_gen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">gen_neg</span><span class="p">)</span>
-
-    <span class="c1"># delta proportion by generator (considering both proportions: sense and production)</span>
-    <span class="n">prop_gen_delta_up</span> <span class="o">=</span> <span class="n">prop_up_gen</span> <span class="o">*</span> <span class="n">prop_up</span>
-    <span class="n">prop_gen_delta_dw</span> <span class="o">=</span> <span class="n">prop_dw_gen</span> <span class="o">*</span> <span class="n">prop_dw</span>
-
-    <span class="c1"># Join generator proportions into one vector</span>
-    <span class="c1"># Notice this is not a summatory, it&#39;s just joining like &#39;or&#39; logical operation</span>
-    <span class="n">proportions</span> <span class="o">=</span> <span class="n">prop_gen_delta_up</span> <span class="o">+</span> <span class="n">prop_gen_delta_dw</span>
-
-    <span class="c1"># some checks</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">proportions</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">):</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="s1">&#39;Issue computing proportions to scale delta generation in area 1.&#39;</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">proportions</span></div>
-
-
-
-<div class="viewcode-block" id="get_exchange_proportions">
-<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.get_exchange_proportions">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_exchange_proportions</span><span class="p">(</span><span class="n">power</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span>
-                             <span class="n">bus_a1_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
-                             <span class="n">bus_a2_idx</span><span class="p">:</span> <span class="n">IntVec</span><span class="p">,</span>
-                             <span class="n">logger</span><span class="p">:</span> <span class="n">Logger</span><span class="p">,</span>
-                             <span class="n">decimals</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Get generation proportions by transfer method with sign consideration.</span>
-<span class="sd">    :param power: Vec. Power reference</span>
-<span class="sd">    :param bus_a1_idx: bus indices within area 1</span>
-<span class="sd">    :param bus_a2_idx: bus indices within area 2</span>
-<span class="sd">    :param logger: logger instance</span>
-<span class="sd">    :param decimals: Number of decimals to round to</span>
-<span class="sd">    :return: proportions (rounded)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">proportions_a1</span> <span class="o">=</span> <span class="n">get_sensed_proportions</span><span class="p">(</span><span class="n">power</span><span class="o">=</span><span class="n">power</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="n">bus_a1_idx</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
-    <span class="n">proportions_a2</span> <span class="o">=</span> <span class="n">get_sensed_proportions</span><span class="p">(</span><span class="n">power</span><span class="o">=</span><span class="n">power</span><span class="p">,</span> <span class="n">idx</span><span class="o">=</span><span class="n">bus_a2_idx</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
-    <span class="n">proportions</span> <span class="o">=</span> <span class="n">proportions_a1</span> <span class="o">-</span> <span class="n">proportions_a2</span>
-
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">proportions</span><span class="p">,</span> <span class="n">decimals</span><span class="p">)</span></div>
-
-
-
 <div class="viewcode-block" id="BusNtcVars">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.BusNtcVars">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BusNtcVars</span><span class="p">:</span>
@@ -509,6 +428,7 @@
         <span class="s2">&quot;worst_contingency_flow&quot;</span><span class="p">,</span>
         <span class="s2">&quot;worst_contingency_loading&quot;</span><span class="p">,</span>
         <span class="s2">&quot;alpha_n1_worst&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;worst_contingency_ties&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
@@ -541,6 +461,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">worst_contingency_loading</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">alpha_n1_worst</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nt</span><span class="p">,</span> <span class="n">n_elm</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 
+        <span class="c1"># branch, group, N-1 flow (MW), N-1 loading (p.u.), alpha N-1 of the groups tied with the worst</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">worst_contingency_ties</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
 <div class="viewcode-block" id="BranchNtcVars.get_values">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Simulations.NTC.html#VeraGridEngine.Simulations.NTC.ntc_opf_strict.BranchNtcVars.get_values">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Sbase</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">OrToolsLpModel</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BranchNtcVars&quot;</span><span class="p">:</span>
@@ -562,6 +485,7 @@
         <span class="n">data</span><span class="o">.</span><span class="n">worst_contingency_flow</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">worst_contingency_flow</span>
         <span class="n">data</span><span class="o">.</span><span class="n">worst_contingency_loading</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">worst_contingency_loading</span>
         <span class="n">data</span><span class="o">.</span><span class="n">alpha_n1_worst</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_n1_worst</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">worst_contingency_ties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">worst_contingency_ties</span>
 
         <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nt</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_elm</span><span class="p">):</span>
@@ -1389,9 +1313,6 @@
                 <span class="n">structural_ntc</span><span class="o">=</span><span class="n">structural_ntc</span><span class="p">,</span> <span class="n">ntc_load_rule</span><span class="o">=</span><span class="n">ntc_load_rule</span><span class="p">,</span>
                 <span class="n">alpha_threshold</span><span class="o">=</span><span class="n">alpha_threshold</span><span class="p">,</span> <span class="n">alpha_n1_abs</span><span class="o">=</span><span class="n">alpha_n1_abs</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="n">prob</span><span class="p">)</span>
 
-    <span class="c1"># copy the contingency rates</span>
-    <span class="n">branch_vars</span><span class="o">.</span><span class="n">contingency_rates</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">branch_data_t</span><span class="o">.</span><span class="n">contingency_rates</span>
-
     <span class="k">return</span> <span class="n">f_obj</span></div>
 
 
@@ -1841,6 +1762,10 @@
                                                         <span class="n">areas_dict</span><span class="o">=</span><span class="n">areas_dict</span><span class="p">,</span>
                                                         <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">)</span>
 
+    <span class="c1"># The N-1 report divides by these ratings even when no contingency row enters the LP</span>
+    <span class="c1"># so copy them unconditionally</span>
+    <span class="n">mip_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">contingency_rates</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">contingency_rates</span>
+
     <span class="c1"># branch index, branch object, flow sense w.r.t the area exchange</span>
     <span class="n">bus_a1_idx_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">bus_a1_idx</span><span class="p">)</span>
     <span class="n">bus_a2_idx_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">bus_a2_idx</span><span class="p">)</span>
@@ -2063,13 +1988,31 @@
         <span class="n">status</span> <span class="o">=</span> <span class="n">controlled_states</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">f_obj</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="n">robust</span><span class="p">,</span> <span class="n">show_logs</span><span class="o">=</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span>
                                          <span class="n">progress</span><span class="o">=</span><span class="n">SolverProgress</span><span class="p">(</span><span class="n">progress_text</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">pass</span>  <span class="c1"># Other control modes already have their contingency constraints.</span>
+        <span class="c1"># Other control modes already have their contingency constraints. Among the optima,</span>
+        <span class="c1"># pick the least control effort so the operating point and its limiting pairs are reproducible.</span>
+        <span class="n">effort</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">LpExp</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="n">add_base_control_effort</span><span class="p">(</span><span class="n">prob</span><span class="o">=</span><span class="n">lp_model</span><span class="p">,</span> <span class="n">t_idx</span><span class="o">=</span><span class="n">t_idx</span><span class="p">,</span>
+                                <span class="n">branch_data_t</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="p">,</span>
+                                <span class="n">active_branch_data_t</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">active_branch_data</span><span class="p">,</span>
+                                <span class="n">branch_vars</span><span class="o">=</span><span class="n">mip_vars</span><span class="o">.</span><span class="n">branch_vars</span><span class="p">,</span>
+                                <span class="n">vsc_vars</span><span class="o">=</span><span class="n">mip_vars</span><span class="o">.</span><span class="n">vsc_vars</span><span class="p">,</span>
+                                <span class="n">hvdc_vars</span><span class="o">=</span><span class="n">mip_vars</span><span class="o">.</span><span class="n">hvdc_vars</span><span class="p">,</span>
+                                <span class="n">effort</span><span class="o">=</span><span class="n">effort</span><span class="p">)</span>
+        <span class="n">add_corrective_control_effort</span><span class="p">(</span><span class="n">prob</span><span class="o">=</span><span class="n">lp_model</span><span class="p">,</span> <span class="n">vsc_delta_store</span><span class="o">=</span><span class="n">vsc_delta_store</span><span class="p">,</span>
+                                      <span class="n">hvdc_delta_store</span><span class="o">=</span><span class="n">hvdc_delta_store</span><span class="p">,</span> <span class="n">counted</span><span class="o">=</span><span class="nb">set</span><span class="p">(),</span> <span class="n">effort</span><span class="o">=</span><span class="n">effort</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="n">lp_model</span><span class="o">.</span><span class="n">OPTIMAL</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">effort</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="n">solve_least_control_effort</span><span class="p">(</span><span class="n">prob</span><span class="o">=</span><span class="n">lp_model</span><span class="p">,</span> <span class="n">objective</span><span class="o">=</span><span class="n">f_obj</span><span class="p">,</span> <span class="n">transfer</span><span class="o">=</span><span class="n">mip_vars</span><span class="o">.</span><span class="n">delta_1</span><span class="p">[</span><span class="n">t_idx</span><span class="p">],</span>
+                                                <span class="n">effort</span><span class="o">=</span><span class="n">effort</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="n">logger</span><span class="p">,</span> <span class="n">robust</span><span class="o">=</span><span class="n">robust</span><span class="p">,</span>
+                                                <span class="n">show_logs</span><span class="o">=</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">progress_text</span><span class="o">=</span><span class="n">progress_text</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>  <span class="c1"># nothing to choose among the optima, or the first stage failed</span>
 
     <span class="c1"># gather the results</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Status&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">lp_model</span><span class="o">.</span><span class="n">status2string</span><span class="p">(</span><span class="n">status</span><span class="p">))</span>
 
     <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="n">lp_model</span><span class="o">.</span><span class="n">OPTIMAL</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Objective function&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">lp_model</span><span class="o">.</span><span class="n">fobj_value</span><span class="p">())</span>
+        <span class="c1"># the transfer objective, not the second stage effort the model last minimised</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Objective function&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">lp_model</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="n">f_obj</span><span class="p">))</span>
         <span class="n">mip_vars</span><span class="o">.</span><span class="n">acceptable_solution</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s1">&#39;The problem does not have an optimal solution.&#39;</span><span class="p">)</span>
@@ -2126,6 +2069,8 @@
         <span class="n">worst_flow</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_flow</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:],</span>
         <span class="n">worst_loading</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_loading</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:],</span>
         <span class="n">alpha_n1_worst</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">alpha_n1_worst</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="p">:],</span>
+        <span class="n">tied_groups</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">branch_vars</span><span class="o">.</span><span class="n">worst_contingency_ties</span><span class="p">,</span>
+        <span class="n">branch_data</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="p">,</span>
         <span class="n">solved_flows</span><span class="o">=</span><span class="n">solved_flows</span><span class="p">,</span>
         <span class="n">corrective_addons_mw</span><span class="o">=</span><span class="n">corrective_addons_mw</span><span class="p">,</span>
     <span class="p">)</span>
@@ -2133,20 +2078,25 @@
     <span class="c1"># fill the power shift</span>
     <span class="n">vars_v</span><span class="o">.</span><span class="n">power_shift</span> <span class="o">=</span> <span class="n">vars_v</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">delta_p</span><span class="p">[:,</span> <span class="n">bus_a1_idx</span><span class="p">]</span>
 
-    <span class="c1"># register the slacks</span>
-    <span class="k">if</span> <span class="n">vars_v</span><span class="o">.</span><span class="n">delta_sl_1</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Inter area equality not fulfilled for area 1&quot;</span><span class="p">,</span>
-                           <span class="n">value</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">delta_sl_1</span><span class="p">[</span><span class="n">t_idx</span><span class="p">])</span>
+    <span class="c1"># The area 1 increase must equal the area 2 decrease. The balance slacks are interchangeable, so</span>
+    <span class="c1"># only their difference (= delta_1 - delta_2) is a mismatch</span>
+    <span class="n">area_mismatch_mw</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">vars_v</span><span class="o">.</span><span class="n">delta_1</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">-</span> <span class="n">vars_v</span><span class="o">.</span><span class="n">delta_2</span><span class="p">[</span><span class="n">t_idx</span><span class="p">])</span> <span class="o">*</span> <span class="n">grid</span><span class="o">.</span><span class="n">Sbase</span>
+    <span class="k">if</span> <span class="n">area_mismatch_mw</span> <span class="o">&gt;</span> <span class="mf">1e-3</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Area 1 increase and area 2 decrease differ (MW)&quot;</span><span class="p">,</span>
+                           <span class="n">value</span><span class="o">=</span><span class="n">area_mismatch_mw</span><span class="p">,</span> <span class="n">expected_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>  <span class="c1"># both areas moved the same power</span>
 
-    <span class="k">if</span> <span class="n">vars_v</span><span class="o">.</span><span class="n">delta_sl_2</span><span class="p">[</span><span class="n">t_idx</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">1e-6</span><span class="p">:</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Inter area equality not fulfilled for area 2&quot;</span><span class="p">,</span>
-                           <span class="n">value</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">delta_sl_2</span><span class="p">[</span><span class="n">t_idx</span><span class="p">])</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nb</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">vars_v</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">i</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">1e-8</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Inter area equality not fulfilled for area 2&quot;</span><span class="p">,</span>
-                               <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Bus </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-                               <span class="n">value</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">i</span><span class="p">])</span>
+    <span class="c1"># Kirchhoff balance of every networked bus (MW). Isolated buses were reported when formulated</span>
+    <span class="n">bus_k</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="k">for</span> <span class="n">bus_k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">nbus</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mip_vars</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">bus_k</span><span class="p">],</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+            <span class="k">pass</span>  <span class="c1"># isolated bus, no balance equation</span>
+        <span class="k">elif</span> <span class="nb">abs</span><span class="p">(</span><span class="n">vars_v</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">bus_k</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mf">1e-3</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">add_warning</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Nodal balance not fulfilled (MW)&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">nc</span><span class="o">.</span><span class="n">bus_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">bus_k</span><span class="p">],</span>
+                               <span class="n">value</span><span class="o">=</span><span class="n">vars_v</span><span class="o">.</span><span class="n">bus_vars</span><span class="o">.</span><span class="n">Pbalance</span><span class="p">[</span><span class="n">t_idx</span><span class="p">,</span> <span class="n">bus_k</span><span class="p">],</span> <span class="n">expected_value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>  <span class="c1"># balanced within tolerance</span>
 
     <span class="c1"># add the model logger to the main logger</span>
     <span class="n">logger</span> <span class="o">+=</span> <span class="n">lp_model</span><span class="o">.</span><span class="n">logger</span>
@@ -2164,8 +2114,8 @@
     <span class="n">inter_area_hvdc_sense</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inter_info_hvdc</span><span class="p">]</span>
 
     <span class="n">inter_info_vsc</span> <span class="o">=</span> <span class="n">nc</span><span class="o">.</span><span class="n">vsc_data</span><span class="o">.</span><span class="n">get_inter_areas</span><span class="p">(</span><span class="n">bus_idx_from</span><span class="o">=</span><span class="n">bus_a1_idx</span><span class="p">,</span> <span class="n">bus_idx_to</span><span class="o">=</span><span class="n">bus_a2_idx</span><span class="p">)</span>
-    <span class="n">inter_area_vsc_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inter_info_vsc</span><span class="p">]</span>
-    <span class="n">inter_area_vsc_sense</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inter_info_vsc</span><span class="p">]</span>
+    <span class="n">inter_area_vsc_idx</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inter_info_vsc</span><span class="p">]</span>
+    <span class="n">inter_area_vsc_sense</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inter_info_vsc</span><span class="p">]</span>
 
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">inter_area_branch_idx</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Inter area branch&quot;</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">) - </span><span class="si">{</span><span class="n">nc</span><span class="o">.</span><span class="n">passive_branch_data</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>

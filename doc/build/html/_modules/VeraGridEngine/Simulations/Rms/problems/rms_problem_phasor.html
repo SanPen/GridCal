@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -69,7 +69,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -139,13 +140,13 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.jit_compiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">RMSCompiler</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Branches.transformer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Transformer2W</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.driver_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">DummySignal</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.importer.co_simulation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.co_simulation</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">advance_rms_fmu_cs_devices</span><span class="p">,</span>
     <span class="n">close_rms_fmu_cs_devices</span><span class="p">,</span>
     <span class="n">initialize_rms_fmu_cs_devices</span><span class="p">,</span>
     <span class="n">register_rms_fmu_cs_device</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.importer.model_exchange</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.model_exchange</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">advance_rms_fmu_me_devices</span><span class="p">,</span>
     <span class="n">close_rms_fmu_me_devices</span><span class="p">,</span>
     <span class="n">get_next_rms_fmu_me_event_time</span><span class="p">,</span>
@@ -154,7 +155,7 @@
     <span class="n">register_rms_fmu_me_device</span><span class="p">,</span>
     <span class="n">resolve_rms_fmu_me_devices</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.importer.runtime_profile</span><span class="w"> </span><span class="kn">import</span> <span class="n">FmuMeEvaluationBudget</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.profile</span><span class="w"> </span><span class="kn">import</span> <span class="n">FmuMeEvaluationBudget</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_tic</span><span class="p">():</span>
@@ -168,9 +169,9 @@
 <div class="viewcode-block" id="setP">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.setP">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">setP</span><span class="p">(</span><span class="n">P</span><span class="p">:</span> <span class="n">ObjVec</span><span class="p">,</span> <span class="n">P_used</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set or add to P value at index k.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">P_used</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
         <span class="n">P</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
         <span class="n">P_used</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
@@ -182,9 +183,9 @@
 <div class="viewcode-block" id="setQ">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.setQ">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">setQ</span><span class="p">(</span><span class="n">Q</span><span class="p">:</span> <span class="n">ObjVec</span><span class="p">,</span> <span class="n">Q_used</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set or add to Q value at index k.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">Q_used</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
         <span class="n">Q</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
         <span class="n">Q_used</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
@@ -196,9 +197,9 @@
 <div class="viewcode-block" id="setIr">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.setIr">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">setIr</span><span class="p">(</span><span class="n">Ir</span><span class="p">:</span> <span class="n">ObjVec</span><span class="p">,</span> <span class="n">Ir_used</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set or add to Ir (real current) value at index k.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">Ir_used</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
         <span class="n">Ir</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
         <span class="n">Ir_used</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
@@ -210,9 +211,9 @@
 <div class="viewcode-block" id="setIi">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.setIi">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">setIi</span><span class="p">(</span><span class="n">Ii</span><span class="p">:</span> <span class="n">ObjVec</span><span class="p">,</span> <span class="n">Ii_used</span><span class="p">:</span> <span class="n">BoolVec</span><span class="p">,</span> <span class="n">k</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Set or add to Ii (imaginary current) value at index k.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">Ii_used</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
         <span class="n">Ii</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
         <span class="n">Ii_used</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
@@ -224,7 +225,7 @@
 <div class="viewcode-block" id="RmsProblemPhasor">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RmsProblemPhasor</span><span class="p">(</span><span class="n">RmsProblemTemplate</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Phasor-based DAE (Differential-Algebraic Equation) class.</span>
 
 <span class="sd">    This class uses phasor representation (Vr, Vi) for voltages instead of polar coordinates (Vm, Va).</span>
@@ -236,64 +237,64 @@
 <span class="sd">        - Store residual equations using phasor-based power flow equations</span>
 <span class="sd">        - Store sparsity patterns</span>
 <span class="sd">        - Convert between polar (power flow) and phasor (RMS) representations</span>
-<span class="sd">    """</span>
-    <span class="n">VARS_NAME</span> <span class="o">=</span> <span class="s2">"vars"</span>
-    <span class="n">VARIABLE_PARAMS_NAME</span> <span class="o">=</span> <span class="s2">"vprms"</span>
-    <span class="n">CONSTANT_PARAMS_NAME</span> <span class="o">=</span> <span class="s2">"cprms"</span>
-    <span class="n">DIFF_NAME</span> <span class="o">=</span> <span class="s2">"diff"</span>
-    <span class="n">TIME_NAME</span> <span class="o">=</span> <span class="s2">"glob_time"</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">VARS_NAME</span> <span class="o">=</span> <span class="s2">&quot;vars&quot;</span>
+    <span class="n">VARIABLE_PARAMS_NAME</span> <span class="o">=</span> <span class="s2">&quot;vprms&quot;</span>
+    <span class="n">CONSTANT_PARAMS_NAME</span> <span class="o">=</span> <span class="s2">&quot;cprms&quot;</span>
+    <span class="n">DIFF_NAME</span> <span class="o">=</span> <span class="s2">&quot;diff&quot;</span>
+    <span class="n">TIME_NAME</span> <span class="o">=</span> <span class="s2">&quot;glob_time&quot;</span>
 
     <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="s2">"options"</span><span class="p">,</span>
-        <span class="s2">"logger"</span><span class="p">,</span>
-        <span class="s2">"sys_block"</span><span class="p">,</span>
-        <span class="s2">"sys_vars"</span><span class="p">,</span>
-        <span class="s2">"init_guess"</span><span class="p">,</span>
-        <span class="s2">"Sf"</span><span class="p">,</span>
-        <span class="s2">"St"</span><span class="p">,</span>
-        <span class="s2">"_state_vars"</span><span class="p">,</span>
-        <span class="s2">"_algebraic_vars"</span><span class="p">,</span>
-        <span class="s2">"_diff_vars"</span><span class="p">,</span>
-        <span class="s2">"_state_algeb_vars"</span><span class="p">,</span>
-        <span class="s2">"_variable_parameters"</span><span class="p">,</span>
-        <span class="s2">"_constant_parameters"</span><span class="p">,</span>
-        <span class="s2">"_state_eqs"</span><span class="p">,</span>
-        <span class="s2">"_algebraic_eqs"</span><span class="p">,</span>
-        <span class="s2">"_event_parameters_eqs"</span><span class="p">,</span>
-        <span class="s2">"_event_parameters_eqs0"</span><span class="p">,</span>
-        <span class="s2">"_uid2idx_vars"</span><span class="p">,</span>
-        <span class="s2">"_uid2idx_diff"</span><span class="p">,</span>
-        <span class="s2">"_uid2idx_params"</span><span class="p">,</span>
-        <span class="s2">"_uid2idx_event_params"</span><span class="p">,</span>
-        <span class="s2">"_uid2idx_t"</span><span class="p">,</span>
-        <span class="s2">"_vars_glob_name2uid"</span><span class="p">,</span>
-        <span class="s2">"_compiler_names_dict"</span><span class="p">,</span>
-        <span class="s2">"_alias_names_dict"</span><span class="p">,</span>
-        <span class="s2">"_n_state"</span><span class="p">,</span>
-        <span class="s2">"_n_alg"</span><span class="p">,</span>
-        <span class="s2">"_n_algebraic"</span><span class="p">,</span>
-        <span class="s2">"_n_diff"</span><span class="p">,</span>
-        <span class="s2">"_n_params"</span><span class="p">,</span>
-        <span class="s2">"_n_event_params"</span><span class="p">,</span>
-        <span class="s2">"_n_vars"</span><span class="p">,</span>
-        <span class="s2">"_constant_params"</span><span class="p">,</span>
-        <span class="s2">"_parameters_values"</span><span class="p">,</span>
-        <span class="s2">"_variable_parameters_values"</span><span class="p">,</span>
-        <span class="s2">"_glob_time"</span><span class="p">,</span>
-        <span class="s2">"_event_params_fn"</span><span class="p">,</span>
-        <span class="s2">"_rhs_state_fn"</span><span class="p">,</span>
-        <span class="s2">"_rhs_algeb_fn"</span><span class="p">,</span>
-        <span class="s2">"_derivative_fn"</span><span class="p">,</span>
-        <span class="s2">"_j11_fn"</span><span class="p">,</span>
-        <span class="s2">"_j12_fn"</span><span class="p">,</span>
-        <span class="s2">"_j21_fn"</span><span class="p">,</span>
-        <span class="s2">"_j22_fn"</span><span class="p">,</span>
-        <span class="s2">"_vars_info"</span><span class="p">,</span>
-        <span class="s2">"_fmu_cs_adapters"</span><span class="p">,</span>
-        <span class="s2">"_fmu_cs_initialized"</span><span class="p">,</span>
-        <span class="s2">"_fmu_me_adapters"</span><span class="p">,</span>
-        <span class="s2">"_fmu_me_initialized"</span><span class="p">,</span>
-        <span class="s2">"_fmu_me_evaluation_budget"</span><span class="p">,</span>
+        <span class="s2">&quot;options&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;logger&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sys_block&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;sys_vars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;init_guess&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Sf&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;St&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_state_vars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_algebraic_vars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_diff_vars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_state_algeb_vars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_variable_parameters&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_constant_parameters&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_state_eqs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_algebraic_eqs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_event_parameters_eqs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_event_parameters_eqs0&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_uid2idx_vars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_uid2idx_diff&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_uid2idx_params&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_uid2idx_event_params&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_uid2idx_t&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_vars_glob_name2uid&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_compiler_names_dict&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_alias_names_dict&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_state&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_alg&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_algebraic&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_diff&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_params&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_event_params&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_n_vars&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_constant_params&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_parameters_values&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_variable_parameters_values&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_glob_time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_event_params_fn&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_rhs_state_fn&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_rhs_algeb_fn&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_derivative_fn&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_j11_fn&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_j12_fn&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_j21_fn&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_j22_fn&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_vars_info&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_fmu_cs_adapters&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_fmu_cs_initialized&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_fmu_me_adapters&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_fmu_me_initialized&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;_fmu_me_evaluation_budget&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -301,12 +302,12 @@
                  <span class="n">options</span><span class="p">:</span> <span class="n">RmsOptions</span><span class="p">,</span>
                  <span class="n">pf_results</span><span class="p">:</span> <span class="n">PowerFlowResults</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
                  <span class="n">progress_signal</span><span class="p">:</span> <span class="n">DummySignal</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 
 <span class="sd">        :param grid:</span>
 <span class="sd">        :param options:</span>
 <span class="sd">        :param pf_results:</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">Logger</span><span class="p">()</span>
@@ -392,7 +393,7 @@
         <span class="n">diff_init_guess</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">run_explicit_initialization</span><span class="p">(</span><span class="n">mdl</span><span class="p">:</span> <span class="n">Block</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">            </span><span class="sd">"""Initialize one phasor model through the shared symbolic core."""</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Initialize one phasor model through the shared symbolic core.&quot;&quot;&quot;</span>
             <span class="k">nonlocal</span> <span class="n">diff_init_guess</span>
             <span class="n">sys_diff_vars</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="n">diff_var</span><span class="o">.</span><span class="n">uid</span><span class="p">:</span> <span class="n">diff_var</span> <span class="k">for</span> <span class="n">diff_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_diff_vars</span>
@@ -458,7 +459,7 @@
             <span class="c1"># Todo: missing default initialization for the model</span>
             <span class="c1"># flatten model</span>
             <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"No RMS model"</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;No RMS model&quot;</span><span class="p">,</span>
                                       <span class="n">device_class</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                       <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -595,7 +596,7 @@
         <span class="c1"># Populating VSCs init guess</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_vsc</span><span class="p">()):</span>
             <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"No RMS model"</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;No RMS model&quot;</span><span class="p">,</span>
                                       <span class="n">device_class</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                       <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -645,7 +646,7 @@
         <span class="c1"># Populating HVDC init guess (similar to VSCs)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">elm</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">get_hvdc</span><span class="p">()):</span>
             <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"No RMS model"</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;No RMS model&quot;</span><span class="p">,</span>
                                       <span class="n">device_class</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                       <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -681,7 +682,7 @@
         <span class="k">for</span> <span class="n">elm</span> <span class="ow">in</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_vsc</span><span class="p">():</span>
 
             <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"No RMS model"</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;No RMS model&quot;</span><span class="p">,</span>
                                       <span class="n">device_class</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                       <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
@@ -693,7 +694,7 @@
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">initialization_method</span> <span class="o">==</span> <span class="n">RmsInitializationMethod</span><span class="o">.</span><span class="n">Explicit</span><span class="p">:</span>
                     <span class="n">run_explicit_initialization</span><span class="p">(</span><span class="n">mdl</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Not implemented initialization method"</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Not implemented initialization method&quot;</span><span class="p">)</span>
                 <span class="c1"># add model to system block</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">sys_block</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="p">)</span>
 
@@ -754,11 +755,12 @@
         <span class="k">for</span> <span class="n">elm</span> <span class="ow">in</span> <span class="n">grid</span><span class="o">.</span><span class="n">get_injection_devices_iter</span><span class="p">():</span>
 
             <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"No RMS model"</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;No RMS model&quot;</span><span class="p">,</span>
                                       <span class="n">device_class</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">device_type</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
                                       <span class="n">device</span><span class="o">=</span><span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">bus_index</span> <span class="o">=</span> <span class="n">bus_dict</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="p">]</span>
+                <span class="n">Sdev</span><span class="p">:</span> <span class="nb">complex</span> <span class="o">=</span> <span class="n">injection_init_data</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
 
                 <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">device_type</span> <span class="o">==</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">ShuntDevice</span><span class="p">:</span>
                     <span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="o">.</span><span class="n">api_obj_mapping</span><span class="p">[</span><span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">g</span><span class="p">]]</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">G</span><span class="p">)</span> <span class="o">/</span> <span class="n">grid</span><span class="o">.</span><span class="n">Sbase</span><span class="p">)</span>
@@ -769,13 +771,17 @@
                 <span class="n">register_rms_fmu_me_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm</span><span class="p">,</span> <span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">elm</span><span class="o">.</span><span class="n">bus</span><span class="o">.</span><span class="n">is_dc</span><span class="p">:</span>
-                    <span class="c1"># DC buses: use power directly if supported, otherwise skip</span>
-                    <span class="n">Sbus_dc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">power_flow_results</span><span class="o">.</span><span class="n">Sbus</span><span class="p">[</span><span class="n">bus_index</span><span class="p">]</span>
+                    <span class="c1"># DC models use the individual PF allocation. The aggregate</span>
+                    <span class="c1"># Sbus value would be repeated by every injection at the bus.</span>
                     <span class="k">if</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">P</span> <span class="ow">in</span> <span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="o">.</span><span class="n">external_mapping</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">set_init_guess</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="p">,</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">P</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">Sbus_dc</span><span class="p">))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">set_init_guess</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="p">,</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">P</span><span class="p">,</span> <span class="n">Sdev</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">pass</span>
                     <span class="k">if</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Ir</span> <span class="ow">in</span> <span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="o">.</span><span class="n">external_mapping</span><span class="p">:</span>
                         <span class="c1"># Approximate: I = P/V (assuming V ≈ 1)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">set_init_guess</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="p">,</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Ir</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">Sbus_dc</span><span class="p">))</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">set_init_guess</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="p">,</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Ir</span><span class="p">,</span> <span class="n">Sdev</span><span class="o">.</span><span class="n">real</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">pass</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># Phasor formulation: convert per-device power injection to current</span>
                     <span class="n">Vbus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">power_flow_results</span><span class="o">.</span><span class="n">voltage</span><span class="p">[</span><span class="n">bus_index</span><span class="p">]</span>
@@ -813,7 +819,9 @@
                             <span class="n">Vbus</span><span class="o">.</span><span class="n">imag</span> <span class="o">*</span> <span class="n">Ir_val</span> <span class="o">-</span> <span class="n">Vbus</span><span class="o">.</span><span class="n">real</span> <span class="o">*</span> <span class="n">Ii_val</span>
                         <span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="n">Sdev</span> <span class="o">=</span> <span class="n">injection_init_data</span><span class="p">[</span><span class="n">elm</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
+                        <span class="c1"># Non-adjustable AC injections preserve the same</span>
+                        <span class="c1"># per-device operating point used by the other variants.</span>
+                        <span class="k">pass</span>
 
                     <span class="n">Ir_val</span><span class="p">,</span> <span class="n">Ii_val</span> <span class="o">=</span> <span class="n">_s_to_i</span><span class="p">(</span><span class="n">Sdev</span><span class="p">,</span> <span class="n">Vbus</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Ir</span> <span class="ow">in</span> <span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="o">.</span><span class="n">external_mapping</span><span class="p">:</span>
@@ -873,13 +881,13 @@
                         <span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Not implemented initialization method"</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Not implemented initialization method&quot;</span><span class="p">)</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">sys_block</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">elm</span><span class="o">.</span><span class="n">rms_model</span><span class="p">)</span>
 
         <span class="n">total_init_explicit_time</span> <span class="o">+=</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
-        <span class="c1"># print(f"\nTotal time explicit initialization: {total_init_explicit_time:.6f} seconds")</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">"Total time explicit initialization"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">total_init_explicit_time</span><span class="p">)</span>
+        <span class="c1"># print(f&quot;\nTotal time explicit initialization: {total_init_explicit_time:.6f} seconds&quot;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_info</span><span class="p">(</span><span class="s2">&quot;Total time explicit initialization&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">total_init_explicit_time</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 
@@ -891,12 +899,12 @@
                     <span class="c1"># DC buses have one voltage coordinate, so their physical</span>
                     <span class="c1"># terminal-power contract produces one active-power balance.</span>
                     <span class="k">if</span> <span class="n">Q_used</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Reactive-power balance found on a DC bus"</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Reactive-power balance found on a DC bus&quot;</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">if</span> <span class="n">P_used</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"Isolated bus"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;Isolated bus&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># Convert device terminal powers before emitting the two</span>
                     <span class="c1"># real-valued Kirchhoff current equations of an AC bus.</span>
@@ -914,7 +922,7 @@
                         <span class="n">imaginary_current_balance_used</span><span class="o">=</span><span class="n">Ii_used</span><span class="p">,</span>
                     <span class="p">)</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">Ir_used</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">Ii_used</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">"Isolated bus"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">add_error</span><span class="p">(</span><span class="s2">&quot;Isolated bus&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># Phasor AC buses own real and imaginary KCL residuals.</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Ir</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
@@ -957,36 +965,36 @@
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">diff_vars_from_states</span><span class="p">):</span>
             <span class="n">state_var</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_vars</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">diff_vars_from_states</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'aux'</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">state_var</span><span class="p">)</span>
+                <span class="n">diff_vars_from_states</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">var_factory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;aux&#39;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">state_var</span><span class="p">)</span>
         <span class="n">diff_vars_from_algebraic</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">diff_var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span> <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">diff_var</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_diff_vars</span> <span class="o">=</span> <span class="n">diff_vars_from_states</span> <span class="o">+</span> <span class="n">diff_vars_from_algebraic</span>
 
         <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_vars</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]"</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]"</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
             <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="c1"># for j, ep in enumerate(self._constant_parameters):</span>
-        <span class="c1">#     self._compiler_names_dict[ep.uid] = f"{self.CONSTANT_PARAMS_NAME}[{j}]"</span>
-        <span class="c1">#     self._alias_names_dict[ep.uid] = f"{self.CONSTANT_PARAMS_NAME}_{j}"</span>
+        <span class="c1">#     self._compiler_names_dict[ep.uid] = f&quot;{self.CONSTANT_PARAMS_NAME}[{j}]&quot;</span>
+        <span class="c1">#     self._alias_names_dict[ep.uid] = f&quot;{self.CONSTANT_PARAMS_NAME}_{j}&quot;</span>
         <span class="c1">#     self._uid2idx_params[ep.uid] = j</span>
         <span class="c1">#</span>
         <span class="c1"># for k, ep in enumerate(self._variable_parameters):</span>
-        <span class="c1">#     self._compiler_names_dict[ep.uid] = f"{self.VARIABLE_PARAMS_NAME}[{k}]"</span>
-        <span class="c1">#     self._alias_names_dict[ep.uid] = f"{self.VARIABLE_PARAMS_NAME}_{k}"</span>
+        <span class="c1">#     self._compiler_names_dict[ep.uid] = f&quot;{self.VARIABLE_PARAMS_NAME}[{k}]&quot;</span>
+        <span class="c1">#     self._alias_names_dict[ep.uid] = f&quot;{self.VARIABLE_PARAMS_NAME}_{k}&quot;</span>
         <span class="c1">#     self._uid2idx_event_params[ep.uid] = k</span>
 
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">ep</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_diff_vars</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DIFF_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">]"</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DIFF_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DIFF_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">]&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DIFF_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_diff</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_glob_time</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TIME_NAME</span>
@@ -995,7 +1003,7 @@
 
         <span class="k">for</span> <span class="n">it</span><span class="p">,</span> <span class="n">eq</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="p">):</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">eq</span><span class="p">,</span> <span class="n">Const</span><span class="p">)</span> <span class="ow">and</span> <span class="n">eq</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">' Event parameter </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="si">}</span><span class="s1"> has None Value'</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39; Event parameter </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="p">[</span><span class="n">it</span><span class="p">]</span><span class="si">}</span><span class="s1"> has None Value&#39;</span><span class="p">)</span>
 
 
         <span class="c1"># Store a copy of the original event parameters equations for later use with set_events_group</span>
@@ -1004,20 +1012,20 @@
         <span class="c1"># add events modifying values of event_parameters equations</span>
 
         <span class="n">collect_events</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">param</span><span class="p">:</span> <span class="p">{</span><span class="s2">"times"</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">"values"</span><span class="p">:</span> <span class="p">[]}</span>
+            <span class="n">param</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;times&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="p">[]}</span>
             <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span>
         <span class="p">}</span>
 
         <span class="k">for</span> <span class="n">rms_evt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">rms_events</span><span class="p">:</span>
-            <span class="n">collect_events</span><span class="p">[</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">parameter</span><span class="p">][</span><span class="s2">"times"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
-            <span class="n">collect_events</span><span class="p">[</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">parameter</span><span class="p">][</span><span class="s2">"values"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">collect_events</span><span class="p">[</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">parameter</span><span class="p">][</span><span class="s2">&quot;times&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+            <span class="n">collect_events</span><span class="p">[</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">parameter</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
             <span class="c1"># TODO: implement the function in block: apply_event</span>
         <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">events_info</span> <span class="ow">in</span> <span class="n">collect_events</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">default_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">param</span><span class="p">)]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">param</span><span class="p">)]</span> <span class="o">=</span> <span class="n">piecewise</span><span class="p">(</span>
                 <span class="n">time_var</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_glob_time</span><span class="p">,</span>
-                <span class="n">t_events</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">events_info</span><span class="p">[</span><span class="s2">"times"</span><span class="p">]),</span>
-                <span class="n">new_values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">events_info</span><span class="p">[</span><span class="s2">"values"</span><span class="p">]),</span>
+                <span class="n">t_events</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">events_info</span><span class="p">[</span><span class="s2">&quot;times&quot;</span><span class="p">]),</span>
+                <span class="n">new_values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">events_info</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]),</span>
                 <span class="n">default_value</span><span class="o">=</span><span class="n">default_value</span>
             <span class="p">)</span>
 
@@ -1025,7 +1033,7 @@
         <span class="c1"># Compile RHS and Jacobian using JIT Compiler adaptation</span>
         <span class="c1"># --------------------------------------------------------------------------------------------------------------</span>
         <span class="n">timings</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">"Compiling RMS using JIT Native Compiler..."</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Compiling RMS using JIT Native Compiler...&quot;</span><span class="p">)</span>
 
         <span class="n">t0</span> <span class="o">=</span> <span class="n">_tic</span><span class="p">()</span>
         <span class="n">rms_compiler</span> <span class="o">=</span> <span class="n">RMSCompiler</span><span class="p">(</span>
@@ -1035,11 +1043,11 @@
             <span class="n">c_params</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_constant_parameters</span><span class="p">,</span>
             <span class="n">compiler_names_dict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span>
         <span class="p">)</span>
-        <span class="n">timings</span><span class="p">[</span><span class="s2">"Compiler Setup"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
+        <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;Compiler Setup&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
 
         <span class="n">t0</span> <span class="o">=</span> <span class="n">_tic</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_derivative_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_derivative_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="p">)</span>
-        <span class="n">timings</span><span class="p">[</span><span class="s2">"SymbolicDerivative"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
+        <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;SymbolicDerivative&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
 
         <span class="n">t0</span> <span class="o">=</span> <span class="n">_tic</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_params_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_event_params_fn</span><span class="p">(</span>
@@ -1048,44 +1056,44 @@
             <span class="n">EVENT_PARAMS_NAME</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">VARIABLE_PARAMS_NAME</span><span class="p">,</span>
             <span class="n">TIME_NAME</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">TIME_NAME</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">timings</span><span class="p">[</span><span class="s2">"Event parameters"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
+        <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;Event parameters&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
 
         <span class="n">t0</span> <span class="o">=</span> <span class="n">_tic</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_rhs_algeb_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_rhs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">,</span> <span class="s2">"rhs_algeb"</span><span class="p">)</span>
-        <span class="n">timings</span><span class="p">[</span><span class="s2">"RHS algebraic"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rhs_algeb_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_rhs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">,</span> <span class="s2">&quot;rhs_algeb&quot;</span><span class="p">)</span>
+        <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;RHS algebraic&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_eqs</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">t0</span> <span class="o">=</span> <span class="n">_tic</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_rhs_state_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_rhs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_eqs</span><span class="p">,</span> <span class="s2">"rhs_state"</span><span class="p">)</span>
-            <span class="n">timings</span><span class="p">[</span><span class="s2">"RHS state"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rhs_state_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_rhs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_eqs</span><span class="p">,</span> <span class="s2">&quot;rhs_state&quot;</span><span class="p">)</span>
+            <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;RHS state&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
 
             <span class="n">t0</span> <span class="o">=</span> <span class="n">_tic</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_j11_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_sparse_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_eqs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_vars</span><span class="p">,</span> <span class="s2">"j11"</span><span class="p">)</span>
-            <span class="n">timings</span><span class="p">[</span><span class="s2">"J11 (dF/dx)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j11_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_sparse_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_eqs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_vars</span><span class="p">,</span> <span class="s2">&quot;j11&quot;</span><span class="p">)</span>
+            <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;J11 (dF/dx)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
 
             <span class="n">t0</span> <span class="o">=</span> <span class="n">_tic</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_j12_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_sparse_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_eqs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span><span class="p">,</span> <span class="s2">"j12"</span><span class="p">)</span>
-            <span class="n">timings</span><span class="p">[</span><span class="s2">"J12 (dF/dy)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j12_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_sparse_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_eqs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span><span class="p">,</span> <span class="s2">&quot;j12&quot;</span><span class="p">)</span>
+            <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;J12 (dF/dy)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
 
             <span class="n">t0</span> <span class="o">=</span> <span class="n">_tic</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_j21_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_sparse_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_vars</span><span class="p">,</span> <span class="s2">"j21"</span><span class="p">)</span>
-            <span class="n">timings</span><span class="p">[</span><span class="s2">"J21 (dG/dx)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j21_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_sparse_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_state_vars</span><span class="p">,</span> <span class="s2">&quot;j21&quot;</span><span class="p">)</span>
+            <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;J21 (dG/dx)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
 
             <span class="n">t0</span> <span class="o">=</span> <span class="n">_tic</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_j22_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_sparse_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span><span class="p">,</span> <span class="s2">"j22"</span><span class="p">)</span>
-            <span class="n">timings</span><span class="p">[</span><span class="s2">"J22 (dG/dy)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j22_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_sparse_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span><span class="p">,</span> <span class="s2">&quot;j22&quot;</span><span class="p">)</span>
+            <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;J22 (dG/dy)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
 
         <span class="k">else</span><span class="p">:</span>
             <span class="n">t0</span> <span class="o">=</span> <span class="n">_tic</span><span class="p">()</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_j22_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_sparse_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span><span class="p">,</span> <span class="s2">"j22"</span><span class="p">)</span>
-            <span class="n">timings</span><span class="p">[</span><span class="s2">"J22 only (no states)"</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_j22_fn</span> <span class="o">=</span> <span class="n">rms_compiler</span><span class="o">.</span><span class="n">compile_sparse_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_eqs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span><span class="p">,</span> <span class="s2">&quot;j22&quot;</span><span class="p">)</span>
+            <span class="n">timings</span><span class="p">[</span><span class="s2">&quot;J22 only (no states)&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_toc</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Model compiled with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span><span class="si">}</span><span class="s2"> variables"</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Compilation timing summary:"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model compiled with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span><span class="si">}</span><span class="s2"> variables&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Compilation timing summary:&quot;</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">timings</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">k</span><span class="si">:</span><span class="s2">30s</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">8.4f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Total JIT compile time: </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">timings</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">k</span><span class="si">:</span><span class="s2">30s</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">8.4f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total JIT compile time: </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">timings</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">)</span>
 
         <span class="n">variable_parameters_init</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable_parameter_number</span><span class="p">())</span>
 
@@ -1096,12 +1104,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_constant_params</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">const</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">const</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parameters_values</span><span class="p">])</span>
 
         <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">verbose</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Total compile time: </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">timings</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total compile time: </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">timings</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="RmsProblemPhasor.add_variables_to_compilation_dicts">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.add_variables_to_compilation_dicts">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_variables_to_compilation_dicts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elm</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">,</span> <span class="n">mdl</span><span class="p">:</span> <span class="n">Block</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        add variables and parameters info to the system block</span>
 
 <span class="sd">        :param elm:</span>
@@ -1110,17 +1118,17 @@
 <span class="sd">        :type mdl: VeraGridEngine.Utils.Symbolic.block.Block</span>
 <span class="sd">        :return:</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">block_item</span><span class="p">:</span> <span class="n">Block</span>
         <span class="k">for</span> <span class="n">block_item</span> <span class="ow">in</span> <span class="n">mdl</span><span class="o">.</span><span class="n">get_all_blocks</span><span class="p">():</span>
             <span class="c1"># i is for variables</span>
             <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">block_item</span><span class="o">.</span><span class="n">state_vars</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"State variable '</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' (uid=</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) is already registered in the system. "</span>
-                                   <span class="sa">f</span><span class="s2">"Previous device may have created a duplicate variable."</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span><span class="si">}</span><span class="s2">]"</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;State variable &#39;</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (uid=</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) is already registered in the system. &quot;</span>
+                                   <span class="sa">f</span><span class="s2">&quot;Previous device may have created a duplicate variable.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span><span class="si">}</span><span class="s2">]&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_register_global_var_name</span><span class="p">(</span><span class="n">name_key</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="n">block_item</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">add_device_var</span><span class="p">(</span><span class="n">dev</span><span class="o">=</span><span class="n">elm</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
@@ -1130,10 +1138,10 @@
 
             <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">block_item</span><span class="o">.</span><span class="n">algebraic_vars</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Algebraic variable '</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' (uid=</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) is already registered in the system. "</span>
-                                   <span class="sa">f</span><span class="s2">"Previous device may have created a duplicate variable."</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span><span class="si">}</span><span class="s2">]"</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Algebraic variable &#39;</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (uid=</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) is already registered in the system. &quot;</span>
+                                   <span class="sa">f</span><span class="s2">&quot;Previous device may have created a duplicate variable.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span><span class="si">}</span><span class="s2">]&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_vars</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_register_global_var_name</span><span class="p">(</span><span class="n">name_key</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="n">block_item</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">add_device_var</span><span class="p">(</span><span class="n">dev</span><span class="o">=</span><span class="n">elm</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
@@ -1145,10 +1153,10 @@
             <span class="n">ep</span><span class="p">:</span> <span class="n">Var</span>
             <span class="k">for</span> <span class="n">ep</span><span class="p">,</span> <span class="n">const</span> <span class="ow">in</span> <span class="n">block_item</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="n">ep</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_params</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Parameter '</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' (uid=</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) is already registered in the system. "</span>
-                                   <span class="sa">f</span><span class="s2">"Previous device may have created a duplicate parameter."</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">CONSTANT_PARAMS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_params</span><span class="si">}</span><span class="s2">]"</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">CONSTANT_PARAMS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_params</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parameter &#39;</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (uid=</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) is already registered in the system. &quot;</span>
+                                   <span class="sa">f</span><span class="s2">&quot;Previous device may have created a duplicate parameter.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">CONSTANT_PARAMS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_params</span><span class="si">}</span><span class="s2">]&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">CONSTANT_PARAMS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_params</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_params</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_params</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_constant_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ep</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_parameters_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">const</span><span class="p">)</span>
@@ -1158,10 +1166,10 @@
             <span class="k">for</span> <span class="n">ep</span><span class="p">,</span> <span class="n">eq</span> <span class="ow">in</span> <span class="n">block_item</span><span class="o">.</span><span class="n">event_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">ep</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_event_params</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Event parameter '</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' (uid=</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) is already registered in the system. "</span>
-                                   <span class="sa">f</span><span class="s2">"Previous device may have created a duplicate event parameter."</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARIABLE_PARAMS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">]"</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARIABLE_PARAMS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Event parameter &#39;</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (uid=</span><span class="si">{</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) is already registered in the system. &quot;</span>
+                                   <span class="sa">f</span><span class="s2">&quot;Previous device may have created a duplicate event parameter.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARIABLE_PARAMS_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">]&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">VARIABLE_PARAMS_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_event_params</span><span class="p">[</span><span class="n">ep</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ep</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eq</span><span class="p">)</span>
@@ -1170,10 +1178,10 @@
             <span class="c1"># l is for differential vars</span>
             <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">block_item</span><span class="o">.</span><span class="n">diff_vars</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_diff</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Differential variable '</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">' (uid=</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) is already registered in the system. "</span>
-                                   <span class="sa">f</span><span class="s2">"Previous device may have created a duplicate differential variable."</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DIFF_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_diff</span><span class="si">}</span><span class="s2">]"</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DIFF_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_diff</span><span class="si">}</span><span class="s2">"</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Differential variable &#39;</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; (uid=</span><span class="si">{</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">) is already registered in the system. &quot;</span>
+                                   <span class="sa">f</span><span class="s2">&quot;Previous device may have created a duplicate differential variable.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_compiler_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DIFF_NAME</span><span class="si">}</span><span class="s2">[</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_diff</span><span class="si">}</span><span class="s2">]&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_alias_names_dict</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">DIFF_NAME</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_diff</span><span class="si">}</span><span class="s2">&quot;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_diff</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_n_diff</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_register_global_var_name</span><span class="p">(</span><span class="n">name_key</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="n">elm</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">uid</span><span class="o">=</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="n">block_item</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">add_device_var</span><span class="p">(</span><span class="n">dev</span><span class="o">=</span><span class="n">elm</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="n">v</span><span class="p">)</span>
@@ -1190,9 +1198,9 @@
 <div class="viewcode-block" id="RmsProblemPhasor.set_init_guess">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.set_init_guess">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_init_guess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mdl</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span> <span class="n">reference_powerflow</span><span class="p">:</span> <span class="n">VarPowerFlowReferenceType</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add values from powerflow to initial guess.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">reference_powerflow</span> <span class="ow">in</span> <span class="n">mdl</span><span class="o">.</span><span class="n">external_mapping</span><span class="p">:</span>
             <span class="n">var</span> <span class="o">=</span> <span class="n">mdl</span><span class="o">.</span><span class="n">external_mapping</span><span class="p">[</span><span class="n">reference_powerflow</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span></div>
@@ -1202,15 +1210,15 @@
 <div class="viewcode-block" id="RmsProblemPhasor.get_init_guess_info">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.get_init_guess_info">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_init_guess_info</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns a df with uid, name, and initial value for the system variables.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">vars_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">var_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sys_vars</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
             <span class="n">vars_names</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">key</span><span class="p">,</span> <span class="n">var_name</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">vars_names</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">"key"</span><span class="p">,</span> <span class="s2">"var_name"</span><span class="p">,</span> <span class="s2">"value"</span><span class="p">])</span></div>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">vars_names</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;key&quot;</span><span class="p">,</span> <span class="s2">&quot;var_name&quot;</span><span class="p">,</span> <span class="s2">&quot;value&quot;</span><span class="p">])</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemPhasor.get_E_matrix">
@@ -1220,7 +1228,7 @@
         <span class="n">xdot</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
         <span class="c1"># for var in self._state_vars:</span>
         <span class="c1">#     if var.diff_var is None:</span>
-        <span class="c1">#         diff_var = self.grid.var_factory.add_diff_var(name = '', base_var=var)</span>
+        <span class="c1">#         diff_var = self.grid.var_factory.add_diff_var(name = &#39;&#39;, base_var=var)</span>
         <span class="c1">#         xdot.append(diff_var)</span>
         <span class="c1">#     else:</span>
         <span class="c1">#         xdot.append(var.diff_var)</span>
@@ -1259,7 +1267,7 @@
                 <span class="n">E_value</span><span class="p">[:,</span> <span class="n">col_idx</span><span class="p">]</span> <span class="o">+=</span> <span class="n">E_partial</span><span class="p">[:,</span> <span class="n">j</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">pass</span>
-        <span class="n">E_value</span><span class="p">[:</span><span class="n">n_states</span><span class="p">,</span> <span class="p">:</span><span class="n">n_states</span><span class="p">]</span> <span class="o">-=</span> <span class="n">sp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n_states</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">E_value</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"lil"</span><span class="p">)</span>
+        <span class="n">E_value</span><span class="p">[:</span><span class="n">n_states</span><span class="p">,</span> <span class="p">:</span><span class="n">n_states</span><span class="p">]</span> <span class="o">-=</span> <span class="n">sp</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">n_states</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">E_value</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;lil&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">E_value</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span></div>
 
@@ -1276,20 +1284,20 @@
         <span class="n">fy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_j12</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="mf">1e10</span><span class="p">)</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
         <span class="n">gx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_j21</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="mf">1e10</span><span class="p">)</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
         <span class="n">gy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_j22</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="mf">1e15</span><span class="p">)</span><span class="o">.</span><span class="n">tocsc</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">sp</span><span class="o">.</span><span class="n">bmat</span><span class="p">([[</span><span class="n">fx</span><span class="p">,</span> <span class="n">fy</span><span class="p">],</span> <span class="p">[</span><span class="n">gx</span><span class="p">,</span> <span class="n">gy</span><span class="p">]],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">"csc"</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">sp</span><span class="o">.</span><span class="n">bmat</span><span class="p">([[</span><span class="n">fx</span><span class="p">,</span> <span class="n">fy</span><span class="p">],</span> <span class="p">[</span><span class="n">gx</span><span class="p">,</span> <span class="n">gy</span><span class="p">]],</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;csc&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemPhasor.get_device_vars_dict">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.get_device_vars_dict">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_device_vars_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="n">ALL_DEV_TYPES</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">"""Get dictionary of device variables."""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get dictionary of device variables.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars_info</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemPhasor.add_device_var">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.add_device_var">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">add_device_var</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dev</span><span class="p">:</span> <span class="n">ALL_DEV_TYPES</span><span class="p">,</span> <span class="n">var</span><span class="p">:</span> <span class="n">Var</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Associate a variable with a device."""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Associate a variable with a device.&quot;&quot;&quot;</span>
         <span class="n">var_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars_info</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">var_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1301,7 +1309,7 @@
 <div class="viewcode-block" id="RmsProblemPhasor.get_var_idx">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.get_var_idx">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_var_idx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">:</span> <span class="n">Var</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Get variable index."""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get variable index.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_uid2idx_vars</span><span class="p">[</span><span class="n">v</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span></div>
 
 
@@ -1315,14 +1323,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_vars_glob_name2uid</span><span class="p">[</span><span class="n">name_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">uid</span>
             <span class="k">return</span>
 
-        <span class="n">block_tag</span> <span class="o">=</span> <span class="s2">""</span>
+        <span class="n">block_tag</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="k">if</span> <span class="n">block</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">block_tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"::</span><span class="si">{</span><span class="n">block</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">block</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">block_tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;::</span><span class="si">{</span><span class="n">block</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">#</span><span class="si">{</span><span class="n">block</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s2">&quot;</span>
 
-        <span class="n">disambiguated_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name_key</span><span class="si">}{</span><span class="n">block_tag</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">disambiguated_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_key</span><span class="si">}{</span><span class="n">block_tag</span><span class="si">}</span><span class="s2">&quot;</span>
 
         <span class="k">if</span> <span class="n">disambiguated_key</span> <span class="o">==</span> <span class="n">name_key</span> <span class="ow">or</span> <span class="n">disambiguated_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars_glob_name2uid</span><span class="p">:</span>
-            <span class="n">disambiguated_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name_key</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">uid</span><span class="si">}</span><span class="s2">]"</span>
+            <span class="n">disambiguated_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name_key</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">uid</span><span class="si">}</span><span class="s2">]&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_vars_glob_name2uid</span><span class="p">[</span><span class="n">disambiguated_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">uid</span>
 
@@ -1388,9 +1396,9 @@
 <div class="viewcode-block" id="RmsProblemPhasor.get_x0">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.get_x0">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_x0</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Vec</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Helper function to build the initial vector.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_state_vars</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_algebraic_vars</span><span class="p">))</span>
 
         <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1407,12 +1415,12 @@
         <span class="n">t_prev</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">t_target</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Return the earliest imported FMI ME time event in one interval.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the earliest imported FMI ME time event in one interval.</span>
 
 <span class="sd">        :param t_prev: Previous accepted RMS time.</span>
 <span class="sd">        :param t_target: Candidate RMS target time.</span>
 <span class="sd">        :return: Earliest FMI event in ``(t_prev, t_target]`` or ``None``.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="n">get_next_rms_fmu_me_event_time</span><span class="p">(</span>
             <span class="n">problem</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
@@ -1427,14 +1435,14 @@
                                <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                                <span class="n">x_snapshot</span><span class="p">:</span> <span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                                <span class="n">scheduled_t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""Update the variable parameters."""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update the variable parameters.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters_values</span><span class="p">[:</span><span class="bp">self</span><span class="o">.</span><span class="n">_n_event_params</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_params_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters_values</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="RmsProblemPhasor.reset_boundary_update_state">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.reset_boundary_update_state">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reset_boundary_update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Reset runtime event-parameter state to the initial simulation time."""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset runtime event-parameter state to the initial simulation time.&quot;&quot;&quot;</span>
         <span class="n">variable_parameters_init</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable_parameter_number</span><span class="p">())</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_params_fn</span><span class="p">(</span><span class="n">variable_parameters_init</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">t0</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_params_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters_values</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">t0</span><span class="p">))</span></div>
@@ -1443,7 +1451,7 @@
 <div class="viewcode-block" id="RmsProblemPhasor.update">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.update">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="n">Vec</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Store runtime event parameters for the current Newton step."""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store runtime event parameters for the current Newton step.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters_values</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="p">)]</span></div>
 
 
@@ -1451,13 +1459,13 @@
 <div class="viewcode-block" id="RmsProblemPhasor.initialize_fmu_cs_devices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.initialize_fmu_cs_devices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">initialize_fmu_cs_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_snapshot</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize imported FMU Co-Simulation devices before the RMS time loop starts.</span>
 
 <span class="sd">        :param x_snapshot: Initial accepted state vector.</span>
 <span class="sd">        :param t: Initial simulation time.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fmu_cs_adapters</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">initialize_rms_fmu_cs_devices</span><span class="p">(</span><span class="n">problem</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_snapshot</span><span class="o">=</span><span class="n">x_snapshot</span><span class="p">,</span> <span class="n">time_value</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1467,14 +1475,14 @@
 <div class="viewcode-block" id="RmsProblemPhasor.advance_fmu_cs_devices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.advance_fmu_cs_devices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">advance_fmu_cs_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x_snapshot</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Advance imported FMU Co-Simulation devices for one RMS communication step.</span>
 
 <span class="sd">        :param t: Current simulation time.</span>
 <span class="sd">        :param x_snapshot: Current accepted state vector.</span>
 <span class="sd">        :param h: RMS communication step.</span>
 <span class="sd">        :return: Whether at least one registered CS adapter advanced.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">co_simulation_advanced</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fmu_cs_adapters</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1492,11 +1500,11 @@
 <div class="viewcode-block" id="RmsProblemPhasor.close_fmu_cs_devices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.close_fmu_cs_devices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">close_fmu_cs_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Release imported FMU Co-Simulation devices after the RMS simulation ends.</span>
 
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fmu_cs_adapters</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">close_rms_fmu_cs_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
@@ -1504,13 +1512,13 @@
 <div class="viewcode-block" id="RmsProblemPhasor.initialize_fmu_me_devices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.initialize_fmu_me_devices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">initialize_fmu_me_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_snapshot</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize imported FMU Model Exchange devices before the RMS time loop starts.</span>
 
 <span class="sd">        :param x_snapshot: Initial accepted state vector.</span>
 <span class="sd">        :param t: Initial simulation time.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fmu_me_adapters</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">initialize_rms_fmu_me_devices</span><span class="p">(</span><span class="n">problem</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_snapshot</span><span class="o">=</span><span class="n">x_snapshot</span><span class="p">,</span> <span class="n">time_value</span><span class="o">=</span><span class="n">t</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1520,14 +1528,14 @@
 <div class="viewcode-block" id="RmsProblemPhasor.advance_fmu_me_devices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.advance_fmu_me_devices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">advance_fmu_me_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x_snapshot</span><span class="p">:</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">h</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Advance imported FMU Model Exchange devices for one RMS communication step.</span>
 
 <span class="sd">        :param t: Current simulation time.</span>
 <span class="sd">        :param x_snapshot: Current accepted state vector.</span>
 <span class="sd">        :param h: RMS communication step.</span>
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fmu_me_adapters</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">advance_rms_fmu_me_devices</span><span class="p">(</span><span class="n">problem</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_value</span><span class="o">=</span><span class="n">t</span><span class="p">,</span> <span class="n">x_snapshot</span><span class="o">=</span><span class="n">x_snapshot</span><span class="p">,</span> <span class="n">step_size</span><span class="o">=</span><span class="n">h</span><span class="p">)</span></div>
 
@@ -1535,11 +1543,11 @@
 <div class="viewcode-block" id="RmsProblemPhasor.resolve_fmu_me_devices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.resolve_fmu_me_devices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resolve_fmu_me_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accepted</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Resolve all prepared FMI ME candidates after one RMS step.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve all prepared FMI ME candidates after one RMS step.</span>
 
 <span class="sd">        :param accepted: Whether the RMS numerical step converged.</span>
 <span class="sd">        :return: Earlier state-event retry time, or ``None``.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fmu_me_adapters</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">resolve_rms_fmu_me_devices</span><span class="p">(</span>
@@ -1553,10 +1561,10 @@
 <div class="viewcode-block" id="RmsProblemPhasor.prepare_fmu_me_state_event_retry">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.prepare_fmu_me_state_event_retry">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prepare_fmu_me_state_event_retry</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""Localize an ME state event before any CS device advances.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Localize an ME state event before any CS device advances.</span>
 
 <span class="sd">        :return: Global shortened target time, or ``None``.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fmu_me_adapters</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">_prepare_rms_fmu_me_state_event_retry</span><span class="p">(</span>
@@ -1571,11 +1579,11 @@
 <div class="viewcode-block" id="RmsProblemPhasor.close_fmu_me_devices">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.close_fmu_me_devices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">close_fmu_me_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Release imported FMU Model Exchange devices after the RMS simulation ends.</span>
 
 <span class="sd">        :return: None.</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fmu_me_adapters</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">close_rms_fmu_me_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
@@ -1647,35 +1655,35 @@
 <div class="viewcode-block" id="RmsProblemPhasor.set_events_group">
 <a class="viewcode-back" href="../../../../../rst_source/api/auto/VeraGridEngine.Simulations.Rms.problems.html#VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor.RmsProblemPhasor.set_events_group">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_events_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rms_events_group</span><span class="p">:</span> <span class="n">RmsEventsGroup</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Set the events group to use for this simulation.</span>
 <span class="sd">        This filters events by group and recompiles the event parameters function.</span>
 
 <span class="sd">        :param rms_events_group: The RmsEventsGroup to use</span>
-<span class="sd">        """</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Restore original event parameters equations</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs0</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
         <span class="c1"># Collect events for this group only</span>
         <span class="n">collect_events</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="n">param</span><span class="p">:</span> <span class="p">{</span><span class="s2">"times"</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">"values"</span><span class="p">:</span> <span class="p">[]}</span>
+            <span class="n">param</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;times&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="p">[]}</span>
             <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span>
         <span class="p">}</span>
 
         <span class="c1"># Filter events by group</span>
         <span class="n">rms_evts</span> <span class="o">=</span> <span class="p">[</span><span class="n">evt</span> <span class="k">for</span> <span class="n">evt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">rms_events</span> <span class="k">if</span> <span class="n">evt</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">idtag</span> <span class="o">==</span> <span class="n">rms_events_group</span><span class="o">.</span><span class="n">idtag</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">rms_evt</span> <span class="ow">in</span> <span class="n">rms_evts</span><span class="p">:</span>
-            <span class="n">collect_events</span><span class="p">[</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">parameter</span><span class="p">][</span><span class="s2">"times"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
-            <span class="n">collect_events</span><span class="p">[</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">parameter</span><span class="p">][</span><span class="s2">"values"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="n">collect_events</span><span class="p">[</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">parameter</span><span class="p">][</span><span class="s2">&quot;times&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+            <span class="n">collect_events</span><span class="p">[</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">parameter</span><span class="p">][</span><span class="s2">&quot;values&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rms_evt</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
         <span class="c1"># Apply piecewise functions for events</span>
         <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">events_info</span> <span class="ow">in</span> <span class="n">collect_events</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">events_info</span><span class="p">[</span><span class="s2">"times"</span><span class="p">]:</span>  <span class="c1"># Only if there are events for this parameter</span>
+            <span class="k">if</span> <span class="n">events_info</span><span class="p">[</span><span class="s2">&quot;times&quot;</span><span class="p">]:</span>  <span class="c1"># Only if there are events for this parameter</span>
                 <span class="n">default_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">param</span><span class="p">)]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_event_parameters_eqs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_variable_parameters</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">param</span><span class="p">)]</span> <span class="o">=</span> <span class="n">piecewise</span><span class="p">(</span>
                     <span class="n">time_var</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_glob_time</span><span class="p">,</span>
-                    <span class="n">t_events</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">events_info</span><span class="p">[</span><span class="s2">"times"</span><span class="p">]),</span>
-                    <span class="n">new_values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">events_info</span><span class="p">[</span><span class="s2">"values"</span><span class="p">]),</span>
+                    <span class="n">t_events</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">events_info</span><span class="p">[</span><span class="s2">&quot;times&quot;</span><span class="p">]),</span>
+                    <span class="n">new_values</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">events_info</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]),</span>
                     <span class="n">default_value</span><span class="o">=</span><span class="n">default_value</span>
                 <span class="p">)</span>
 

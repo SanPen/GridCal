@@ -3944,10 +3944,18 @@ class RoundBaseArithmeticOpItem(QGraphicsEllipseItem):
         :param widget: Optional target widget.
         :return: None.
         """
-        rect = self.rect()
+        rect: QtCore.QRectF = self.rect()
+        border_color: QColor = (
+            EditorGraphicsCommonFeatures.BLOCK_BORDER_SELECTED
+            if self.isSelected()
+            else self.pen().color()
+        )
+
+        # Arithmetic blocks use a custom painter, so their selection outline
+        # must be resolved explicitly just like the other block item classes.
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         painter.setBrush(self.brush())
-        painter.setPen(self.pen())
+        painter.setPen(QPen(border_color, 1.6))
         painter.drawEllipse(rect)
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:
@@ -4242,10 +4250,18 @@ class RectBaseArithmeticOpItem(QGraphicsRectItem):
         :param widget: Optional target widget.
         :return: None.
         """
-        rect = self.rect()
+        rect: QtCore.QRectF = self.rect()
+        border_color: QColor = (
+            EditorGraphicsCommonFeatures.BLOCK_BORDER_SELECTED
+            if self.isSelected()
+            else self.pen().color()
+        )
+
+        # Keep the large-input arithmetic representation visually consistent
+        # with both the round arithmetic item and the regular block items.
         painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
         painter.setBrush(self.brush())
-        painter.setPen(self.pen())
+        painter.setPen(QPen(border_color, 1.6))
         painter.drawRoundedRect(rect, 6.0, 6.0)
 
     def mousePressEvent(self, event: QtWidgets.QGraphicsSceneMouseEvent) -> None:

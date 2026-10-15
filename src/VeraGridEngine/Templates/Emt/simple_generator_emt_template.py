@@ -488,12 +488,16 @@ def get_simple_generator_emt_template(vf: VarFactory, name: str = "simple_emt_ty
             i_B - (i_d * sym.sin(theta - 2 * np.pi / 3) + i_q * sym.cos(theta - 2 * np.pi / 3) + i_0),
             i_C - (i_d * sym.sin(theta + 2 * np.pi / 3) + i_q * sym.cos(theta + 2 * np.pi / 3) + i_0),
 
-            Te - (3 / 2) * (psi_q * i_d - psi_d * i_q),
+            # The EMT phase currents use the standard three-phase system base.
+            # Divide the amplitude-preserving dq torque by three so it remains
+            # on the same system power base as the mechanical-power reference.
+            Te - (1 / 2) * (psi_q * i_d - psi_d * i_q),
 
             # Averaged active and reactive powers in the synchronous dq frame.
-            # These are the correct quantities to compare with PF sharing references.
-            Pe - ((3 / 2) * (v_d * i_d + v_q * i_q) + 3 * v_0 * i_0),
-            Qe - ((3 / 2) * (v_q * i_d - v_d * i_q)),
+            # The raw abc/dq products are three times the per-unit power because
+            # phase quantities use the total three-phase Sbase.
+            Pe - ((1 / 2) * (v_d * i_d + v_q * i_q) + v_0 * i_0),
+            Qe - ((1 / 2) * (v_q * i_d - v_d * i_q)),
 
             # Active-power sharing: the mechanical power setpoint is the assigned share.
             Pm - P_share_ref,
@@ -613,7 +617,10 @@ def get_simple_generator_emt_template(vf: VarFactory, name: str = "simple_emt_ty
         et: vf.add_const(0.0),
         omega: omega_ref,
 
-        theta: phi_v + delta,
+        # The Park transform below defines the d axis with sine and the q axis
+        # with cosine. Rotate the PF-derived electrical angle by 90 degrees so
+        # the initialized dq fluxes satisfy the generator algebraic equations.
+        theta: phi_v + delta + np.pi / 2.0,
 
 
         v_d: 2 / 3 * (sym.sin(theta) * inputs[0] +
@@ -640,11 +647,13 @@ def get_simple_generator_emt_template(vf: VarFactory, name: str = "simple_emt_ty
         # v_f: i_f * Rf,
         psi_f: (Lmd + Lf) * i_f - Lmd * i_d,
 
-        Pe: ((3 / 2) * (v_d * i_d + v_q * i_q) + 3 * v_0 * i_0),
-        Qe: ((3 / 2) * (v_q * i_d - v_d * i_q)),
+        # Use the same three-phase-base normalization as the runtime equations
+        # so explicit initialization starts with Pe/Pm and Qe/Qref aligned.
+        Pe: ((1 / 2) * (v_d * i_d + v_q * i_q) + v_0 * i_0),
+        Qe: ((1 / 2) * (v_q * i_d - v_d * i_q)),
         Pm: P_share_ref,
 
-        Te: (3 / 2) * (psi_q * i_d - psi_d * i_q),
+        Te: (1 / 2) * (psi_q * i_d - psi_d * i_q),
         v_f: (Rf * i_f + Kq_share * (Q_share_ref - Qe)),
     }
 

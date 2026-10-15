@@ -25,7 +25,7 @@ from VeraGridEngine.Devices.Parents.injection_parent import InjectionParent
 from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Simulations.driver_template import DummySignal
 from VeraGridEngine.Devices.Events.emt_events_group import EmtEventsGroup
-from VeraGridEngine.Devices.types import ALL_DEV_TYPES
+from VeraGridEngine.Devices.types import ALL_DEV_TYPES, INJECTION_DEVICE_TYPES
 from VeraGridEngine.Utils.Symbolic.symbolic import Var, Expr, piecewise, Const, hard_sat, heaviside
 from VeraGridEngine.Utils.Symbolic.block import Block, has_emt_internal_grounding_link
 from VeraGridEngine.enumerations import (
@@ -33,6 +33,7 @@ from VeraGridEngine.enumerations import (
     ParamPowerFlowReferenceType,
     DeviceType,
     DynamicEventTransitionType,
+    DynamicSimulationMode,
     EmtInitializationMethod,
     EmtInitializationStatus,
     EmtLineTypes,
@@ -43,8 +44,19 @@ from VeraGridEngine.Templates.Emt.bergeron_line_emt_template import BergeronHist
 from VeraGridEngine.Simulations.EMT.JMARTI_Sim.jmarti_runtime import JMartiHistoryRuntime
 from VeraGridEngine.Simulations.PowerFlow3ph.power_flow_results_3ph import PowerFlowResults3Ph
 from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
+from VeraGridEngine.Simulations.EMT.injection_operating_point import (
+    EmtInjectionOperatingPoint,
+    build_balanced_emt_injection_operating_point,
+)
+from VeraGridEngine.Simulations.PowerFlow.NumericalMethods.common_functions import (
+    split_slack_bus_quantity_between_generators_and_batteries,
+)
 from VeraGridEngine.Simulations.EMT.initialization_emt import EmtInitializationReport, run_emt_native_initialization, run_emt_device_pseudo_transient_initialization, validate_emt_periodic_initialization, _compute_missing_dx0, _build_hierarchical_event_equation_list, _build_event_equation_lookup_from_problem_order
-from VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic import init_explicit_common, build_symbolic_vector_single_equation_compiler
+from VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic import (
+    ExplicitInitializationResult,
+    build_symbolic_vector_single_equation_compiler,
+    init_explicit_common,
+)
 from VeraGridEngine.Utils.Symbolic.compiled_functions import get_compiled_functions_cache_stats
 from VeraGridEngine.Utils.Symbolic.bus_emt_template import get_bus_emt_algebraic_vars
 from VeraGridEngine.Utils.Symbolic.bus_emt_template import BusEmtTemplate, get_bus_mask
@@ -66,113 +78,18 @@ from VeraGridEngine.Simulations.EMT.problems.emt_terminal_current_assembly impor
     assemble_emt_mapped_current_references,
 )
 from VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified import (
+    StaticParameterMappingDiagnostics,
     abc_to_nabc,
     assign_static_api_object_mapping_for_device,
     converter_control_code,
     get_api_parameter_initial_value_by_uid,
     get_line_g_keys,
+    get_current_injection_phase_values_pu_abc,
     get_load_power_phase_values_pu_abc,
     get_shunt_phase_values_pu_abc,
+    resolve_constant_parameter_initial_value,
+    resolve_runtime_parameter_initial_expression,
 )
-
-
-def _get_static_mapping_keys_for_parameter(
-        root_block: Block,
-        parameter: Var,
-) -> List[ParamPowerFlowReferenceType]:
-    """Return the static API mapping keys that target one EMT parameter.
-
-    EMT models can expose the authoritative mapping either on their wrapper
-    root or on a nested equation block. Traversing the complete hierarchy keeps
-    the diagnostic valid for both representations.
-
-    :param root_block: Complete EMT model assigned to the static device.
-    :param parameter: Constant symbolic parameter being diagnosed.
-    :return: Mapping keys whose target has the same immutable UID.
-    """
-    mapping_keys: List[ParamPowerFlowReferenceType] = list()
-    candidate_block: Block
-    mapping_key: ParamPowerFlowReferenceType
-    mapping_target: Var
-
-    for candidate_block in root_block.get_all_blocks():
-        for mapping_key, mapping_target in candidate_block.api_obj_mapping.items():
-            if mapping_target.uid == parameter.uid:
-                mapping_keys.append(mapping_key)
-            else:
-                pass
-
-    return mapping_keys
-
-
-def _resolve_emt_constant_parameter_value(
-        device: ALL_DEV_TYPES,
-        root_block: Block,
-        owner_block: Block,
-        parameter: Var,
-        declared_value: Const,
-        static_parameter_values: Dict[Var, Const],
-) -> Const:
-    """Resolve one EMT constant before registering the DAE problem.
-
-    Numerical template constants are self-contained. A ``Const(None)`` is a
-    required static-device placeholder and is valid only when
-    ``api_obj_mapping`` has supplied a concrete value. Raising during assembly
-    prevents a later context-free NumPy conversion failure.
-
-    :param device: Static device that owns the EMT model.
-    :param root_block: Complete EMT model assigned to ``device``.
-    :param owner_block: Block that declares the constant parameter.
-    :param parameter: Symbolic constant parameter.
-    :param declared_value: Value stored in ``owner_block.parameters``.
-    :param static_parameter_values: Values resolved from ``api_obj_mapping``.
-    :return: Concrete constant that the EMT problem can register.
-    :raises ValueError: If no numerical source exists for the parameter.
-    """
-    mapped_value: Const | None = get_api_parameter_initial_value_by_uid(
-        parameter=parameter,
-        problem_mapping=static_parameter_values,
-    )
-    resolved_value: Const
-
-    if mapped_value is None:
-        resolved_value = declared_value
-    else:
-        resolved_value = mapped_value
-
-    if resolved_value.value is None:
-        mapping_keys: List[ParamPowerFlowReferenceType] = _get_static_mapping_keys_for_parameter(
-            root_block=root_block,
-            parameter=parameter,
-        )
-        mapping_names: List[str] = list()
-        mapping_key: ParamPowerFlowReferenceType
-
-        for mapping_key in mapping_keys:
-            mapping_names.append(mapping_key.name)
-
-        if len(mapping_names) == 0:
-            mapping_diagnostic: str = (
-                "the parameter is not targeted by any api_obj_mapping entry"
-            )
-        else:
-            mapping_diagnostic = (
-                "api_obj_mapping targets it through ["
-                + ", ".join(mapping_names)
-                + "], but the static mapper produced no value"
-            )
-
-        raise ValueError(
-            "Unresolved EMT constant parameter "
-            + f"'{parameter.name}' in block '{owner_block.name}' of "
-            + f"{device.device_type.value} '{device.name}': {mapping_diagnostic}. "
-            + "A parameter declared as Const(None) must be linked to a supported "
-            + "static device property through api_obj_mapping on its owning block."
-        )
-    else:
-        pass
-
-    return resolved_value
 
 
 def _tic() -> float:
@@ -749,26 +666,6 @@ def _sanitize_external_mapping_for_explicit_dc_terminals(mapping: Dict[Any, Var]
     return sanitized_mapping
 
 
-def _build_device_idtag_lookup(devices: List[Any]) -> Dict[str, int]:
-    """
-    Build one idtag-to-index lookup table.
-
-    This lookup is acceptable because it is used only for indexing and not as
-    the primary numerical storage container.
-
-    :param devices: Device list.
-    :return: Lookup dictionary.
-    """
-    lookup: Dict[str, int] = dict()
-    device_index: int = 0
-
-    while device_index < len(devices):
-        lookup[devices[device_index].idtag] = device_index
-        device_index += 1
-
-    return lookup
-
-
 def _get_connected_bus_balanced_power(pf_results: PowerFlowResults, bus_index: int, sbase: float) -> complex:
     """
     Return one balanced complex bus power in per unit.
@@ -807,32 +704,6 @@ def _get_bus_balanced_injection_power(pf_results: PowerFlowResults, bus_index: i
         return complex(pf_results.Sbus[bus_index] / sbase)
     except (AttributeError, IndexError, TypeError, ValueError):
         return 0.0 + 0.0j
-
-
-def _get_source_seed_weight(injection: Any) -> float:
-    """
-    Return the weight used to distribute bus residual among source-like injections.
-
-    ``Snom`` is used for source devices that expose an apparent-power base.
-    Otherwise, a unit weight is used. This keeps EMT host devices such as shunts
-    from being forced to expose generator-style ratings.
-
-    :param injection: Injection device.
-    :return: Residual-allocation weight.
-    """
-    if injection.device_type in {
-        DeviceType.GeneratorDevice,
-        DeviceType.BatteryDevice,
-        DeviceType.StaticGeneratorDevice,
-    }:
-        snom_value: float = float(injection.Snom)
-    else:
-        snom_value = 0.0
-
-    if snom_value > 0.0:
-        return snom_value
-    else:
-        return 1.0
 
 
 def _get_internal_runtime_default(mdl: Block, var_name: str, default_value: float) -> float:
@@ -1611,20 +1482,28 @@ def _get_expected_pi_line_terminal_refs(ph_mask: List[bool]) -> List[VarPowerFlo
     return ordered_refs
 
 
-def validate_line_phase_layout(branch: Any, mdl: Block, logger: Logger):
+def validate_line_phase_layout(
+        branch: BranchParent,
+        mdl: Block,
+        effective_external_mapping: Dict[Any, Var],
+        logger: Logger | None,
+) -> bool:
     """
     Validate that a pi-line EMT block matches the physical branch phase layout.
 
     The EMT parameter mapper writes reduced branch matrices into the fixed NABC
     API map using ``branch.ys``. This helper therefore checks that the symbolic
     pi-line terminal layout still matches the physical branch phase mask before
-    the device is flattened into the system model. A mismatch is a topology
-    error, so the function reports it through the shared logger and preserves the
-    original model instead of silently rebuilding it.
+    the device is flattened into the system model. The validation result is
+    independent of diagnostic availability: a missing logger suppresses the log
+    entry but never turns an invalid topology into a valid one.
 
     :param branch: Grid branch device.
     :param mdl: EMT block associated with the branch.
-    :param logger: Shared system logger used to report invalid topology states.
+    :param effective_external_mapping: Problem-local mapping already completed
+        from modern declarations and compatible legacy input references.
+    :param logger: Optional driver-owned logger used for diagnostics.
+    :return: ``True`` when symbolic and physical terminal layouts match.
     """
 
     # The branch admittance mask is the physical topology source of truth, so it
@@ -1638,9 +1517,12 @@ def validate_line_phase_layout(branch: Any, mdl: Block, logger: Logger):
 
     expected_refs: List[VarPowerFlowReferenceType] = _get_expected_pi_line_terminal_refs(ph_mask)
 
-    # Only bus-terminal voltage references participate in the topology check.
-    # Other inputs can remain on the block without affecting phase consistency.
-    tracked_refs: Set[VarPowerFlowReferenceType] = {
+    # The external-mapping keys declare the semantic branch interface. Their
+    # target variables can already have been connected to bus variables, whose
+    # references are ``v_*`` rather than the original ``vf_*`` and ``vt_*``.
+    # Inspecting the targets or ``in_vars`` would consequently reject a valid
+    # loaded model merely because its terminal connections were restored.
+    terminal_refs: List[VarPowerFlowReferenceType] = list((
         VarPowerFlowReferenceType.vf_N,
         VarPowerFlowReferenceType.vf_A,
         VarPowerFlowReferenceType.vf_B,
@@ -1649,114 +1531,86 @@ def validate_line_phase_layout(branch: Any, mdl: Block, logger: Logger):
         VarPowerFlowReferenceType.vt_A,
         VarPowerFlowReferenceType.vt_B,
         VarPowerFlowReferenceType.vt_C,
-    }
+    ))
 
-    current_refs: List[VarPowerFlowReferenceType] = list()
+    external_refs: List[VarPowerFlowReferenceType] = list()
+    legacy_refs: List[VarPowerFlowReferenceType] = list()
+    resolved_refs: List[VarPowerFlowReferenceType] = list()
+    hierarchy: List[Block] = _collect_block_hierarchy(mdl)
+    terminal_ref: VarPowerFlowReferenceType
 
-    for in_var in mdl.in_vars:
-        if in_var.ref in tracked_refs:
-            current_refs.append(in_var.ref)
+    # Report each source independently. This diagnostic inspection does not
+    # resolve the interface again; the authoritative result is the mapping
+    # supplied by the problem-local registry.
+    for terminal_ref in terminal_refs:
+        has_external_ref: bool = False
+        has_legacy_ref: bool = False
+        hierarchy_block: Block
+
+        for hierarchy_block in hierarchy:
+            hierarchy_mapping: Dict[Any, Var] | None = hierarchy_block.external_mapping
+            mapped_var: Var | None
+            if hierarchy_mapping is None:
+                mapped_var = None
+            else:
+                mapped_var = hierarchy_mapping.get(terminal_ref, None)
+            if mapped_var is not None:
+                has_external_ref = True
+            else:
+                pass
+
+            in_var: Var
+            for in_var in hierarchy_block.in_vars:
+                if in_var.ref == terminal_ref:
+                    has_legacy_ref = True
+                else:
+                    pass
+
+        if has_external_ref:
+            external_refs.append(terminal_ref)
         else:
             pass
 
-    # A mismatch means the symbolic template and the EMT topology disagree about
-    # how many branch terminals exist. That state is invalid because later model
-    # assembly would bind non-existent phases, so it must be surfaced explicitly.
-    if current_refs != expected_refs:
-        logger.add_error(
-            msg="Pi-line template has a different number of phases than the EMT model (topology mismatch).",
-            device=branch.name,
-            device_class=str(branch.device_type),
-            value=str(current_refs),
-            expected_value=str(expected_refs),
-        )
-    else:
+        if has_legacy_ref:
+            legacy_refs.append(terminal_ref)
+        else:
+            pass
+
+        resolved_var: Var | None = effective_external_mapping.get(terminal_ref, None)
+        if resolved_var is not None:
+            resolved_refs.append(terminal_ref)
+        else:
+            pass
+
+    # Keep the exact phase order deterministic so a misplaced terminal is also
+    # diagnosed instead of being hidden by a set comparison.
+    layout_is_valid: bool = resolved_refs == expected_refs
+    if layout_is_valid:
         pass
+    else:
+        missing_refs: List[VarPowerFlowReferenceType] = list(
+            terminal_ref for terminal_ref in expected_refs if terminal_ref not in resolved_refs
+        )
+        unexpected_refs: List[VarPowerFlowReferenceType] = list(
+            terminal_ref for terminal_ref in resolved_refs if terminal_ref not in expected_refs
+        )
+        if logger is not None:
+            logger.add_error(
+                msg="Pi-line template terminal phase layout does not match the physical line phase layout.",
+                device=branch.name,
+                device_class=str(branch.device_type),
+                value=(
+                    f"external_mapping={external_refs}; legacy_in_vars={legacy_refs}; "
+                    f"resolved={resolved_refs}; missing={missing_refs}; unexpected={unexpected_refs}"
+                ),
+                expected_value=str(expected_refs),
+                device_property="emt_terminal_phase_layout",
+            )
+        else:
+            pass
 
+    return layout_is_valid
 
-
-class EmtInjectionSeedStore:
-    """
-    Fixed-size container storing PF-derived initialization seeds for EMT injections.
-
-    The store is indexed by the position of each injection in the pre-built
-    ``injection_devices`` list of ``EmtProblemDae._build_structure_and_collect``.
-    This avoids dynamic dictionaries for numerical data and keeps memory layout
-    explicit and preallocated.
-
-    :param n_injections: Number of injection devices in the EMT problem.
-    """
-
-    __slots__ = (
-        "_ac_power",
-        "_dc_power",
-        "_has_seed",
-    )
-
-    def __init__(self, n_injections: int) -> None:
-        """
-        Build the fixed-size seed store.
-
-        :param n_injections: Number of injection devices.
-        :return: None.
-        """
-        # The AC seed stores one complex power per NABC phase for each injection.
-        self._ac_power: np.ndarray = np.zeros((n_injections, 4), dtype=np.complex128)
-
-        # The DC seed stores one real active power per injection.
-        self._dc_power: np.ndarray = np.zeros(n_injections, dtype=np.float64)
-
-        # This mask tells whether an injection received an explicit seed.
-        self._has_seed: np.ndarray = np.zeros(n_injections, dtype=bool)
-
-    def set_ac_seed(self, injection_index: int, phase_power: np.ndarray) -> None:
-        """
-        Store one AC four-phase power seed.
-
-        :param injection_index: Injection position in the fixed injection list.
-        :param phase_power: Complex power vector in NABC order.
-        :return: None.
-        """
-        self._ac_power[injection_index, :] = phase_power
-        self._has_seed[injection_index] = True
-
-    def set_dc_seed(self, injection_index: int, power_value: float) -> None:
-        """
-        Store one DC active-power seed.
-
-        :param injection_index: Injection position in the fixed injection list.
-        :param power_value: DC active power in per unit.
-        :return: None.
-        """
-        self._dc_power[injection_index] = power_value
-        self._has_seed[injection_index] = True
-
-    def has_seed(self, injection_index: int) -> bool:
-        """
-        Return whether the given injection has a stored seed.
-
-        :param injection_index: Injection position in the fixed injection list.
-        :return: ``True`` if a seed exists, ``False`` otherwise.
-        """
-        return bool(self._has_seed[injection_index])
-
-    def get_ac_seed(self, injection_index: int) -> np.ndarray:
-        """
-        Return the AC phase-power seed in NABC order.
-
-        :param injection_index: Injection position in the fixed injection list.
-        :return: Complex power vector in NABC order.
-        """
-        return self._ac_power[injection_index, :]
-
-    def get_dc_seed(self, injection_index: int) -> float:
-        """
-        Return the DC active-power seed.
-
-        :param injection_index: Injection position in the fixed injection list.
-        :return: DC active power in per unit.
-        """
-        return float(self._dc_power[injection_index])
 
 
 def _accumulate_kcl_current(
@@ -1883,6 +1737,7 @@ class EmtProblemDae(EmtProblemTemplate):
         "_device_models_with_init_eqs_seen",
         "_device_models_for_ptc",
         "_local_external_mapping_by_block_uid",
+        "_static_parameter_mapping_diagnostics",
         "_temp_init_guess",
         "_temp_diff_init_guess",
         "_temp_post_init_guess",
@@ -1899,7 +1754,7 @@ class EmtProblemDae(EmtProblemTemplate):
                  pf_results: PowerFlowResults | None = None,
                  progress_signal: DummySignal | None = None,
                  progress_text: DummySignal | None = None,
-                 logger: Logger|None = None) -> None:
+                 logger: Logger | None = None) -> None:
         """
         Initializes the EMT Problem by parsing the grid and passing the
         resulting mathematical block to the BaseProblem constructor.
@@ -1909,9 +1764,17 @@ class EmtProblemDae(EmtProblemTemplate):
         :param pf_results: PowerFlowResults
         :param progress_signal: progress_signal
         :param progress_text: progress_text
-        :param logger: Logger
+        :param logger: Optional logger owned by the simulation driver.
         """
-        self.logger = logger
+        # The EMT driver owns the logger. Direct problem construction remains
+        # valid and silent when no logger is supplied.
+        self.logger: Logger | None = logger
+        self._static_parameter_mapping_diagnostics: StaticParameterMappingDiagnostics = (
+            StaticParameterMappingDiagnostics(
+                logger=self.logger,
+                simulation_mode=DynamicSimulationMode.EMT,
+            )
+        )
         self.grid = grid
         self.options = options
         self._device_type_disposition: Dict[DeviceType, str] = _build_emt_device_type_disposition_table()
@@ -2068,11 +1931,10 @@ class EmtProblemDae(EmtProblemTemplate):
         # 1) PF guesses
         self.init_guess.update(self._temp_init_guess)
         self.diff_init_guess.update(self._temp_diff_init_guess)
-        # PF seeding can rewrite runtime source equations for wrapper-owned EMT
-        # event parameters such as ZIP-load voltage derivatives. Refresh the
-        # canonical runtime-equation source from the current block hierarchy before
-        # explicit initialization so the explicit solver does not consume stale
-        # ``Const(None)`` placeholders captured earlier during template build.
+        # Rebuild canonical template fallbacks before promoting PF seeds. The
+        # following loop reapplies every problem-owned seed afterwards, so the
+        # source hierarchy remains immutable and cannot overwrite the operating
+        # point used by explicit initialization.
         self.refresh_runtime_equations_from_hierarchy()
         for uid, value in self._temp_init_guess.items():
             runtime_idx_promote: int | None = self.uid2idx_event_params.get(uid, None)
@@ -2111,6 +1973,16 @@ class EmtProblemDae(EmtProblemTemplate):
         # Its only starting data is the PF operating point and runtime constants.
         if self.options.initialization_method != EmtInitializationMethod.PseudoTransient:
             self._run_explicit_initialization()
+        else:
+            pass
+
+        # Freeze the fully resolved problem-local runtime equations as the
+        # event-free baseline. Native initialization reads the current runtime
+        # equations, while later event-group activation starts from
+        # ``_runtime_parameter_eqs0``. Keeping both views identical prevents the
+        # post-native stage from restoring the pre-PF template placeholders now
+        # that source Blocks are deliberately immutable.
+        self._runtime_parameter_eqs0 = list(self._event_parameters_eqs)
         explicit_init_s: float = _toc(t_phase_start)
         t_phase_start = _tic()
 
@@ -2154,7 +2026,12 @@ class EmtProblemDae(EmtProblemTemplate):
         # and break the initial runtime-parameter evaluation.
         self.set_events_group(None)
         self._seed_all_switch_models()
-        self.rebuild_runtime_param_vectors()
+        # ``set_events_group()`` has already rebuilt the runtime equations while
+        # preserving the operating-point vector resolved by explicit/native
+        # initialization. Switch seeding updates that same problem-local storage
+        # directly. A generic rebuild here would start from a zero vector and
+        # erase deferred PF seeds whose source Block intentionally remains
+        # immutable.
         if self.initialization_report is None:
             pass
         else:
@@ -2420,13 +2297,13 @@ class EmtProblemDae(EmtProblemTemplate):
 
     def _register_init_model(self, mdl: Block) -> None:
         """
-        Register the init-owning blocks of one device hierarchy.
+        Register one device root when its hierarchy owns initialization data.
 
-        The EMT refactor is moving away from relying on one flattened device root.
-        Explicit initialization should therefore track the natural blocks that
-        actually own ``init_eqs`` / ``diff_init_eqs`` instead of assuming that a
-        previous ``unify_blocks()`` pass already merged the full hierarchy into the
-        root block.
+        ``init_explicit_common()`` builds its graph recursively from the block it
+        receives. Registering both an ancestor and one of its descendants would
+        therefore evaluate the descendant more than once. The complete device
+        root is retained exactly once whenever any block in its hierarchy owns
+        ``init_eqs`` or ``diff_init_eqs``.
 
         :param mdl: Device root block.
         :type mdl: Block
@@ -2435,19 +2312,27 @@ class EmtProblemDae(EmtProblemTemplate):
         """
         candidate_blocks: List[Block] = mdl.get_all_blocks()
         candidate_block: Block
-        has_init_equations: bool
+        hierarchy_has_init_equations: bool = False
 
+        # Inspect the complete hierarchy before registering anything. The
+        # recursive explicit graph will later consume this same hierarchy from
+        # the device root, so descendants must not become independent entries.
         for candidate_block in candidate_blocks:
-            has_init_equations = self._device_block_has_init_equations(candidate_block)
-
-            if has_init_equations:
-                if candidate_block.uid in self._device_models_with_init_eqs_seen:
-                    pass
-                else:
-                    self._device_models_with_init_eqs_seen.add(candidate_block.uid)
-                    self._device_models_with_init_eqs.append(candidate_block)
+            if self._device_block_has_init_equations(candidate_block):
+                hierarchy_has_init_equations = True
             else:
                 pass
+
+        # Register only the root. Repeated visits of the same device are still
+        # harmless, while ancestor-descendant overlap is structurally impossible.
+        if hierarchy_has_init_equations:
+            if mdl.uid in self._device_models_with_init_eqs_seen:
+                pass
+            else:
+                self._device_models_with_init_eqs_seen.add(mdl.uid)
+                self._device_models_with_init_eqs.append(mdl)
+        else:
+            pass
 
     def get_build_report(self) -> Dict[str, float]:
         """
@@ -2649,7 +2534,7 @@ class EmtProblemDae(EmtProblemTemplate):
                             pass
                         event_parameter_index += 1
 
-                    self.init_guess, self.diff_init_guess = init_explicit_common(
+                    explicit_initialization_result: ExplicitInitializationResult = init_explicit_common(
                         mdl=mdl,
                         sys_vars=sys_vars,
                         sys_diff_vars=sys_diff_vars,
@@ -2668,6 +2553,11 @@ class EmtProblemDae(EmtProblemTemplate):
                         event_params_array_seed=self._event_params_values,
                         verbose=bool(self.options.verbose > 0),
                     )
+                    if explicit_initialization_result.converged:
+                        self.init_guess = explicit_initialization_result.init_guess
+                        self.diff_init_guess = explicit_initialization_result.diff_init_guess
+                    else:
+                        raise RuntimeError(explicit_initialization_result.message)
 
                     # Explicit initialization resolves one PF-consistent local
                     # operating point that must survive the later constructor
@@ -3530,7 +3420,10 @@ class EmtProblemDae(EmtProblemTemplate):
         :return: Set of exposed external reference keys.
         """
         refs: Set[VarPowerFlowReferenceType] = set()
-        external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping(mdl)
+        external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping_local(
+            problem=self,
+            mdl=mdl,
+        )
         active_root_uids: Set[int] = set(root_var.uid for root_var in mdl.in_vars + mdl.out_vars)
         reference: Any
         mapped_var: Var | None
@@ -3696,6 +3589,7 @@ class EmtProblemDae(EmtProblemTemplate):
             VarPowerFlowReferenceType.v_C,
         ]
         bus_phase_connections: Dict[Tuple[Any, VarPowerFlowReferenceType], Set[str]] = dict()
+        invalid_line_layouts: List[str] = list()
         for bus in self.grid.buses:
             for phase in ac_phases:
                 bus_phase_connections[(bus, phase)] = set()
@@ -3714,7 +3608,26 @@ class EmtProblemDae(EmtProblemTemplate):
                 br_emt_model: Block = br.emt_model
 
                 if br.device_type == DeviceType.LineDevice:
-                    validate_line_phase_layout(branch=br, mdl=br_emt_model, logger=self.logger)
+                    line_external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping_local(
+                        problem=self,
+                        mdl=br_emt_model,
+                    )
+                    if line_external_mapping is None:
+                        line_external_mapping = dict()
+                    else:
+                        pass
+                    line_layout_is_valid: bool = validate_line_phase_layout(
+                        branch=br,
+                        mdl=br_emt_model,
+                        effective_external_mapping=line_external_mapping,
+                        logger=self.logger,
+                    )
+                    if line_layout_is_valid:
+                        pass
+                    else:
+                        invalid_line_layouts.append(
+                            f"  - Line '{br.name}' has an EMT terminal layout that does not match its physical phases."
+                        )
                 else:
                     pass
 
@@ -3752,7 +3665,10 @@ class EmtProblemDae(EmtProblemTemplate):
                         else:
                             pass
                     else:
-                        branch_external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping(br_emt_model)
+                        branch_external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping_local(
+                            problem=self,
+                            mdl=br_emt_model,
+                        )
                         present_branch_refs: Set[VarPowerFlowReferenceType] = set()
 
                         if branch_external_mapping is not None:
@@ -3766,15 +3682,24 @@ class EmtProblemDae(EmtProblemTemplate):
                         else:
                             pass
 
-                        if len(present_branch_refs) == 0:
-                            in_var: Var
-                            for in_var in br_emt_model.in_vars:
-                                if in_var.ref is not None:
-                                    present_branch_refs.add(in_var.ref)
-                                else:
-                                    pass
-                        else:
+                        # Direct validation helpers can invoke this method
+                        # without the normal device-registration stage. Only in
+                        # that case recover legacy input references locally;
+                        # production builds already have one authoritative map.
+                        has_registered_branch_mapping: bool = (
+                            br_emt_model.uid in self._local_external_mapping_by_block_uid
+                        )
+                        if has_registered_branch_mapping:
                             pass
+                        else:
+                            branch_block: Block
+                            for branch_block in _collect_block_hierarchy(br_emt_model):
+                                branch_in_var: Var
+                                for branch_in_var in branch_block.in_vars:
+                                    if isinstance(branch_in_var.ref, VarPowerFlowReferenceType):
+                                        present_branch_refs.add(branch_in_var.ref)
+                                    else:
+                                        pass
 
                         branch_ref: VarPowerFlowReferenceType
                         for branch_ref in present_branch_refs:
@@ -3819,12 +3744,42 @@ class EmtProblemDae(EmtProblemTemplate):
 
                 if inj_emt_model is not None:
                     inj_bus: Any = inj.bus
-                    in_var: Var
-                    for in_var in inj_emt_model.in_vars:
-                        if in_var.ref in ac_phases:
-                            bus_phase_connections[(inj_bus, in_var.ref)].add(f"injection:{inj.idtag}")
-                        else:
-                            pass
+                    injection_external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping_local(
+                        problem=self,
+                        mdl=inj_emt_model,
+                    )
+                    if injection_external_mapping is not None:
+                        injection_phase: VarPowerFlowReferenceType
+                        for injection_phase in ac_phases:
+                            injection_voltage_var: Var | None = injection_external_mapping.get(
+                                injection_phase,
+                                None,
+                            )
+                            if injection_voltage_var is not None:
+                                bus_phase_connections[(inj_bus, injection_phase)].add(f"injection:{inj.idtag}")
+                            else:
+                                pass
+                    else:
+                        pass
+
+                    # Preserve direct validation of legacy fixtures which do
+                    # not execute the normal registration stage beforehand.
+                    has_registered_injection_mapping: bool = (
+                        inj_emt_model.uid in self._local_external_mapping_by_block_uid
+                    )
+                    if has_registered_injection_mapping:
+                        pass
+                    else:
+                        injection_block: Block
+                        for injection_block in _collect_block_hierarchy(inj_emt_model):
+                            injection_in_var: Var
+                            for injection_in_var in injection_block.in_vars:
+                                if injection_in_var.ref in ac_phases:
+                                    bus_phase_connections[(inj_bus, injection_in_var.ref)].add(
+                                        f"injection:{inj.idtag}"
+                                    )
+                                else:
+                                    pass
 
                     if has_emt_internal_grounding_link(block=inj_emt_model):
                         bus_phase_connections[(inj_bus, VarPowerFlowReferenceType.v_N)].add(
@@ -3854,13 +3809,26 @@ class EmtProblemDae(EmtProblemTemplate):
             else:
                 pass
 
-        if floating_phases:
-            error_msg = (
+        topology_error_sections: List[str] = list()
+        if len(invalid_line_layouts) > 0:
+            topology_error_sections.append(
+                "TopologyError: Invalid EMT line terminal layouts detected:\n"
+                + "\n".join(invalid_line_layouts)
+            )
+        else:
+            pass
+
+        if len(floating_phases) > 0:
+            topology_error_sections.append(
                 "TopologyError: Floating bus phases detected "
                 "(each phase must be connected to at least 2 elements):\n"
+                + "\n".join(floating_phases)
             )
-            error_msg += "\n".join(floating_phases)
-            raise EmtTopologyError(error_msg)
+        else:
+            pass
+
+        if len(topology_error_sections) > 0:
+            raise EmtTopologyError("\n".join(topology_error_sections))
         else:
             pass
 
@@ -3875,24 +3843,10 @@ class EmtProblemDae(EmtProblemTemplate):
 
         :return: None.
         :raises ValueError: If a runtime parameter has no numerical, symbolic,
-            power-flow, initialization-equation, or retained-mode source.
+            device-mapped, power-flow, or retained-mode source.
         """
         parameter_index: int = 0
         parameter_count: int = len(self._variable_parameters)
-        hierarchical_initialization_source_uids: set[int] = set()
-        initialization_variable: Var
-        initialization_expression: Expr | Const | None
-
-        # Wrapper models can keep the initialization equation on an ancestor
-        # block rather than beside the event declaration. Preserve that valid
-        # ownership pattern by checking the already-flattened initialization map.
-        for initialization_variable, initialization_expression in self._init_eqs_flat.items():
-            if isinstance(initialization_expression, Const) and initialization_expression.value is None:
-                pass
-            elif initialization_expression is None:
-                pass
-            else:
-                hierarchical_initialization_source_uids.add(initialization_variable.uid)
 
         while parameter_index < parameter_count:
             parameter: Var = self._variable_parameters[parameter_index]
@@ -3905,7 +3859,7 @@ class EmtProblemDae(EmtProblemTemplate):
                 if owner_block is None or device is None:
                     raise ValueError(
                         "Unresolved EMT dynamic parameter "
-                        + f"'{parameter.name}': its Const(None) source is not associated "
+                        + f"'{parameter.name}' (uid={parameter.uid}): its Const(None) source is not associated "
                         + "with a device and owner block in the assembled EMT problem."
                     )
                 else:
@@ -3914,62 +3868,50 @@ class EmtProblemDae(EmtProblemTemplate):
                         or parameter.uid in self._temp_post_init_guess
                         or parameter.uid in self.event_params_init_dict
                     )
-                    is_discrete_parameter: bool = parameter.uid in self._runtime_mode_uids
-                    owner_initialization_expression: Expr | Const | None = None
-                    owner_initialization_variable: Var
-                    owner_candidate_expression: Expr | Const
+                    has_procedural_owner: bool = False
 
-                    # A legacy model can retain the initialization source beside
-                    # its event declaration. Check that source in addition to the
-                    # already-flattened hierarchical initialization equations.
-                    for owner_initialization_variable, owner_candidate_expression in owner_block.init_eqs.items():
-                        if owner_initialization_variable.uid == parameter.uid:
-                            owner_initialization_expression = owner_candidate_expression
-                        else:
-                            pass
-
-                    has_owner_initialization_source: bool
-                    if owner_initialization_expression is None:
-                        has_owner_initialization_source = False
-                    elif (isinstance(owner_initialization_expression, Const)
-                          and owner_initialization_expression.value is None):
-                        has_owner_initialization_source = False
-                    else:
-                        has_owner_initialization_source = True
-
-                    has_hierarchical_initialization_source: bool = (
-                        parameter.uid in hierarchical_initialization_source_uids
-                    )
-                    if has_power_flow_seed:
+                    # A procedural owner is relevant only for a retained mode
+                    # that still lacks a PF/API seed. Avoid consulting the
+                    # assembled runtime indices for ordinary parameters, which
+                    # also keeps isolated validation fixtures independent from
+                    # the complete numerical-problem construction sequence.
+                    if has_power_flow_seed or parameter.uid not in self._runtime_mode_uids:
                         pass
-                    elif (
-                        getattr(getattr(self, "options", None), "initialization_method", None)
-                        == EmtInitializationMethod.PseudoTransient
+                    else:
+                        runtime_parameter_index: int | None = self.uid2idx_event_params.get(
+                            parameter.uid,
+                            None,
+                        )
+                        has_procedural_owner = (
+                            runtime_parameter_index is not None
+                            and self._block_boundary_updater is not None
+                            and runtime_parameter_index
+                            in self._block_boundary_updater.get_output_parameter_indices()
+                        )
+                    is_pseudo_transient_unknown: bool = (
+                        self.options.initialization_method == EmtInitializationMethod.PseudoTransient
                         and any(
                             dependency.uid == parameter.uid
                             for block in device.emt_model.get_all_blocks()
                             for equation in block.state_eqs + block.algebraic_eqs
                             for dependency in equation.get_vars()
                         )
-                    ):
-                        # Null references are unknowns in the device-local
-                        # periodic solve, as in RMS pseudo-transient init.
-                        pass
-                    elif has_owner_initialization_source:
-                        pass
-                    elif has_hierarchical_initialization_source:
-                        pass
-                    elif is_discrete_parameter:
-                        pass
-                    else:
-                        raise ValueError(
-                            "Unresolved EMT dynamic parameter "
-                            + f"'{parameter.name}' in block '{owner_block.name}' of "
-                            + f"{device.device_type.value} '{device.name}'. "
-                            + "Provide a numerical/symbolic value in event_dict, an "
-                            + "initialization equation for the same parameter, or a "
-                            + "supported power-flow initialization mapping."
-                        )
+                    )
+                    allow_deferred_initialization: bool = (
+                        has_power_flow_seed
+                        or is_pseudo_transient_unknown
+                        or has_procedural_owner
+                    )
+                    resolve_runtime_parameter_initial_expression(
+                        device=device,
+                        simulation_mode=DynamicSimulationMode.EMT,
+                        root_block=device.emt_model,
+                        owner_block=owner_block,
+                        parameter=parameter,
+                        declared_expression=declared_expression,
+                        problem_mapping=dict(),
+                        allow_deferred_initialization=allow_deferred_initialization,
+                    )
             else:
                 pass
 
@@ -3996,6 +3938,7 @@ class EmtProblemDae(EmtProblemTemplate):
         :return: Unified device block.
         """
         resolved_external_mapping: Dict[Any, Var]
+        parameter_owner_blocks: List[Block] = _collect_block_hierarchy(mdl)
 
         # Validate every static declaration before flattening. Repeated symbolic
         # UIDs are an invalid ownership contract and must not be deduplicated.
@@ -4011,26 +3954,192 @@ class EmtProblemDae(EmtProblemTemplate):
                         + "is declared more than once in the device block hierarchy."
                     )
                 else:
-                    _resolve_emt_constant_parameter_value(
+                    resolve_constant_parameter_initial_value(
                         device=dev,
+                        simulation_mode=DynamicSimulationMode.EMT,
                         root_block=mdl,
                         owner_block=validation_block,
                         parameter=constant_parameter,
                         declared_value=declared_constant,
-                        static_parameter_values=static_parameter_values_mapping,
+                        problem_mapping=static_parameter_values_mapping,
                     )
                     declared_parameter_uids.add(constant_parameter.uid)
 
         # The external electrical interface is distinct from static parameter
         # ownership and is flattened for the later network-connection stage.
         resolved_external_mapping = _collect_external_mapping_from_block(mdl)
-        if len(resolved_external_mapping) > 0:
-            self._local_external_mapping_by_block_uid[mdl.uid] = resolved_external_mapping
+        device_disposition: str = self._get_device_emt_disposition(dev.device_type)
+        terminal_refs: List[VarPowerFlowReferenceType] = list()
+        if device_disposition == EmtDeviceDisposition.BRANCH_STRUCTURAL:
+            terminal_refs = list((
+                VarPowerFlowReferenceType.vf_N,
+                VarPowerFlowReferenceType.vf_A,
+                VarPowerFlowReferenceType.vf_B,
+                VarPowerFlowReferenceType.vf_C,
+                VarPowerFlowReferenceType.vt_N,
+                VarPowerFlowReferenceType.vt_A,
+                VarPowerFlowReferenceType.vt_B,
+                VarPowerFlowReferenceType.vt_C,
+                VarPowerFlowReferenceType.Vf_dc,
+                VarPowerFlowReferenceType.Vt_dc,
+                VarPowerFlowReferenceType.Vdc,
+                VarPowerFlowReferenceType.v_N,
+                VarPowerFlowReferenceType.v_A,
+                VarPowerFlowReferenceType.v_B,
+                VarPowerFlowReferenceType.v_C,
+            ))
+        else:
+            if device_disposition == EmtDeviceDisposition.INJECTION_STRUCTURAL:
+                terminal_refs = list((
+                    VarPowerFlowReferenceType.v_N,
+                    VarPowerFlowReferenceType.v_A,
+                    VarPowerFlowReferenceType.v_B,
+                    VarPowerFlowReferenceType.v_C,
+                    VarPowerFlowReferenceType.Vdc,
+                ))
+            else:
+                pass
+
+        # Resolve only the terminal portion of the already collected mapping.
+        # Modern non-null mappings are authoritative. Legacy ``in_vars`` fill
+        # individual missing terminals without modifying the persistent block.
+        external_terminal_targets: Dict[VarPowerFlowReferenceType, Var] = dict()
+        legacy_terminal_targets: Dict[VarPowerFlowReferenceType, Var] = dict()
+        terminal_conflicts: List[str] = list()
+        terminal_ref: VarPowerFlowReferenceType
+        parameter_owner_block: Block
+
+        for terminal_ref in terminal_refs:
+            for parameter_owner_block in parameter_owner_blocks:
+                owner_external_mapping: Dict[Any, Var] | None = parameter_owner_block.external_mapping
+                external_target: Var | None
+                if owner_external_mapping is None:
+                    external_target = None
+                else:
+                    external_target = owner_external_mapping.get(terminal_ref, None)
+                if external_target is not None:
+                    previous_external_target: Var | None = external_terminal_targets.get(terminal_ref, None)
+                    if previous_external_target is None:
+                        external_terminal_targets[terminal_ref] = external_target
+                    else:
+                        if previous_external_target.uid == external_target.uid:
+                            pass
+                        else:
+                            terminal_conflicts.append(
+                                f"external_mapping reference '{terminal_ref.value}' targets both "
+                                f"'{previous_external_target.name}' and '{external_target.name}'"
+                            )
+                else:
+                    pass
+
+        external_target_uids: Set[int] = set()
+        external_target_var: Var
+        for external_target_var in external_terminal_targets.values():
+            external_target_uids.add(external_target_var.uid)
+
+        for terminal_ref in terminal_refs:
+            for parameter_owner_block in parameter_owner_blocks:
+                block_external_mapping: Dict[Any, Var] | None = parameter_owner_block.external_mapping
+                block_declares_modern_terminal: bool = bool(
+                    block_external_mapping is not None
+                    and block_external_mapping.get(terminal_ref, None) is not None
+                )
+                has_authoritative_modern_target: bool = terminal_ref in external_terminal_targets
+                inspect_block_legacy_inputs: bool = bool(
+                    not has_authoritative_modern_target
+                    or block_declares_modern_terminal
+                )
+                if inspect_block_legacy_inputs:
+                    legacy_in_var: Var
+                    for legacy_in_var in parameter_owner_block.in_vars:
+                        if legacy_in_var.ref == terminal_ref:
+                            # A modern target may already have been rebound to a bus
+                            # variable whose reference resembles another terminal.
+                            # Do not re-export that same variable under a second key.
+                            already_mapped_under_other_key: bool = (
+                                legacy_in_var.uid in external_target_uids
+                                and terminal_ref not in external_terminal_targets
+                            )
+                            if already_mapped_under_other_key:
+                                pass
+                            else:
+                                previous_legacy_target: Var | None = legacy_terminal_targets.get(terminal_ref, None)
+                                if previous_legacy_target is None:
+                                    legacy_terminal_targets[terminal_ref] = legacy_in_var
+                                else:
+                                    if previous_legacy_target.uid == legacy_in_var.uid:
+                                        pass
+                                    else:
+                                        terminal_conflicts.append(
+                                            f"legacy input reference '{terminal_ref.value}' targets both "
+                                            f"'{previous_legacy_target.name}' and '{legacy_in_var.name}'"
+                                        )
+                        else:
+                            pass
+                else:
+                    pass
+
+        for terminal_ref in terminal_refs:
+            external_target = external_terminal_targets.get(terminal_ref, None)
+            legacy_target: Var | None = legacy_terminal_targets.get(terminal_ref, None)
+            if external_target is not None and legacy_target is not None:
+                if external_target.uid == legacy_target.uid:
+                    pass
+                else:
+                    terminal_conflicts.append(
+                        f"reference '{terminal_ref.value}' maps to modern target "
+                        f"'{external_target.name}' and incompatible legacy target '{legacy_target.name}'"
+                    )
+            else:
+                pass
+
+        if len(terminal_conflicts) > 0:
+            conflict_message: str = (
+                f"Conflicting EMT terminal mappings for device '{self._get_device_name(dev)}': "
+                + "; ".join(terminal_conflicts)
+            )
+            if self.logger is not None:
+                self.logger.add_error(
+                    msg="Conflicting EMT terminal mappings.",
+                    device=self._get_device_name(dev),
+                    device_class=self._get_device_type_label(dev),
+                    value="; ".join(terminal_conflicts),
+                    expected_value="One compatible target per terminal reference",
+                    device_property="emt_terminal_mapping",
+                )
+            else:
+                pass
+            raise EmtTopologyError(conflict_message)
         else:
             pass
 
-        parameter_owner_blocks: List[Block] = _collect_block_hierarchy(mdl)
-        parameter_owner_block: Block
+        # Rebuild the local mapping with canonical terminal ordering, followed
+        # by the untouched non-terminal PF initialization references.
+        ordered_external_mapping: Dict[Any, Var] = dict()
+        terminal_ref_set: Set[VarPowerFlowReferenceType] = set(terminal_refs)
+        for terminal_ref in terminal_refs:
+            external_target = external_terminal_targets.get(terminal_ref, None)
+            legacy_target = legacy_terminal_targets.get(terminal_ref, None)
+            if external_target is not None:
+                ordered_external_mapping[terminal_ref] = external_target
+            else:
+                if legacy_target is not None:
+                    ordered_external_mapping[terminal_ref] = legacy_target
+                else:
+                    pass
+
+        mapping_key: Any
+        mapping_value: Var
+        for mapping_key, mapping_value in resolved_external_mapping.items():
+            if mapping_key in terminal_ref_set:
+                pass
+            else:
+                ordered_external_mapping[mapping_key] = mapping_value
+
+        resolved_external_mapping = _sanitize_external_mapping_for_explicit_dc_terminals(
+            ordered_external_mapping
+        )
+        self._local_external_mapping_by_block_uid[mdl.uid] = resolved_external_mapping
 
         # Preserve device and block ownership until PF-derived runtime values have
         # been applied. The later validation can then explain exactly which model
@@ -4179,23 +4288,20 @@ class EmtProblemDae(EmtProblemTemplate):
             else:
                 if isinstance(target, Var):
                     # The mapped runtime parameter may live in a nested child
-                    # block, so the assignment must target the owner block that
-                    # actually stores the mutable ``event_dict`` entry.
+                    # block. Ownership is validated on the hierarchy, but the
+                    # resolved value is stored only by the numerical problem.
                     owner_block = _find_event_var_owner(mdl, target)
                     if owner_block is None:
                         pass
                     else:
-                        # PF seeding runs before the flat runtime arrays exist.
-                        # Persist the value in the owning working block first so
-                        # explicit initialization cannot fall back to the
-                        # template default (for example 1.0 instead of 0.1 pu).
-                        owner_parameter: Var
-                        for owner_parameter in owner_block.event_dict:
-                            if owner_parameter.uid == target.uid:
-                                owner_block.event_dict[owner_parameter] = Const(float(value))
-                            else:
-                                pass
-                        self._set_runtime_parameter_value_by_uid(uid=target.uid, value=float(value))
+                        # During structural collection the flat arrays do not
+                        # exist yet, so the problem-local temporary seed is the
+                        # durable hand-off to post-construction initialization.
+                        self._set_runtime_parameter_seed_by_uid(
+                            uid=target.uid,
+                            value=float(value),
+                            persist_after_native_init=False,
+                        )
                 else:
                     pass
 
@@ -4286,7 +4392,7 @@ class EmtProblemDae(EmtProblemTemplate):
             device=branch,
             mdl=br_working_mdl,
             problem_mapping=static_parameter_values_mapping,
-            logger=self.logger,
+            logger=self._static_parameter_mapping_diagnostics,
         )
 
         if branch.device_type == DeviceType.VscDevice:
@@ -4728,9 +4834,14 @@ class EmtProblemDae(EmtProblemTemplate):
         :param static_parameter_values_mapping: Owner-resolved static constants for PF seeding.
         :return: None.
         """
+        effective_external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping_local(
+            problem=self,
+            mdl=mdl,
+        )
         assemble_emt_mapped_current_references(
             model=mdl,
             current_balance=i_kcl,
+            effective_external_mapping=effective_external_mapping,
             bus_from_index=f,
             bus_to_index=t,
             bus_from_is_dc=branch.bus_from.is_dc,
@@ -4793,7 +4904,10 @@ class EmtProblemDae(EmtProblemTemplate):
         while term_idx < 2:
             terminal_bus: Any = terminal_buses[term_idx]
             terminal_keys: List[VarPowerFlowReferenceType] = terminal_voltage_keys[term_idx]
-            external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping(mdl)
+            external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping_local(
+                problem=self,
+                mdl=mdl,
+            )
 
             if terminal_bus.is_dc:
                 v_dc: Any
@@ -4857,8 +4971,8 @@ class EmtProblemDae(EmtProblemTemplate):
                                     static_parameter_values_mapping: Dict[Var, Const],
                                     ph_v_keys: List[VarPowerFlowReferenceType],
                                     inj_i_keys: List[VarPowerFlowReferenceType],
-                                    seed_store: Optional[EmtInjectionSeedStore],
-                                    generator_count_same_bus: Dict[int, int]) -> None:
+                                    seed_store: Optional[EmtInjectionOperatingPoint],
+                                    generator_battery_count_same_bus: Dict[int, int]) -> None:
         """
         Build one EMT injection device and merge it into the nodal structure.
 
@@ -4874,7 +4988,7 @@ class EmtProblemDae(EmtProblemTemplate):
         :param ph_v_keys: AC bus voltage keys.
         :param inj_i_keys: Injection current keys.
         :param seed_store: Precomputed injection seed store.
-        :param generator_count_same_bus: Number of generators per bus.
+        :param generator_battery_count_same_bus: Number of generators and batteries per bus.
         :return: None.
         """
         disposition: str = self._get_device_emt_disposition(injection.device_type)
@@ -4890,7 +5004,7 @@ class EmtProblemDae(EmtProblemTemplate):
             device=injection,
             mdl=inj_working_mdl,
             problem_mapping=static_parameter_values_mapping,
-            logger=self.logger,
+            logger=self._static_parameter_mapping_diagnostics,
         )
         self._assign_event_mapping_value_if_present(
             mdl=inj_working_mdl,
@@ -4905,10 +5019,15 @@ class EmtProblemDae(EmtProblemTemplate):
             static_parameter_values_mapping=static_parameter_values_mapping,
         )
         b: int = bus_dict[injection.bus]
+        effective_external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping_local(
+            problem=self,
+            mdl=mdl,
+        )
 
         assemble_emt_mapped_current_references(
             model=mdl,
             current_balance=i_kcl,
+            effective_external_mapping=effective_external_mapping,
             bus_index=b,
             bus_is_dc=injection.bus.is_dc,
         )
@@ -4927,16 +5046,16 @@ class EmtProblemDae(EmtProblemTemplate):
             bus_index=b,
             seed_store=seed_store,
             injection_index=injection_index,
-            generator_count_same_bus=generator_count_same_bus,
+            generator_battery_count_same_bus=generator_battery_count_same_bus,
         )
 
     def _seed_injection_device_by_type(self,
                                        injection: Any,
                                        mdl: Block,
                                        bus_index: int,
-                                       seed_store: Optional[EmtInjectionSeedStore],
+                                       seed_store: Optional[EmtInjectionOperatingPoint],
                                        injection_index: int,
-                                       generator_count_same_bus: Dict[int, int]) -> None:
+                                       generator_battery_count_same_bus: Dict[int, int]) -> None:
         """
         Dispatch one injection seed application to the explicit ``DeviceType`` path.
 
@@ -4945,7 +5064,7 @@ class EmtProblemDae(EmtProblemTemplate):
         :param bus_index: Bus index.
         :param seed_store: Precomputed seed store.
         :param injection_index: Injection loop index.
-        :param generator_count_same_bus: Number of generators per bus.
+        :param generator_battery_count_same_bus: Number of generators and batteries per bus.
         :return: None.
         """
         if seed_store is None:
@@ -4958,14 +5077,14 @@ class EmtProblemDae(EmtProblemTemplate):
             pass
 
         if injection.device_type == DeviceType.GeneratorDevice:
-            generator_count_local: int = int(generator_count_same_bus[bus_index])
+            generator_battery_count_local: int = int(generator_battery_count_same_bus[bus_index])
             self._apply_injection_seed(
                 injection=injection,
                 mdl=mdl,
                 bus_index=bus_index,
                 seed_store=seed_store,
                 injection_index=injection_index,
-                generator_count_same_bus=generator_count_local,
+                generator_battery_count_same_bus=generator_battery_count_local,
             )
 
             if not injection.bus.is_dc:
@@ -4974,20 +5093,31 @@ class EmtProblemDae(EmtProblemTemplate):
                     inj=injection,
                     mdl=mdl,
                     phase_power=phase_power_seed,
-                    generator_count_same_bus=generator_count_local,
+                    generator_battery_count_same_bus=generator_battery_count_local,
                 )
             else:
                 pass
         else:
             if injection.device_type == DeviceType.BatteryDevice:
+                generator_battery_count_local = int(generator_battery_count_same_bus[bus_index])
                 self._apply_injection_seed(
                     injection=injection,
                     mdl=mdl,
                     bus_index=bus_index,
                     seed_store=seed_store,
                     injection_index=injection_index,
-                    generator_count_same_bus=int(generator_count_same_bus[bus_index]),
+                    generator_battery_count_same_bus=generator_battery_count_local,
                 )
+                if not injection.bus.is_dc:
+                    phase_power_seed = seed_store.get_ac_seed(injection_index)
+                    self._assign_generator_sharing_targets_from_seed(
+                        inj=injection,
+                        mdl=mdl,
+                        phase_power=phase_power_seed,
+                        generator_battery_count_same_bus=generator_battery_count_local,
+                    )
+                else:
+                    pass
             else:
                 if injection.device_type == DeviceType.LoadDevice:
                     self._apply_injection_seed(
@@ -4996,7 +5126,7 @@ class EmtProblemDae(EmtProblemTemplate):
                         bus_index=bus_index,
                         seed_store=seed_store,
                         injection_index=injection_index,
-                        generator_count_same_bus=0,
+                        generator_battery_count_same_bus=0,
                     )
                 else:
                     if injection.device_type == DeviceType.ExternalGridDevice:
@@ -5006,7 +5136,7 @@ class EmtProblemDae(EmtProblemTemplate):
                             bus_index=bus_index,
                             seed_store=seed_store,
                             injection_index=injection_index,
-                            generator_count_same_bus=0,
+                            generator_battery_count_same_bus=0,
                         )
                     else:
                         if injection.device_type == DeviceType.StaticGeneratorDevice:
@@ -5016,7 +5146,7 @@ class EmtProblemDae(EmtProblemTemplate):
                                 bus_index=bus_index,
                                 seed_store=seed_store,
                                 injection_index=injection_index,
-                                generator_count_same_bus=0,
+                                generator_battery_count_same_bus=0,
                             )
                         else:
                             if injection.device_type == DeviceType.ShuntDevice:
@@ -5026,7 +5156,7 @@ class EmtProblemDae(EmtProblemTemplate):
                                     bus_index=bus_index,
                                     seed_store=seed_store,
                                     injection_index=injection_index,
-                                    generator_count_same_bus=0,
+                                    generator_battery_count_same_bus=0,
                                 )
                             else:
                                 if injection.device_type == DeviceType.ControllableShuntDevice:
@@ -5036,7 +5166,7 @@ class EmtProblemDae(EmtProblemTemplate):
                                         bus_index=bus_index,
                                         seed_store=seed_store,
                                         injection_index=injection_index,
-                                        generator_count_same_bus=0,
+                                        generator_battery_count_same_bus=0,
                                     )
                                 else:
                                     if injection.device_type == DeviceType.CurrentInjectionDevice:
@@ -5046,7 +5176,7 @@ class EmtProblemDae(EmtProblemTemplate):
                                             bus_index=bus_index,
                                             seed_store=seed_store,
                                             injection_index=injection_index,
-                                            generator_count_same_bus=0,
+                                            generator_battery_count_same_bus=0,
                                         )
                                     else:
                                         self._apply_injection_seed(
@@ -5055,7 +5185,9 @@ class EmtProblemDae(EmtProblemTemplate):
                                             bus_index=bus_index,
                                             seed_store=seed_store,
                                             injection_index=injection_index,
-                                            generator_count_same_bus=int(generator_count_same_bus[bus_index]),
+                                            generator_battery_count_same_bus=int(
+                                                generator_battery_count_same_bus[bus_index]
+                                            ),
                                         )
 
 
@@ -5075,7 +5207,10 @@ class EmtProblemDae(EmtProblemTemplate):
         :param ph_v_keys: AC bus voltage keys.
         :return: None.
         """
-        inj_external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping(mdl)
+        inj_external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping_local(
+            problem=self,
+            mdl=mdl,
+        )
         inj_bus_mdl: Block = bus_working_models[injection.bus]
 
         if injection.bus.is_dc:
@@ -5253,15 +5388,20 @@ class EmtProblemDae(EmtProblemTemplate):
         # Collect injections only after the bus dictionary has been built.
         # The generator-sharing bookkeeping needs the bus indices, so it must run
         # after bus_dict is available.
-        injection_devices: List[Any] = list(grid.get_injection_devices_iter())
+        injection_devices: List[INJECTION_DEVICE_TYPES] = list(grid.get_injection_devices_iter())
 
-        generator_count_same_bus: Dict[int, int] = dict()
+        generator_battery_count_same_bus: Dict[int, int] = dict()
         for bus_idx, _ in enumerate(grid.buses):
-            generator_count_same_bus[bus_idx] = 0
+            generator_battery_count_same_bus[bus_idx] = 0
         for inj in injection_devices:
             bus_idx_local: int = bus_dict[inj.bus]
-            if inj.device_type == DeviceType.GeneratorDevice:
-                generator_count_same_bus[bus_idx_local] += 1
+            if inj.active:
+                if inj.device_type == DeviceType.GeneratorDevice:
+                    generator_battery_count_same_bus[bus_idx_local] += 1
+                elif inj.device_type == DeviceType.BatteryDevice:
+                    generator_battery_count_same_bus[bus_idx_local] += 1
+                else:
+                    pass
             else:
                 pass
 
@@ -5300,7 +5440,7 @@ class EmtProblemDae(EmtProblemTemplate):
             )
 
         # seed store to save the different injections in a bus
-        seed_store: Optional[EmtInjectionSeedStore]
+        seed_store: Optional[EmtInjectionOperatingPoint]
 
         if self.power_flow_results_3ph is not None:
             seed_store = self._build_injection_seed_store_3ph(
@@ -5315,7 +5455,6 @@ class EmtProblemDae(EmtProblemTemplate):
                     grid=grid,
                     bus_dict=bus_dict,
                     injection_devices=injection_devices,
-                    sbase=grid.Sbase,
                 )
             else:
                 seed_store = None
@@ -5334,7 +5473,7 @@ class EmtProblemDae(EmtProblemTemplate):
                 ph_v_keys=ph_v_keys,
                 inj_i_keys=inj_i_keys,
                 seed_store=seed_store,
-                generator_count_same_bus=generator_count_same_bus,
+                generator_battery_count_same_bus=generator_battery_count_same_bus,
             )
 
         bus_idx_local: int = 0
@@ -5936,26 +6075,6 @@ class EmtProblemDae(EmtProblemTemplate):
 
         return power_vector
 
-    @staticmethod
-    def _get_load_fixed_power_vector_balanced(load: Any, sbase: float) -> np.ndarray:
-        """
-        Return the balanced per-phase complex power seed of a load.
-
-        :param load: Load device.
-        :param sbase: System base power.
-        :return: Complex power vector in NABC order.
-        """
-        power_vector: np.ndarray = _zero_ac_power_vector()
-        p_phase: float = float(load.P) / (3.0 * sbase)
-        q_phase: float = float(load.Q) / (3.0 * sbase)
-
-        power_vector[0] = 0.0 + 0.0j
-        power_vector[1] = complex(-p_phase, -q_phase)
-        power_vector[2] = complex(-p_phase, -q_phase)
-        power_vector[3] = complex(-p_phase, -q_phase)
-
-        return power_vector
-
     def _get_shunt_fixed_power_vector_3ph(
             self,
             shunt: Any,
@@ -5964,9 +6083,11 @@ class EmtProblemDae(EmtProblemTemplate):
         """
         Return the fixed per-phase complex power seed of a shunt.
 
-        The current EMT implementation only has direct access to total ``G`` and ``B``
-        in this parser stage. Therefore, the total shunt admittance is split equally
-        among phases for initialization purposes.
+        Explicit per-phase ``G`` and ``B`` values are preserved when available.
+        When the static device only defines balanced totals, the shared phase-value
+        resolver distributes those totals consistently with the static mapper.
+        Returned values follow the EMT injection convention: conductance consumes
+        active power and positive capacitive susceptance injects reactive power.
 
         :param shunt: Shunt device.
         :param bus_index: Bus index.
@@ -5993,43 +6114,12 @@ class EmtProblemDae(EmtProblemTemplate):
             phase_voltage: complex = complex(voltage_vector[phase_index])
             voltage_square: float = float(np.abs(phase_voltage) ** 2)
 
+            # Static G+jB describes the admittance that absorbs branch power.
+            # The EMT operating-point store is injection-oriented, therefore a
+            # positive G consumes P while a positive capacitive B injects Q.
             power_vector[phase_index] = complex(
-                float(g_phase_nabc_pu[phase_index]) * voltage_square,
-                -float(b_phase_nabc_pu[phase_index]) * voltage_square,
-            )
-            phase_index += 1
-
-        return power_vector
-
-    def _get_shunt_fixed_power_vector_balanced(
-            self,
-            shunt: Any,
-            bus_index: int,
-            sbase: float,
-    ) -> np.ndarray:
-        """
-        Return the balanced per-phase complex power seed of a shunt.
-
-        :param shunt: Shunt device.
-        :param bus_index: Bus index.
-        :param sbase: System base power.
-        :return: Complex power vector in NABC order.
-        """
-        voltage_vector: np.ndarray = self._get_bus_voltage_vector_balanced(bus_index)
-        power_vector: np.ndarray = _zero_ac_power_vector()
-        g_phase: float = float(shunt.G) / (3.0 * sbase)
-        b_phase: float = float(shunt.B) / (3.0 * sbase)
-        phase_index: int = 1
-
-        power_vector[0] = 0.0 + 0.0j
-
-        while phase_index < 4:
-            phase_voltage: complex = complex(voltage_vector[phase_index])
-            voltage_square: float = float(np.abs(phase_voltage) ** 2)
-
-            power_vector[phase_index] = complex(
-                g_phase * voltage_square,
-                -b_phase * voltage_square,
+                -float(g_phase_nabc_pu[phase_index]) * voltage_square,
+                float(b_phase_nabc_pu[phase_index]) * voltage_square,
             )
             phase_index += 1
 
@@ -6038,406 +6128,375 @@ class EmtProblemDae(EmtProblemTemplate):
     def _build_injection_seed_store_3ph(
             self,
             grid: MultiCircuit,
-            bus_dict: Dict[Any, int],
-            injection_devices: List[Any],
+            bus_dict: Dict[Bus, int],
+            injection_devices: List[INJECTION_DEVICE_TYPES],
             sbase: float,
-    ) -> EmtInjectionSeedStore:
-        """
-        Build the PF seed store for EMT injections using the three-phase PF snapshot.
+    ) -> EmtInjectionOperatingPoint:
+        """Build per-device EMT seeds without extending the PF3 result contract.
 
-        The algorithm mirrors the RMS logic:
-        1. loads and shunts contribute fixed known power injections,
-        2. the remaining bus power is treated as residual,
-        3. the residual is distributed among source-like injections on the same bus.
+        PF3 provides solved phase powers at bus level but does not expose active
+        power per generator. EMT therefore evaluates every fixed injection at
+        the solved phase voltages and applies the same limit-based slack split
+        already used by balanced PF to the remaining per-phase residual.
 
-        The result is one per-device seed, which is exactly what the current EMT
-        code is missing when multiple injections share the same bus.
-
-        :param grid: Network model.
-        :param bus_dict: Bus-to-index lookup.
-        :param injection_devices: Fixed injection list used by the EMT builder.
-        :param sbase: System base power.
-        :return: Preallocated seed store.
+        :param grid: Static network model.
+        :param bus_dict: Mapping from static buses to result positions.
+        :param injection_devices: Fixed-order injection-device collection.
+        :param sbase: System three-phase power base.
+        :return: Fixed-size EMT per-device operating point.
         """
         n_buses: int = len(grid.buses)
         n_injections: int = len(injection_devices)
+        generators: List[INJECTION_DEVICE_TYPES] = list(grid.get_generators())
+        batteries: List[INJECTION_DEVICE_TYPES] = list(grid.get_batteries())
+        n_generators: int = len(generators)
+        n_batteries: int = len(batteries)
+        operating_point: EmtInjectionOperatingPoint = EmtInjectionOperatingPoint(n_injections)
+        balanced_operating_point: Optional[EmtInjectionOperatingPoint]
 
-        seed_store: EmtInjectionSeedStore = EmtInjectionSeedStore(n_injections)
+        if self.power_flow_results is None:
+            balanced_operating_point = None
+        else:
+            balanced_operating_point = build_balanced_emt_injection_operating_point(
+                grid=grid,
+                power_flow_results=self.power_flow_results,
+                bus_dict=bus_dict,
+                injection_devices=injection_devices,
+            )
 
-        # The target bus powers come from the PF solution and are stored phase by phase.
-        target_ac_power: np.ndarray = np.zeros((n_buses, 4), dtype=np.complex128)
-        fixed_ac_power: np.ndarray = np.zeros((n_buses, 4), dtype=np.complex128)
+        # PF3 exposes only bus phase powers. Preserve them as the authoritative
+        # phase targets and accumulate all non-participating device powers.
+        target_bus_power: np.ndarray = np.zeros((n_buses, 4), dtype=np.complex128)
+        target_bus_power[:, 1] = self.power_flow_results_3ph.Sbus_A / sbase
+        target_bus_power[:, 2] = self.power_flow_results_3ph.Sbus_B / sbase
+        target_bus_power[:, 3] = self.power_flow_results_3ph.Sbus_C / sbase
+        fixed_bus_power: np.ndarray = np.zeros((n_buses, 4), dtype=np.complex128)
+        device_phase_power: np.ndarray = np.zeros((n_injections, 4), dtype=np.complex128)
+        generator_injection_indices: np.ndarray = np.full(n_generators, -1, dtype=np.int64)
+        battery_injection_indices: np.ndarray = np.full(n_batteries, -1, dtype=np.int64)
 
-        # DC buses use one real power residual only.
-        target_dc_power: np.ndarray = np.zeros(n_buses, dtype=np.float64)
-        fixed_dc_power: np.ndarray = np.zeros(n_buses, dtype=np.float64)
-
-        # These matrices store which injections must absorb the residual.
-        source_indices_ac: np.ndarray = -np.ones((n_buses, n_injections), dtype=np.int64)
-        source_counts_ac: np.ndarray = np.zeros(n_buses, dtype=np.int64)
-
-        source_indices_dc: np.ndarray = -np.ones((n_buses, n_injections), dtype=np.int64)
-        source_counts_dc: np.ndarray = np.zeros(n_buses, dtype=np.int64)
-
-        load_lookup: Dict[str, int] = _build_device_idtag_lookup(grid.loads)
-        shunt_lookup: Dict[str, int] = _build_device_idtag_lookup(grid.shunts)
-
-        bus_index: int = 0
-        while bus_index < n_buses:
-            if grid.buses[bus_index].is_dc:
-                if self.power_flow_results is None:
-                    target_dc_power[bus_index] = 0.0
-                else:
-                    target_dc_power[bus_index] = float(np.real(self.power_flow_results.Sbus[bus_index] / sbase))
-            else:
-                target_ac_power[bus_index, 0] = complex(self.power_flow_results_3ph.Sbus_N[bus_index] / sbase)
-                target_ac_power[bus_index, 1] = complex(self.power_flow_results_3ph.Sbus_A[bus_index] / sbase)
-                target_ac_power[bus_index, 2] = complex(self.power_flow_results_3ph.Sbus_B[bus_index] / sbase)
-                target_ac_power[bus_index, 3] = complex(self.power_flow_results_3ph.Sbus_C[bus_index] / sbase)
-            bus_index += 1
-
+        generator_index: int = 0
+        battery_index: int = 0
         injection_index: int = 0
+
         while injection_index < n_injections:
-            injection: Any = injection_devices[injection_index]
-            bus_index = int(bus_dict[injection.bus])
+            injection: INJECTION_DEVICE_TYPES = injection_devices[injection_index]
+            bus_index: int = int(bus_dict[injection.bus])
+
+            # Preserve the family-to-injection mapping for active, inactive,
+            # AC, and DC devices alike. PF result arrays use this family order.
+            if injection.device_type == DeviceType.GeneratorDevice:
+                generator_injection_indices[generator_index] = injection_index
+            else:
+                pass
+            if injection.device_type == DeviceType.BatteryDevice:
+                battery_injection_indices[battery_index] = injection_index
+            else:
+                pass
 
             if injection.bus.is_dc:
-                # Loads are fixed DC consumers. All other DC injections are treated as source-like.
-                if injection.idtag in load_lookup:
-                    fixed_power_dc: float = -float(injection.P) / sbase
-                    fixed_dc_power[bus_index] += fixed_power_dc
-                    seed_store.set_dc_seed(injection_index, fixed_power_dc)
-                else:
-                    row_index_dc: int = int(source_counts_dc[bus_index])
-                    source_indices_dc[bus_index, row_index_dc] = injection_index
-                    source_counts_dc[bus_index] += 1
-            else:
-                if injection.idtag in load_lookup:
-                    fixed_power_ac: np.ndarray = self._get_load_fixed_power_vector_3ph(injection)
-                    fixed_ac_power[bus_index, :] += fixed_power_ac
-                    seed_store.set_ac_seed(injection_index, fixed_power_ac)
-                else:
-                    if injection.idtag in shunt_lookup:
-                        fixed_power_ac = self._get_shunt_fixed_power_vector_3ph(injection, bus_index)
-                        fixed_ac_power[bus_index, :] += fixed_power_ac
-                        seed_store.set_ac_seed(injection_index, fixed_power_ac)
+                # PF3 does not solve DC terminals. A simultaneous balanced PF is
+                # the only source that can provide a per-device DC dispatch.
+                if balanced_operating_point is None:
+                    if self.logger is not None:
+                        self.logger.add_error(
+                            msg="Three-phase EMT initialization requires balanced PF results for DC injections.",
+                            device=injection.name,
+                            device_class=str(injection.device_type),
+                            device_property="power_flow_results",
+                        )
                     else:
-                        row_index_ac: int = int(source_counts_ac[bus_index])
-                        source_indices_ac[bus_index, row_index_ac] = injection_index
-                        source_counts_ac[bus_index] += 1
+                        pass
+                else:
+                    operating_point.set_dc_seed(
+                        injection_index=injection_index,
+                        power_value=balanced_operating_point.get_dc_seed(injection_index),
+                    )
+            else:
+                phase_power: np.ndarray = np.zeros(4, dtype=np.complex128)
+
+                if injection.active:
+                    if injection.device_type == DeviceType.GeneratorDevice:
+                        # Source powers are assigned after all fixed injections
+                        # have been removed from the solved bus target.
+                        pass
+                    elif injection.device_type == DeviceType.BatteryDevice:
+                        pass
+                    elif injection.device_type == DeviceType.LoadDevice:
+                        phase_power = self._get_load_fixed_power_vector_3ph(load=injection)
+                    elif injection.device_type == DeviceType.StaticGeneratorDevice:
+                        phase_p_abc: np.ndarray
+                        phase_q_abc: np.ndarray
+                        phase_p_abc, phase_q_abc = get_load_power_phase_values_pu_abc(
+                            load=injection,
+                            grid=grid,
+                        )
+                        phase_power[1:4] = phase_p_abc + 1.0j * phase_q_abc
+                    elif injection.device_type == DeviceType.ExternalGridDevice:
+                        phase_p_abc, phase_q_abc = get_load_power_phase_values_pu_abc(
+                            load=injection,
+                            grid=grid,
+                        )
+                        phase_power[1:4] = -(phase_p_abc + 1.0j * phase_q_abc)
+                    elif injection.device_type == DeviceType.ShuntDevice:
+                        phase_power = self._get_shunt_fixed_power_vector_3ph(
+                            shunt=injection,
+                            bus_index=bus_index,
+                        )
+                    elif injection.device_type == DeviceType.ControllableShuntDevice:
+                        phase_power = self._get_shunt_fixed_power_vector_3ph(
+                            shunt=injection,
+                            bus_index=bus_index,
+                        )
+                    elif injection.device_type == DeviceType.CurrentInjectionDevice:
+                        current_real_abc: np.ndarray
+                        current_imaginary_abc: np.ndarray
+                        current_real_abc, current_imaginary_abc = get_current_injection_phase_values_pu_abc(
+                            current_injection=injection,
+                            grid=grid,
+                        )
+                        voltage_vector: np.ndarray = self._get_bus_voltage_vector_3ph(bus_index)
+                        phase_index: int = 1
+                        while phase_index < 4:
+                            specified_current: complex = complex(
+                                current_real_abc[phase_index - 1],
+                                current_imaginary_abc[phase_index - 1],
+                            )
+                            phase_power[phase_index] = -voltage_vector[phase_index] * np.conj(
+                                specified_current
+                            )
+                            phase_index += 1
+                    else:
+                        phase_power[:] = 0.0 + 0.0j
+                else:
+                    phase_power[:] = 0.0 + 0.0j
+
+                device_phase_power[injection_index, :] = phase_power
+                if (injection.device_type == DeviceType.GeneratorDevice
+                        or injection.device_type == DeviceType.BatteryDevice):
+                    pass
+                else:
+                    fixed_bus_power[bus_index, :] += phase_power
+
+            if injection.device_type == DeviceType.GeneratorDevice:
+                generator_index += 1
+            else:
+                pass
+            if injection.device_type == DeviceType.BatteryDevice:
+                battery_index += 1
+            else:
+                pass
             injection_index += 1
 
-        bus_index = 0
-        while bus_index < n_buses:
-            if grid.buses[bus_index].is_dc:
-                residual_dc: float = float(target_dc_power[bus_index] - fixed_dc_power[bus_index])
-                source_count_dc: int = int(source_counts_dc[bus_index])
-
-                if source_count_dc == 0:
-                    if abs(residual_dc) > 1.0e-9:
-                        if self.logger is not None:
-                            self.logger.add_warning(
-                                msg="DC EMT injection residual could not be assigned.",
-                                device="EmtProblemDae",
-                                value=f"bus_index={bus_index}, residual={residual_dc}",
-                                expected_value="At least one source-like DC injection",
-                                device_class="EMT",
-                                device_property="injection_seed_store_3ph",
-                            )
-                        else:
-                            pass
-                    else:
-                        pass
-                else:
-                    total_weight_dc: float = 0.0
-                    source_row_index_dc: int = 0
-
-                    while source_row_index_dc < source_count_dc:
-                        injection_index = int(source_indices_dc[bus_index, source_row_index_dc])
-                        total_weight_dc += _get_source_seed_weight(injection_devices[injection_index])
-                        source_row_index_dc += 1
-
-                    remaining_weight_dc: float = total_weight_dc
-                    remaining_residual_dc: float = residual_dc
-                    source_row_index_dc = 0
-
-                    while source_row_index_dc < source_count_dc:
-                        injection_index = int(source_indices_dc[bus_index, source_row_index_dc])
-
-                        if source_row_index_dc == source_count_dc - 1:
-                            allocated_dc: float = remaining_residual_dc
-                        else:
-                            weight_dc: float = _get_source_seed_weight(injection_devices[injection_index])
-
-                            if remaining_weight_dc > 0.0:
-                                share_dc: float = weight_dc / remaining_weight_dc
-                            else:
-                                share_dc = 1.0 / float(source_count_dc - source_row_index_dc)
-
-                            allocated_dc = remaining_residual_dc * share_dc
-                            remaining_residual_dc -= allocated_dc
-                            remaining_weight_dc -= weight_dc
-
-                        seed_store.set_dc_seed(injection_index, allocated_dc)
-                        source_row_index_dc += 1
+        # Compile the source arrays required by the existing balanced slack
+        # allocator. Baselines come from balanced PF when present, so non-slack
+        # source devices retain the same operating point as RMS.
+        generator_bus_indices: np.ndarray = np.zeros(n_generators, dtype=np.int64)
+        generator_p_min: np.ndarray = np.zeros(n_generators, dtype=np.float64)
+        generator_p_max: np.ndarray = np.zeros(n_generators, dtype=np.float64)
+        generator_q_min: np.ndarray = np.zeros(n_generators, dtype=np.float64)
+        generator_q_max: np.ndarray = np.zeros(n_generators, dtype=np.float64)
+        generator_status: np.ndarray = np.zeros(n_generators, dtype=bool)
+        generator_p_base: np.ndarray = np.zeros(n_generators, dtype=np.float64)
+        generator_q_base: np.ndarray = np.zeros(n_generators, dtype=np.float64)
+        generator_index = 0
+        while generator_index < n_generators:
+            generator: INJECTION_DEVICE_TYPES = generators[generator_index]
+            generator_unit_scale: float = 1000.0 if generator.use_kw else 1.0
+            generator_bus_indices[generator_index] = int(bus_dict[generator.bus])
+            generator_p_min[generator_index] = float(generator.Pmin) / generator_unit_scale / (3.0 * sbase)
+            generator_p_max[generator_index] = float(generator.Pmax) / generator_unit_scale / (3.0 * sbase)
+            generator_q_min[generator_index] = float(generator.Qmin) / generator_unit_scale / (3.0 * sbase)
+            generator_q_max[generator_index] = float(generator.Qmax) / generator_unit_scale / (3.0 * sbase)
+            generator_status[generator_index] = bool(generator.active and not generator.bus.is_dc)
+            if self.power_flow_results is None:
+                generator_p_base[generator_index] = float(generator.P) / generator_unit_scale / (3.0 * sbase)
+                generator_q_base[generator_index] = float(generator.Q) / generator_unit_scale / (3.0 * sbase)
             else:
-                residual_ac: np.ndarray = target_ac_power[bus_index, :] - fixed_ac_power[bus_index, :]
-                source_count_ac: int = int(source_counts_ac[bus_index])
+                generator_p_base[generator_index] = (
+                    float(self.power_flow_results.gen_p[generator_index]) / (3.0 * sbase)
+                )
+                generator_q_base[generator_index] = (
+                    float(self.power_flow_results.gen_q[generator_index]) / (3.0 * sbase)
+                )
+            generator_index += 1
 
-                if source_count_ac == 0:
-                    if np.max(np.abs(residual_ac)) > 1.0e-9:
-                        if self.logger is not None:
-                            self.logger.add_warning(
-                                msg="AC EMT injection residual could not be assigned.",
-                                device="EmtProblemDae",
-                                value=f"bus_index={bus_index}, residual={residual_ac}",
-                                expected_value="At least one source-like AC injection",
-                                device_class="EMT",
-                                device_property="injection_seed_store_3ph",
-                            )
-                        else:
-                            pass
+        battery_bus_indices: np.ndarray = np.zeros(n_batteries, dtype=np.int64)
+        battery_p_min: np.ndarray = np.zeros(n_batteries, dtype=np.float64)
+        battery_p_max: np.ndarray = np.zeros(n_batteries, dtype=np.float64)
+        battery_q_min: np.ndarray = np.zeros(n_batteries, dtype=np.float64)
+        battery_q_max: np.ndarray = np.zeros(n_batteries, dtype=np.float64)
+        battery_status: np.ndarray = np.zeros(n_batteries, dtype=bool)
+        battery_p_base: np.ndarray = np.zeros(n_batteries, dtype=np.float64)
+        battery_q_base: np.ndarray = np.zeros(n_batteries, dtype=np.float64)
+        battery_index = 0
+        while battery_index < n_batteries:
+            battery: INJECTION_DEVICE_TYPES = batteries[battery_index]
+            battery_unit_scale: float = 1000.0 if battery.use_kw else 1.0
+            battery_bus_indices[battery_index] = int(bus_dict[battery.bus])
+            battery_p_min[battery_index] = float(battery.Pmin) / battery_unit_scale / (3.0 * sbase)
+            battery_p_max[battery_index] = float(battery.Pmax) / battery_unit_scale / (3.0 * sbase)
+            battery_q_min[battery_index] = float(battery.Qmin) / battery_unit_scale / (3.0 * sbase)
+            battery_q_max[battery_index] = float(battery.Qmax) / battery_unit_scale / (3.0 * sbase)
+            battery_status[battery_index] = bool(battery.active and not battery.bus.is_dc)
+            if self.power_flow_results is None:
+                battery_p_base[battery_index] = float(battery.P) / battery_unit_scale / (3.0 * sbase)
+                battery_q_base[battery_index] = float(battery.Q) / battery_unit_scale / (3.0 * sbase)
+            else:
+                battery_p_base[battery_index] = (
+                    float(self.power_flow_results.battery_p[battery_index]) / (3.0 * sbase)
+                )
+                battery_q_base[battery_index] = (
+                    float(self.power_flow_results.battery_q[battery_index]) / (3.0 * sbase)
+                )
+            battery_index += 1
+
+        slack_bus_mask: np.ndarray = np.zeros(n_buses, dtype=bool)
+        grid_bus_index: int = 0
+        while grid_bus_index < len(grid.buses):
+            grid_bus: Bus = grid.buses[grid_bus_index]
+            bus_index = int(bus_dict[grid_bus])
+            slack_bus_mask[bus_index] = bool(grid_bus.is_slack and not grid_bus.is_dc)
+            grid_bus_index += 1
+
+        # Allocate each solved phase independently. The helper gives all active
+        # generators and batteries at a slack bus one common capability-based
+        # sharing factor, exactly as balanced PF does for its final residual.
+        phase_index: int = 1
+        while phase_index < 4:
+            generator_p_phase: np.ndarray
+            battery_p_phase: np.ndarray
+            generator_q_phase: np.ndarray
+            battery_q_phase: np.ndarray
+            generator_p_phase, battery_p_phase = split_slack_bus_quantity_between_generators_and_batteries(
+                Qbus=target_bus_power[:, phase_index].real,
+                Qfixed_bus=fixed_bus_power[:, phase_index].real,
+                slack_bus_mask=slack_bus_mask,
+                gen_bus_idx=generator_bus_indices,
+                Qmin_gen=generator_p_min,
+                Qmax_gen=generator_p_max,
+                gen_status=generator_status,
+                Q0_gen=generator_p_base,
+                batt_bus_idx=battery_bus_indices,
+                Qmin_batt=battery_p_min,
+                Qmax_batt=battery_p_max,
+                batt_status=battery_status,
+                Q0_batt=battery_p_base,
+                atol=1.0e-12,
+            )
+            generator_q_phase, battery_q_phase = split_slack_bus_quantity_between_generators_and_batteries(
+                Qbus=target_bus_power[:, phase_index].imag,
+                Qfixed_bus=fixed_bus_power[:, phase_index].imag,
+                slack_bus_mask=slack_bus_mask,
+                gen_bus_idx=generator_bus_indices,
+                Qmin_gen=generator_q_min,
+                Qmax_gen=generator_q_max,
+                gen_status=generator_status,
+                Q0_gen=generator_q_base,
+                batt_bus_idx=battery_bus_indices,
+                Qmin_batt=battery_q_min,
+                Qmax_batt=battery_q_max,
+                batt_status=battery_status,
+                Q0_batt=battery_q_base,
+                atol=1.0e-12,
+            )
+
+            generator_index = 0
+            while generator_index < n_generators:
+                injection_index = int(generator_injection_indices[generator_index])
+                device_phase_power[injection_index, phase_index] = complex(
+                    generator_p_phase[generator_index],
+                    generator_q_phase[generator_index],
+                )
+                generator_index += 1
+
+            battery_index = 0
+            while battery_index < n_batteries:
+                injection_index = int(battery_injection_indices[battery_index])
+                device_phase_power[injection_index, phase_index] = complex(
+                    battery_p_phase[battery_index],
+                    battery_q_phase[battery_index],
+                )
+                battery_index += 1
+            phase_index += 1
+
+        # Convert every AC power seed to the NABC current coordinates expected
+        # by EMT. The neutral current closes the conductor-current sum.
+        injection_index = 0
+        while injection_index < n_injections:
+            injection = injection_devices[injection_index]
+            if injection.bus.is_dc:
+                pass
+            else:
+                phase_power = device_phase_power[injection_index, :]
+                operating_point.set_ac_seed(
+                    injection_index=injection_index,
+                    phase_power=phase_power,
+                )
+                bus_index = int(bus_dict[injection.bus])
+                voltage_vector: np.ndarray = self._get_bus_voltage_vector_3ph(bus_index)
+                phase_current: np.ndarray = np.zeros(4, dtype=np.complex128)
+                phase_index = 1
+                while phase_index < 4:
+                    if abs(voltage_vector[phase_index]) > 1.0e-12:
+                        phase_current[phase_index] = 3.0 * np.conj(
+                            phase_power[phase_index] / voltage_vector[phase_index]
+                        )
                     else:
-                        pass
-                else:
-                    total_weight_ac: float = 0.0
-                    source_row_index_ac: int = 0
+                        phase_current[phase_index] = 0.0 + 0.0j
+                    phase_index += 1
+                phase_current[0] = -(phase_current[1] + phase_current[2] + phase_current[3])
+                operating_point.set_ac_current_seed(
+                    injection_index=injection_index,
+                    phase_current=phase_current,
+                    authoritative=False,
+                )
+            injection_index += 1
 
-                    while source_row_index_ac < source_count_ac:
-                        injection_index = int(source_indices_ac[bus_index, source_row_index_ac])
-                        total_weight_ac += _get_source_seed_weight(injection_devices[injection_index])
-                        source_row_index_ac += 1
-
-                    remaining_weight_ac: float = total_weight_ac
-                    remaining_residual_ac: np.ndarray = residual_ac.copy()
-                    source_row_index_ac = 0
-
-                    while source_row_index_ac < source_count_ac:
-                        injection_index = int(source_indices_ac[bus_index, source_row_index_ac])
-
-                        if source_row_index_ac == source_count_ac - 1:
-                            allocated_ac: np.ndarray = remaining_residual_ac.copy()
-                        else:
-                            weight_ac: float = _get_source_seed_weight(injection_devices[injection_index])
-
-                            if remaining_weight_ac > 0.0:
-                                share_ac: float = weight_ac / remaining_weight_ac
-                            else:
-                                share_ac = 1.0 / float(source_count_ac - source_row_index_ac)
-
-                            allocated_ac = remaining_residual_ac * share_ac
-                            remaining_residual_ac = remaining_residual_ac - allocated_ac
-                            remaining_weight_ac -= weight_ac
-
-                        seed_store.set_ac_seed(injection_index, allocated_ac)
-                        source_row_index_ac += 1
-            bus_index += 1
-
-        return seed_store
+        return operating_point
 
     def _build_injection_seed_store_balanced(
             self,
             grid: MultiCircuit,
-            bus_dict: Dict[Any, int],
-            injection_devices: List[Any],
-            sbase: float,
-    ) -> EmtInjectionSeedStore:
+            bus_dict: Dict[Bus, int],
+            injection_devices: List[INJECTION_DEVICE_TYPES],
+    ) -> EmtInjectionOperatingPoint:
+        """Build the EMT per-device operating point from balanced PF results.
+
+        The balanced power-flow worker already owns the slack-bus dispatch in
+        its per-device generator and battery result arrays. EMT must consume
+        that dispatch directly instead of constructing a second Snom-weighted
+        allocation from aggregate bus power.
+
+        :param grid: Static network model.
+        :param bus_dict: Mapping from static buses to power-flow result positions.
+        :param injection_devices: Fixed-order injection-device collection.
+        :return: EMT per-device operating point.
         """
-        Build the PF seed store for EMT injections using the balanced PF snapshot.
+        operating_point: EmtInjectionOperatingPoint
 
-        The balanced PF gives one three-phase complex bus injection. This function
-        converts it into balanced ABC phase powers and then applies the same
-        residual-allocation logic as the three-phase version.
+        if self.power_flow_results is None:
+            # The caller normally omits the store when no PF result exists. Keep
+            # this state explicit so the helper remains safe in isolation.
+            operating_point = EmtInjectionOperatingPoint(len(injection_devices))
+        else:
+            operating_point = build_balanced_emt_injection_operating_point(
+                grid=grid,
+                power_flow_results=self.power_flow_results,
+                bus_dict=bus_dict,
+                injection_devices=injection_devices,
+            )
 
-        :param grid: Network model.
-        :param bus_dict: Bus-to-index lookup.
-        :param injection_devices: Fixed injection list used by the EMT builder.
-        :param sbase: System base power.
-        :return: Preallocated seed store.
-        """
-        n_buses: int = len(grid.buses)
-        n_injections: int = len(injection_devices)
-
-        seed_store: EmtInjectionSeedStore = EmtInjectionSeedStore(n_injections)
-
-        target_ac_power: np.ndarray = np.zeros((n_buses, 4), dtype=np.complex128)
-        fixed_ac_power: np.ndarray = np.zeros((n_buses, 4), dtype=np.complex128)
-
-        target_dc_power: np.ndarray = np.zeros(n_buses, dtype=np.float64)
-        fixed_dc_power: np.ndarray = np.zeros(n_buses, dtype=np.float64)
-
-        source_indices_ac: np.ndarray = -np.ones((n_buses, n_injections), dtype=np.int64)
-        source_counts_ac: np.ndarray = np.zeros(n_buses, dtype=np.int64)
-
-        source_indices_dc: np.ndarray = -np.ones((n_buses, n_injections), dtype=np.int64)
-        source_counts_dc: np.ndarray = np.zeros(n_buses, dtype=np.int64)
-
-        load_lookup: Dict[str, int] = _build_device_idtag_lookup(grid.loads)
-        shunt_lookup: Dict[str, int] = _build_device_idtag_lookup(grid.shunts)
-
-        bus_index: int = 0
-        while bus_index < n_buses:
-            if grid.buses[bus_index].is_dc:
-                if self.power_flow_results is None:
-                    target_dc_power[bus_index] = 0.0
-                else:
-                    target_dc_power[bus_index] = float(np.real(self.power_flow_results.Sbus[bus_index] / sbase))
-            else:
-                bus_power: complex = complex(self.power_flow_results.Sbus[bus_index] / sbase)
-                phase_power: complex = bus_power / 3.0
-
-                target_ac_power[bus_index, 0] = 0.0 + 0.0j
-                target_ac_power[bus_index, 1] = phase_power
-                target_ac_power[bus_index, 2] = phase_power
-                target_ac_power[bus_index, 3] = phase_power
-            bus_index += 1
-
-        injection_index: int = 0
-        while injection_index < n_injections:
-            injection: Any = injection_devices[injection_index]
-            bus_index = int(bus_dict[injection.bus])
-
-            if injection.bus.is_dc:
-                if injection.idtag in load_lookup:
-                    fixed_power_dc: float = -float(injection.P) / sbase
-                    fixed_dc_power[bus_index] += fixed_power_dc
-                    seed_store.set_dc_seed(injection_index, fixed_power_dc)
-                else:
-                    row_index_dc: int = int(source_counts_dc[bus_index])
-                    source_indices_dc[bus_index, row_index_dc] = injection_index
-                    source_counts_dc[bus_index] += 1
-            else:
-                if injection.idtag in load_lookup:
-                    fixed_power_ac: np.ndarray = self._get_load_fixed_power_vector_balanced(injection, sbase)
-                    fixed_ac_power[bus_index, :] += fixed_power_ac
-                    seed_store.set_ac_seed(injection_index, fixed_power_ac)
-                else:
-                    if injection.idtag in shunt_lookup:
-                        fixed_power_ac = self._get_shunt_fixed_power_vector_balanced(injection, bus_index, sbase)
-                        fixed_ac_power[bus_index, :] += fixed_power_ac
-                        seed_store.set_ac_seed(injection_index, fixed_power_ac)
-                    else:
-                        row_index_ac: int = int(source_counts_ac[bus_index])
-                        source_indices_ac[bus_index, row_index_ac] = injection_index
-                        source_counts_ac[bus_index] += 1
-            injection_index += 1
-
-        bus_index = 0
-        while bus_index < n_buses:
-            if grid.buses[bus_index].is_dc:
-                residual_dc: float = float(target_dc_power[bus_index] - fixed_dc_power[bus_index])
-                source_count_dc: int = int(source_counts_dc[bus_index])
-
-                if source_count_dc == 0:
-                    if abs(residual_dc) > 1.0e-9:
-                        if self.logger is not None:
-                            self.logger.add_warning(
-                                msg="Balanced DC EMT injection residual could not be assigned.",
-                                device="EmtProblemDae",
-                                value=f"bus_index={bus_index}, residual={residual_dc}",
-                                expected_value="At least one source-like DC injection",
-                                device_class="EMT",
-                                device_property="injection_seed_store_balanced",
-                            )
-                        else:
-                            pass
-                    else:
-                        pass
-                else:
-                    total_weight_dc: float = 0.0
-                    source_row_index_dc: int = 0
-
-                    while source_row_index_dc < source_count_dc:
-                        injection_index = int(source_indices_dc[bus_index, source_row_index_dc])
-                        total_weight_dc += _get_source_seed_weight(injection_devices[injection_index])
-                        source_row_index_dc += 1
-
-                    remaining_weight_dc: float = total_weight_dc
-                    remaining_residual_dc: float = residual_dc
-                    source_row_index_dc = 0
-
-                    while source_row_index_dc < source_count_dc:
-                        injection_index = int(source_indices_dc[bus_index, source_row_index_dc])
-
-                        if source_row_index_dc == source_count_dc - 1:
-                            allocated_dc: float = remaining_residual_dc
-                        else:
-                            weight_dc: float = _get_source_seed_weight(injection_devices[injection_index])
-
-                            if remaining_weight_dc > 0.0:
-                                share_dc: float = weight_dc / remaining_weight_dc
-                            else:
-                                share_dc = 1.0 / float(source_count_dc - source_row_index_dc)
-
-                            allocated_dc = remaining_residual_dc * share_dc
-                            remaining_residual_dc -= allocated_dc
-                            remaining_weight_dc -= weight_dc
-
-                        seed_store.set_dc_seed(injection_index, allocated_dc)
-                        source_row_index_dc += 1
-            else:
-                residual_ac: np.ndarray = target_ac_power[bus_index, :] - fixed_ac_power[bus_index, :]
-                source_count_ac: int = int(source_counts_ac[bus_index])
-
-                if source_count_ac == 0:
-                    if np.max(np.abs(residual_ac)) > 1.0e-9:
-                        if self.logger is not None:
-                            self.logger.add_warning(
-                                msg="Balanced AC EMT injection residual could not be assigned.",
-                                device="EmtProblemDae",
-                                value=f"bus_index={bus_index}, residual={residual_ac}",
-                                expected_value="At least one source-like AC injection",
-                                device_class="EMT",
-                                device_property="injection_seed_store_balanced",
-                            )
-                        else:
-                            pass
-                    else:
-                        pass
-                else:
-                    total_weight_ac: float = 0.0
-                    source_row_index_ac: int = 0
-
-                    while source_row_index_ac < source_count_ac:
-                        injection_index = int(source_indices_ac[bus_index, source_row_index_ac])
-                        total_weight_ac += _get_source_seed_weight(injection_devices[injection_index])
-                        source_row_index_ac += 1
-
-                    remaining_weight_ac: float = total_weight_ac
-                    remaining_residual_ac: np.ndarray = residual_ac.copy()
-                    source_row_index_ac = 0
-
-                    while source_row_index_ac < source_count_ac:
-                        injection_index = int(source_indices_ac[bus_index, source_row_index_ac])
-
-                        if source_row_index_ac == source_count_ac - 1:
-                            allocated_ac: np.ndarray = remaining_residual_ac.copy()
-                        else:
-                            weight_ac: float = _get_source_seed_weight(injection_devices[injection_index])
-
-                            if remaining_weight_ac > 0.0:
-                                share_ac: float = weight_ac / remaining_weight_ac
-                            else:
-                                share_ac = 1.0 / float(source_count_ac - source_row_index_ac)
-
-                            allocated_ac = remaining_residual_ac * share_ac
-                            remaining_residual_ac = remaining_residual_ac - allocated_ac
-                            remaining_weight_ac -= weight_ac
-
-                        seed_store.set_ac_seed(injection_index, allocated_ac)
-                        source_row_index_ac += 1
-            bus_index += 1
-
-        return seed_store
+        return operating_point
 
     def _apply_injection_seed(
             self,
-            injection: Any,
+            injection: INJECTION_DEVICE_TYPES,
             mdl: Block,
             bus_index: int,
-            seed_store: EmtInjectionSeedStore,
+            seed_store: EmtInjectionOperatingPoint,
             injection_index: int,
-            generator_count_same_bus: int,
+            generator_battery_count_same_bus: int,
     ) -> None:
         """
         Apply the precomputed PF seed of one injection into the EMT model.
@@ -6451,6 +6510,8 @@ class EmtProblemDae(EmtProblemTemplate):
         :param bus_index: Bus index.
         :param seed_store: Precomputed seed store.
         :param injection_index: Injection position in the fixed injection list.
+        :param generator_battery_count_same_bus: Number of active generators
+            and batteries on the bus.
         :return: None.
         """
         if seed_store.has_seed(injection_index):
@@ -6485,7 +6546,10 @@ class EmtProblemDae(EmtProblemTemplate):
                     )
         else:
             phase_power: np.ndarray = seed_store.get_ac_seed(injection_index)
-            phase_current_vector: np.ndarray = np.zeros(4, dtype=np.complex128)
+            if seed_store.has_current_seed(injection_index):
+                phase_current_vector: np.ndarray = seed_store.get_ac_current_seed(injection_index)
+            else:
+                phase_current_vector = np.zeros(4, dtype=np.complex128)
             preserve_generator_current_seed: bool
 
             if self.power_flow_results_3ph is None:
@@ -6503,7 +6567,10 @@ class EmtProblemDae(EmtProblemTemplate):
                 persist_after_native_init=True,
             )
 
-            if injection.device_type == DeviceType.GeneratorDevice and generator_count_same_bus <= 1:
+            if (
+                    injection.device_type == DeviceType.GeneratorDevice
+                    and generator_battery_count_same_bus <= 1
+            ):
                 preserve_generator_current_seed = False
             else:
                 preserve_generator_current_seed = True
@@ -6535,14 +6602,16 @@ class EmtProblemDae(EmtProblemTemplate):
                 phase_voltage: complex = complex(voltage_vector[phase_index])
                 phase_complex_power: complex = complex(phase_power[phase_index])
 
-                if abs(phase_voltage) > 1.0e-12:
-                    # PF3 stores S_A/B/C on the total three-phase Sbase while
-                    # phase currents use the conventional Ibase=Sbase/(sqrt(3)VLL).
-                    # Since each phase power is S3ph/3, restore the factor three.
-                    phase_current: complex = 3.0 * np.conj(
-                        phase_complex_power / phase_voltage)
+                if seed_store.has_current_seed(injection_index):
+                    phase_current: complex = complex(phase_current_vector[phase_index])
                 else:
-                    phase_current = 0.0 + 0.0j
+                    if abs(phase_voltage) > 1.0e-12:
+                        # Phase powers use the total three-phase Sbase while
+                        # conductor currents use the standard three-phase Ibase.
+                        phase_current = 3.0 * np.conj(
+                            phase_complex_power / phase_voltage)
+                    else:
+                        phase_current = 0.0 + 0.0j
 
                 phase_current_vector[phase_index] = phase_current
                 current_instantaneous: float = float(np.sqrt(2.0) * np.imag(phase_current))
@@ -6827,7 +6896,10 @@ class EmtProblemDae(EmtProblemTemplate):
         ang = phi_I - phi_V
         phi = float(np.arctan2(np.sin(ang), np.cos(ang)))
 
-        external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping(mdl)
+        external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping_local(
+            problem=self,
+            mdl=mdl,
+        )
         if external_mapping is None:
             return
 
@@ -8484,6 +8556,10 @@ class EmtProblemDae(EmtProblemTemplate):
         v_t0_red = np.zeros(rt.m, dtype=np.float64)
         i_f0_red = np.zeros(rt.m, dtype=np.float64)
         i_t0_red = np.zeros(rt.m, dtype=np.float64)
+        v_f_phasor = np.zeros(rt.m, dtype=np.complex128)
+        v_t_phasor = np.zeros(rt.m, dtype=np.complex128)
+        i_f_phasor = np.zeros(rt.m, dtype=np.complex128)
+        i_t_phasor = np.zeros(rt.m, dtype=np.complex128)
 
         for k, ph in enumerate(rt.active_ph):
             voltage_array = voltage_dict[ph]
@@ -8494,6 +8570,8 @@ class EmtProblemDae(EmtProblemTemplate):
             else:
                 vf_ph = voltage_array[f_bus_idx]
                 vt_ph = voltage_array[t_bus_idx]
+            v_f_phasor[k] = vf_ph
+            v_t_phasor[k] = vt_ph
 
             # Instantaneous voltage at t = 0 with your EMT convention
             v_f0_red[k] = float(np.sqrt(2.0) * np.imag(vf_ph))
@@ -8517,6 +8595,8 @@ class EmtProblemDae(EmtProblemTemplate):
             # Instantaneous current at t = 0 with your EMT convention
             i_f0_red[k] = float(np.sqrt(2.0) * np.imag(i_f))
             i_t0_red[k] = float(np.sqrt(2.0) * np.imag(i_t))
+            i_f_phasor[k] = i_f
+            i_t_phasor[k] = i_t
 
         Ih_f0_red = i_f0_red - rt.Gc_red @ v_f0_red
         Ih_t0_red = i_t0_red - rt.Gc_red @ v_t0_red
@@ -8532,11 +8612,12 @@ class EmtProblemDae(EmtProblemTemplate):
                 uid=rt.Ih_t[k].uid, value=float(Ih_t0_red[k]), persist_after_native_init=True,
             )
 
-        rt.initialize_buffers_from_initial_point(
-            v_f0_red=v_f0_red,
-            v_t0_red=v_t0_red,
-            i_f0_red=i_f0_red,
-            i_t0_red=i_t0_red,
+        rt.initialize_buffers_from_phasors(
+            v_f=v_f_phasor,
+            v_t=v_t_phasor,
+            i_f=i_f_phasor,
+            i_t=i_t_phasor,
+            frequency_hz=self.grid.fBase,
         )
 
     def _try_set_bergeron_pf_init_balanced(
@@ -8588,6 +8669,10 @@ class EmtProblemDae(EmtProblemTemplate):
         v_t0_red = np.zeros(rt.m, dtype=np.float64)
         i_f0_red = np.zeros(rt.m, dtype=np.float64)
         i_t0_red = np.zeros(rt.m, dtype=np.float64)
+        v_f_phasor = np.zeros(rt.m, dtype=np.complex128)
+        v_t_phasor = np.zeros(rt.m, dtype=np.complex128)
+        i_f_phasor = np.zeros(rt.m, dtype=np.complex128)
+        i_t_phasor = np.zeros(rt.m, dtype=np.complex128)
 
         for k, ph in enumerate(rt.active_ph):
 
@@ -8647,6 +8732,10 @@ class EmtProblemDae(EmtProblemTemplate):
             v_t0_red[k] = float(np.sqrt(2.0) * np.imag(vt_ph))
             i_f0_red[k] = float(np.sqrt(2.0) * np.imag(i_f))
             i_t0_red[k] = float(np.sqrt(2.0) * np.imag(i_t))
+            v_f_phasor[k] = vf_ph
+            v_t_phasor[k] = vt_ph
+            i_f_phasor[k] = i_f
+            i_t_phasor[k] = i_t
 
         Ih_f0_red = i_f0_red - rt.Gc_red @ v_f0_red
         Ih_t0_red = i_t0_red - rt.Gc_red @ v_t0_red
@@ -8662,11 +8751,12 @@ class EmtProblemDae(EmtProblemTemplate):
                 uid=rt.Ih_t[k].uid, value=float(Ih_t0_red[k]), persist_after_native_init=True,
             )
 
-        rt.initialize_buffers_from_initial_point(
-            v_f0_red=v_f0_red,
-            v_t0_red=v_t0_red,
-            i_f0_red=i_f0_red,
-            i_t0_red=i_t0_red,
+        rt.initialize_buffers_from_phasors(
+            v_f=v_f_phasor,
+            v_t=v_t_phasor,
+            i_f=i_f_phasor,
+            i_t=i_t_phasor,
+            frequency_hz=self.grid.fBase,
         )
 
     def _try_set_jmarti_pf_init(
@@ -8740,12 +8830,12 @@ class EmtProblemDae(EmtProblemTemplate):
             if sf_array is None or abs(vf_ph) <= 1.0e-12:
                 i_f = 0.0 + 0.0j
             else:
-                i_f = np.conj(complex(sf_array[branch_index]) / sbase / vf_ph)
+                i_f = np.conj(3.0 * complex(sf_array[branch_index]) / sbase / vf_ph)
 
             if st_array is None or abs(vt_ph) <= 1.0e-12:
                 i_t = 0.0 + 0.0j
             else:
-                i_t = np.conj(complex(st_array[branch_index]) / sbase / vt_ph)
+                i_t = np.conj(3.0 * complex(st_array[branch_index]) / sbase / vt_ph)
 
             i_f0_phasor_red[phase_index] = i_f
             i_t0_phasor_red[phase_index] = i_t
@@ -8761,8 +8851,8 @@ class EmtProblemDae(EmtProblemTemplate):
 
         phase_index = 0
         while phase_index < rt.m:
-            self._set_runtime_parameter_value_by_uid(uid=rt.Ih_f[phase_index].uid, value=float(np.real(ih_f_phase[phase_index])))
-            self._set_runtime_parameter_value_by_uid(uid=rt.Ih_t[phase_index].uid, value=float(np.real(ih_t_phase[phase_index])))
+            self._set_runtime_parameter_seed_by_uid(uid=rt.Ih_f[phase_index].uid, value=float(np.real(ih_f_phase[phase_index])), persist_after_native_init=True)
+            self._set_runtime_parameter_seed_by_uid(uid=rt.Ih_t[phase_index].uid, value=float(np.real(ih_t_phase[phase_index])), persist_after_native_init=True)
             phase_index += 1
 
     def _try_set_jmarti_pf_init_balanced(
@@ -8791,8 +8881,10 @@ class EmtProblemDae(EmtProblemTemplate):
         v_t_bus: complex = complex(pf_results.voltage[t_bus_idx])
         s_f_3ph: complex = complex(pf_results.Sf[branch_index]) / sbase
         s_t_3ph: complex = complex(pf_results.St[branch_index]) / sbase
-        s_f_phase: complex = s_f_3ph / 3.0
-        s_t_phase: complex = s_t_3ph / 3.0
+        # On the system three-phase current base, balanced per-unit S/V
+        # already gives per-phase current pu; do not divide the power by three.
+        s_f_pu: complex = s_f_3ph
+        s_t_pu: complex = s_t_3ph
         v_f0_phasor_red: np.ndarray = np.zeros(rt.m, dtype=np.complex128)
         v_t0_phasor_red: np.ndarray = np.zeros(rt.m, dtype=np.complex128)
         i_f0_phasor_red: np.ndarray = np.zeros(rt.m, dtype=np.complex128)
@@ -8830,12 +8922,12 @@ class EmtProblemDae(EmtProblemTemplate):
                 if abs(vf_ph) <= 1.0e-12:
                     i_f = 0.0 + 0.0j
                 else:
-                    i_f = np.conj(s_f_phase / vf_ph)
+                    i_f = np.conj(s_f_pu / vf_ph)
 
                 if abs(vt_ph) <= 1.0e-12:
                     i_t = 0.0 + 0.0j
                 else:
-                    i_t = np.conj(s_t_phase / vt_ph)
+                    i_t = np.conj(s_t_pu / vt_ph)
 
             v_f0_phasor_red[phase_index] = vf_ph
             v_t0_phasor_red[phase_index] = vt_ph
@@ -8853,8 +8945,8 @@ class EmtProblemDae(EmtProblemTemplate):
 
         phase_index = 0
         while phase_index < rt.m:
-            self._set_runtime_parameter_value_by_uid(uid=rt.Ih_f[phase_index].uid, value=float(np.real(ih_f_phase[phase_index])))
-            self._set_runtime_parameter_value_by_uid(uid=rt.Ih_t[phase_index].uid, value=float(np.real(ih_t_phase[phase_index])))
+            self._set_runtime_parameter_seed_by_uid(uid=rt.Ih_f[phase_index].uid, value=float(np.real(ih_f_phase[phase_index])), persist_after_native_init=True)
+            self._set_runtime_parameter_seed_by_uid(uid=rt.Ih_t[phase_index].uid, value=float(np.real(ih_t_phase[phase_index])), persist_after_native_init=True)
             phase_index += 1
 
 
@@ -8982,8 +9074,7 @@ class EmtProblemDae(EmtProblemTemplate):
                 pass
 
     def set_internal_runtime_if_exists(self, mdl: Block, var_name: str, value: float) -> None:
-        """
-        Set one internal runtime parameter default if the variable exists in ``event_dict``.
+        """Seed one internal runtime parameter without modifying its source block.
 
         :param mdl: Root model block.
         :param var_name: Runtime parameter variable name.
@@ -8992,7 +9083,6 @@ class EmtProblemDae(EmtProblemTemplate):
         """
         internal_var: Optional[Var]
         owner_block: Optional[Block]
-        runtime_idx: int | None
 
         internal_var, owner_block = _find_internal_runtime_var_owner_with_fallback(mdl, var_name)
 
@@ -9000,27 +9090,13 @@ class EmtProblemDae(EmtProblemTemplate):
             pass
         else:
             if internal_var in owner_block.event_dict:
-                # Keep the hierarchical source authoritative.  Construction later
-                # refreshes the flattened runtime equations from this dictionary;
-                # updating only the temporary flat buffer would silently restore
-                # the template default before explicit initialization.
-                owner_block.event_dict[internal_var] = Const(float(value))
-                runtime_source_parameters: Any = self._runtime_all_parameters_source
-                runtime_source_equations: Any = self._runtime_all_eqs_source
-                source_index: int = 0
-
-                if isinstance(runtime_source_parameters, list) and isinstance(runtime_source_equations, list):
-                    while source_index < len(runtime_source_parameters):
-                        runtime_parameter: Any = runtime_source_parameters[source_index]
-                        if isinstance(runtime_parameter, Var) and runtime_parameter.uid == internal_var.uid:
-                            runtime_source_equations[source_index] = Const(float(value))
-                        else:
-                            pass
-                        source_index += 1
-                else:
-                    pass
-
-                self._set_runtime_parameter_value_by_uid(uid=internal_var.uid, value=float(value))
+                # The Block only declares that the value is runtime-capable.
+                # PF and device-derived initialization belongs to the problem.
+                self._set_runtime_parameter_seed_by_uid(
+                    uid=internal_var.uid,
+                    value=float(value),
+                    persist_after_native_init=False,
+                )
             else:
                 pass
 
@@ -9053,11 +9129,27 @@ class EmtProblemDae(EmtProblemTemplate):
 
         runtime_idx = self._uid2idx_event_params.get(uid, None)
         if runtime_idx is not None:
+            resolved_expression: Const = Const(float(value))
             self._event_params_values[runtime_idx] = float(value)
-            self._event_parameters_eqs[runtime_idx] = Const(float(value))
+            self._event_parameters_eqs[runtime_idx] = resolved_expression
+
+            # ``def_event_params_fn()`` evaluates the finalized continuous/mode
+            # partition rather than ``_event_parameters_eqs`` directly. Keep
+            # that numerical view synchronized as part of the same atomic
+            # problem-local update so native initialization consumes the PF seed.
+            continuous_parameter_count: int = len(self._runtime_continuous_eqs)
+            if runtime_idx < continuous_parameter_count:
+                self._runtime_continuous_eqs[runtime_idx] = resolved_expression
+            else:
+                mode_index: int = runtime_idx - continuous_parameter_count
+                if mode_index < len(self._runtime_mode_eqs):
+                    self._runtime_mode_eqs[mode_index] = resolved_expression
+                else:
+                    pass
+
             runtime_eqs0: Any = self._runtime_parameter_eqs0
             if isinstance(runtime_eqs0, list) and runtime_idx < len(runtime_eqs0):
-                runtime_eqs0[runtime_idx] = Const(float(value))
+                runtime_eqs0[runtime_idx] = resolved_expression
             else:
                 pass
 
@@ -9068,7 +9160,7 @@ class EmtProblemDae(EmtProblemTemplate):
                 while source_index < len(runtime_source_parameters):
                     runtime_parameter: Any = runtime_source_parameters[source_index]
                     if isinstance(runtime_parameter, Var) and runtime_parameter.uid == uid:
-                        runtime_source_equations[source_index] = Const(float(value))
+                        runtime_source_equations[source_index] = resolved_expression
                     else:
                         pass
                     source_index += 1
@@ -9317,8 +9409,16 @@ class EmtProblemDae(EmtProblemTemplate):
                 self._temp_diff_init_guess[diff_var.uid] = float(val)
 
     def set_external_param(self, mdl: Block, key: VarPowerFlowReferenceType, value: float) -> None:
-        """
-        Set a PF-derived value either as an event parameter if the mapped variable belongs to mdl.event_dict.
+        """Seed one externally mapped runtime parameter on problem-local storage.
+
+        The source ``Block.event_dict`` declares mutability and remains unchanged.
+        This method supports calls both before and after the flat runtime vectors
+        have been constructed.
+
+        :param mdl: Dynamic model which exposes the external mapping.
+        :param key: Power-flow reference identifying the runtime target.
+        :param value: PF-derived initial value.
+        :return: None.
         """
         external_mapping: Optional[Dict[Any, Var]] = _get_external_mapping_local(self, mdl)
         var: Optional[Any]
@@ -9380,31 +9480,19 @@ class EmtProblemDae(EmtProblemTemplate):
                 self._set_runtime_parameter_seed_by_uid(uid=var.uid, value=value_float_runtime, persist_after_native_init=True)
             else:
                 # GUI wrapper roots often expose the PF reference while the actual
-                # mutable runtime parameter lives in a child ``event_dict``. The
-                # value must therefore be written to the owning child block.
-                # This pre-finalization path is still needed because PF seeding
-                # happens before the canonical runtime UID index map is built.
+                # runtime parameter lives in a child ``event_dict``. Validate
+                # that owner, but retain the numerical value only in problem-local
+                # seed storage until the canonical runtime index map is built.
                 owner_block = _find_event_var_owner(mdl, var)
                 if owner_block is None:
                     pass
                 else:
                     value_float: float = float(value)
-                    self._temp_init_guess[var.uid] = value_float
-                    self._temp_post_init_guess[var.uid] = value_float
-                    owner_block.event_dict[var] = Const(value_float)
-                    runtime_source_parameters = self._runtime_all_parameters_source
-                    runtime_source_equations = self._runtime_all_eqs_source
-                    if isinstance(runtime_source_parameters, list) and isinstance(runtime_source_equations, list):
-                        source_index = 0
-                        while source_index < len(runtime_source_parameters):
-                            runtime_parameter = runtime_source_parameters[source_index]
-                            if isinstance(runtime_parameter, Var) and runtime_parameter.uid == var.uid:
-                                runtime_source_equations[source_index] = Const(value_float)
-                            else:
-                                pass
-                            source_index += 1
-                    else:
-                        runtime_source_parameters = runtime_source_parameters
+                    self._set_runtime_parameter_seed_by_uid(
+                        uid=var.uid,
+                        value=value_float,
+                        persist_after_native_init=True,
+                    )
         else:
             pass
 
@@ -9744,7 +9832,7 @@ class EmtProblemDae(EmtProblemTemplate):
             inj: InjectionParent,
             mdl: Block,
             phase_power: np.ndarray,
-            generator_count_same_bus: int,
+            generator_battery_count_same_bus: int,
     ) -> None:
         """
         Assign optional sharing references to one generator from its EMT seed.
@@ -9757,7 +9845,8 @@ class EmtProblemDae(EmtProblemTemplate):
         :param inj: Generator device.
         :param mdl: Registered EMT model whose runtime references receive the seed.
         :param phase_power: Complex power seed in NABC order.
-        :param generator_count_same_bus: Number of generators connected to the same bus.
+        :param generator_battery_count_same_bus: Number of generators and
+            batteries connected to the same bus.
         :return: None.
         """
         p_ref_value: float = float(np.real(np.sum(phase_power)))
@@ -9767,7 +9856,7 @@ class EmtProblemDae(EmtProblemTemplate):
             print(f"p_ref_value = {p_ref_value} generator {inj}")
             print(f"q_ref_value = {q_ref_value} generator {inj}")
 
-        if generator_count_same_bus > 1:
+        if generator_battery_count_same_bus > 1:
             share_enable_value: float = 1.0
         else:
             share_enable_value = 0.0

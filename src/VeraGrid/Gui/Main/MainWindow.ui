@@ -6812,9 +6812,6 @@
                  <property name="text">
                   <string>Use power flow values for initialization</string>
                  </property>
-                 <property name="checked">
-                  <bool>true</bool>
-                 </property>
                 </widget>
                </item>
               </layout>

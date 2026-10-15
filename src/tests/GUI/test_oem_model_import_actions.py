@@ -603,8 +603,8 @@ def test_native_oem_action_imports_qualified_model(
         )
         assert compiled.returncode == 0, compiled.stderr
         worker_source_root: Path = (
-            Path(native_inspection_module.__file__).resolve().parent
-            / "native_worker" / "source"
+            Path(native_inspection_module.__file__).resolve().parents[2]
+            / "data" / "native_worker" / "source"
         )
         worker_path: Path = tmp_path / "veragrid-manufacturer-worker"
         worker_sources: list[str] = [

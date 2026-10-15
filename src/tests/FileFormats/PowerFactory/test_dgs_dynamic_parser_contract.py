@@ -84,6 +84,8 @@ from VeraGridEngine.IO.dgs.dgs_objects import (
 )
 from VeraGridEngine.IO.dgs.dynamic_models.dynamic_model_import import (
     DgsDynamicTemplateConversionResult,
+    _add_required_dgs_rms_measurements,
+    _assign_dgs_external_input_references,
     add_dynamic_import_selection_requests_to_circuit,
     apply_dgs_dynamic_templates_to_devices,
     build_dgs_dynamic_model_import_bundle,
@@ -148,6 +150,124 @@ from VeraGridEngine.enumerations import (
     FileType,
     VarPowerFlowReferenceType,
 )
+
+
+def test_dgs_vsc_unconnected_inputs_create_terminal_measurements() -> None:
+    """Create from/to measurements without exposing derived controller inputs.
+
+    :return: None.
+    """
+    dc_bus: Bus = Bus(name="DC", is_dc=True)
+    ac_bus: Bus = Bus(name="AC")
+    converter: VSC = VSC(bus_from=dc_bus, bus_to=ac_bus)
+    input_names: tuple[str, ...] = (
+        "Vdc",
+        "Vm",
+        "Va",
+        "u",
+        "ur",
+        "ui",
+        "cosphi",
+        "sinphi",
+        "P_act",
+        "Q_act",
+    )
+    controller_inputs: list[Var] = list(
+        Var(name=input_name) for input_name in input_names
+    )
+    controller: Block = Block(
+        name="DGS controller",
+        in_vars=list(controller_inputs),
+    )
+    root_block: Block = Block(
+        name="DGS VSC",
+        children=list((controller,)),
+        in_vars=list(controller_inputs),
+    )
+
+    _assign_dgs_external_input_references(
+        block=root_block,
+        device_tpe=DeviceType.VscDevice,
+    )
+    _add_required_dgs_rms_measurements(
+        block=root_block,
+        host_device=converter,
+        circuit=MultiCircuit(),
+        native_specs=list(),
+    )
+
+    child_names: set[str] = set(
+        child_block.name for child_block in root_block.children
+    )
+    assert "MEASUREMENTS_VOLTAGE_ANGLE_FROM" in child_names
+    assert "MEASUREMENTS_VOLTAGE_ANGLE_TO" in child_names
+    assert "MEASUREMENTS_VOLTAGE_FROM_POLAR_TO" in child_names
+    assert "MEASUREMENTS_PLL_TO" in child_names
+    assert "MEASUREMENTS_P_Q_TO" in child_names
+
+    controller_refs: set[VarPowerFlowReferenceType] = set(
+        input_var.ref
+        for input_var in controller.in_vars
+        if isinstance(input_var.ref, VarPowerFlowReferenceType)
+    )
+    assert VarPowerFlowReferenceType.COSPHIt in controller_refs
+    assert VarPowerFlowReferenceType.SINPHIt in controller_refs
+    assert VarPowerFlowReferenceType.Ut in controller_refs
+    assert VarPowerFlowReferenceType.URt in controller_refs
+    assert VarPowerFlowReferenceType.UIt in controller_refs
+
+    remaining_root_refs: set[VarPowerFlowReferenceType] = set(
+        input_var.ref
+        for input_var in root_block.in_vars
+        if isinstance(input_var.ref, VarPowerFlowReferenceType)
+    )
+    assert VarPowerFlowReferenceType.Ut not in remaining_root_refs
+    assert VarPowerFlowReferenceType.URt not in remaining_root_refs
+    assert VarPowerFlowReferenceType.UIt not in remaining_root_refs
+    assert VarPowerFlowReferenceType.COSPHIt not in remaining_root_refs
+    assert VarPowerFlowReferenceType.SINPHIt not in remaining_root_refs
+    assert VarPowerFlowReferenceType.Vf_dc in remaining_root_refs
+    assert VarPowerFlowReferenceType.Vmt in remaining_root_refs
+    assert VarPowerFlowReferenceType.Vat in remaining_root_refs
+
+    # Measurements must share the artificial physical inputs exposed by the
+    # root. Those inputs are later rebound to the real bus variables when the
+    # parsed template is assigned to its static device.
+    root_inputs_by_reference: dict[VarPowerFlowReferenceType, Var] = dict()
+    root_input: Var
+    for root_input in root_block.in_vars:
+        if isinstance(root_input.ref, VarPowerFlowReferenceType):
+            root_inputs_by_reference[root_input.ref] = root_input
+        else:
+            pass
+    measurement_block: Block
+    measurement_input: Var
+    for measurement_block in root_block.children:
+        if measurement_block.name.startswith("MEASUREMENTS_"):
+            for measurement_input in measurement_block.in_vars:
+                assert isinstance(
+                    measurement_input.ref,
+                    VarPowerFlowReferenceType,
+                )
+                assert (
+                    root_inputs_by_reference[measurement_input.ref]
+                    is measurement_input
+                )
+        else:
+            pass
+
+    assert (
+        root_inputs_by_reference[VarPowerFlowReferenceType.Vf_dc]
+        is not controller_inputs[0]
+    )
+    assert (
+        root_inputs_by_reference[VarPowerFlowReferenceType.Vmt]
+        is not controller_inputs[1]
+    )
+    assert (
+        root_inputs_by_reference[VarPowerFlowReferenceType.Vat]
+        is not controller_inputs[2]
+    )
 
 
 def test_physical_meter_terminal_side_rejects_invalid_ordinals() -> None:
@@ -680,26 +800,94 @@ def test_v2_direct_root_connects_ffs_by_slot_fid_and_connector_ordinal() -> None
     ]
     assert len(ffs_block.out_vars) == 1
     ffs_output: Var = ffs_block.out_vars[0]
-    disconnected_input: Var | None = None
-    controller_input: Var
-    for controller_input in active_controller_block.in_vars:
-        if controller_input.name == "dP_FFS":
-            disconnected_input = controller_input
-        else:
-            pass
-    assert disconnected_input is not None
+    connected_inputs: list[Var] = list(
+        controller_input
+        for controller_input in active_controller_block.in_vars
+        if controller_input.uid == ffs_output.uid
+    )
+    assert connected_inputs == [ffs_output]
+    assert not any(
+        controller_input.name == "dP_FFS"
+        for controller_input in active_controller_block.in_vars
+    )
     assert any(
         controller_equation.contains_var(ffs_output)
         for controller_equation in active_controller_block.algebraic_eqs
     )
     assert not any(
-        controller_equation.contains_var(disconnected_input)
-        for controller_equation in active_controller_block.algebraic_eqs
-    )
-    assert not any(
-        root_variable.uid == disconnected_input.uid
+        root_variable.name == "dP_FFS"
         for root_variable in direct_result.root_block.algebraic_vars
     )
+
+
+def test_v1_direct_root_internalizes_slot_omitted_setpoints() -> None:
+    """Keep initialized controller setpoints behind the concrete slot interface.
+
+    :return: None.
+    """
+    dgs_circuit: DgsCircuit = DgsCircuit()
+    dgs_circuit.parse_dgs(
+        path=str(_get_complete_hvdc_vsc_dgs_path(
+            file_name="hvdc_vsc_v1_complete_static_dynamic.dgs",
+        ))
+    )
+    parsed_blocks: dict[str, ParsedDgsBlockDefinition] = (
+        parse_dgs_block_definitions_from_circuit(circuit=dgs_circuit)
+    )
+    root_result: DgsRootBlockResult = build_dgs_root_block_from_circuit(
+        circuit=dgs_circuit,
+        parsed_blocks=parsed_blocks,
+        root_name="MasterPWM_Model",
+    )
+    direct_result: DgsDirectRootBuildResult = build_direct_root_elmcomp_block(
+        circuit=dgs_circuit,
+        result=root_result,
+        graphical_indexes=build_dgs_graphical_indexes(circuit=dgs_circuit),
+    )
+
+    active_controller: Block | None = None
+    reactive_controller: Block | None = None
+    child_block: Block
+    for child_block in direct_result.root_block.children:
+        if child_block.name == "Outer_Ctrl_P":
+            active_controller = child_block
+        else:
+            if child_block.name == "Outer_Ctrl_Q":
+                reactive_controller = child_block
+            else:
+                pass
+    else:
+        pass
+
+    assert active_controller is not None
+    assert reactive_controller is not None
+    active_input_names: set[str] = set(
+        input_var.name for input_var in active_controller.in_vars
+    )
+    reactive_input_names: set[str] = set(
+        input_var.name for input_var in reactive_controller.in_vars
+    )
+    assert "Pdc_ref" not in active_input_names
+    assert "uDC_ref" not in active_input_names
+    assert "Q_ref" not in reactive_input_names
+    assert "Vac_ref" not in reactive_input_names
+
+    active_setpoints: dict[str, Expr | Const] = dict(
+        (setpoint_var.name, initial_expression)
+        for setpoint_var, initial_expression in active_controller.event_dict.items()
+        if setpoint_var.name in {"Pdc_ref", "uDC_ref"}
+    )
+    reactive_setpoints: dict[str, Expr | Const] = dict(
+        (setpoint_var.name, initial_expression)
+        for setpoint_var, initial_expression in reactive_controller.event_dict.items()
+        if setpoint_var.name in {"Q_ref", "Vac_ref"}
+    )
+    assert set(active_setpoints) == {"Pdc_ref", "uDC_ref"}
+    assert set(reactive_setpoints) == {"Q_ref", "Vac_ref"}
+    assert str(active_setpoints["Pdc_ref"]) == "P_act"
+    assert str(active_setpoints["uDC_ref"]) == "uDC"
+    assert str(reactive_setpoints["Q_ref"]) == "Q_act"
+    assert str(reactive_setpoints["Vac_ref"]) == "u"
 
 
 @pytest.mark.parametrize(
@@ -1236,6 +1424,97 @@ def test_v3_dynamic_route_keeps_native_meters_as_connected_editor_blocks() -> No
         ), meter_name
 
     assert logger.error_count() == 0
+
+
+def test_v1_early_native_measurements_preserve_power_and_phase_semantics() -> None:
+    """Keep native DGS scale, orientation and stationary-frame equations.
+
+    :return: None.
+    """
+    dgs_path: Path = _get_complete_hvdc_vsc_dgs_path(
+        file_name="hvdc_vsc_v1_complete_static_dynamic.dgs",
+    )
+    circuit: MultiCircuit = dgs_to_circuit(
+        path=str(dgs_path),
+        use_dynamic_information=True,
+        dynamic_simulation_mode=DynamicSimulationMode.RMS,
+    )
+    expected_power_meter_names: set[str] = set((
+        "Power meter 220",
+        "Power meter 221",
+    ))
+    expected_voltage_meter_names: set[str] = set((
+        "Voltage meter 244",
+        "Voltage meter 245",
+    ))
+    found_power_meter_names: set[str] = set()
+    found_voltage_meter_names: set[str] = set()
+    found_generic_voltage_meter_count: int = 0
+    found_stationary_phase_meter_count: int = 0
+    found_vsc_converter_count: int = 0
+    converter: VSC
+    for converter in circuit.vsc_devices:
+        candidate_block: Block
+        for candidate_block in converter.rms_model.get_all_blocks():
+            if candidate_block.name.startswith("MEASUREMENTS_VOLTAGE"):
+                found_generic_voltage_meter_count += 1
+            else:
+                pass
+            if candidate_block.name in expected_power_meter_names:
+                found_power_meter_names.add(candidate_block.name)
+                equation_texts: list[str] = list(
+                    str(equation)
+                    for equation in candidate_block.algebraic_eqs
+                )
+                assert any(
+                    "-0.07142857142857142" in equation_text
+                    and "Pac" in equation_text
+                    for equation_text in equation_texts
+                )
+                assert any(
+                    "-0.07142857142857142" in equation_text
+                    and "Qac" in equation_text
+                    for equation_text in equation_texts
+                )
+            else:
+                equation_texts = list(
+                    str(equation)
+                    for equation in candidate_block.algebraic_eqs
+                )
+                if candidate_block.name in expected_voltage_meter_names:
+                    found_voltage_meter_names.add(candidate_block.name)
+                else:
+                    has_stationary_cosine: bool = any(
+                        "(cosphi) - (1.0)" == equation_text
+                        for equation_text in equation_texts
+                    )
+                    has_stationary_sine: bool = any(
+                        "(sinphi) - (0.0)" == equation_text
+                        for equation_text in equation_texts
+                    )
+                    if has_stationary_cosine and has_stationary_sine:
+                        found_stationary_phase_meter_count += 1
+                    else:
+                        if candidate_block.name == "VSC Converter":
+                            found_vsc_converter_count += 1
+                            assert set(
+                                output_var.name
+                                for output_var in candidate_block.out_vars
+                            ) == {
+                                "id", "iq", "uDC", "Pdc", "Pac", "Qac",
+                            }
+                        else:
+                            pass
+
+        assert set(
+            output_var.name for output_var in converter.rms_model.out_vars
+        ) == {"Pdc", "Pac", "Qac"}
+
+    assert found_power_meter_names == expected_power_meter_names
+    assert found_voltage_meter_names == expected_voltage_meter_names
+    assert found_generic_voltage_meter_count == 0
+    assert found_stationary_phase_meter_count == 2
+    assert found_vsc_converter_count == 2
 
 
 @pytest.mark.parametrize(

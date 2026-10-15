@@ -283,11 +283,13 @@ class SmallSignalStabilityEmtDriver(DriverTemplate):
         if isinstance(pf_results, PowerFlowResults) :
             self.problem = EmtProblemDae(grid=grid,
                                          options=emt_options,
-                                         pf_results=pf_results)
+                                         pf_results=pf_results,
+                                         logger=self.logger)
         elif isinstance(pf_results, PowerFlowResults3Ph):
             self.problem = EmtProblemDae(grid=grid,
                                          options=emt_options,
-                                         pf_results_3Ph=pf_results)
+                                         pf_results_3Ph=pf_results,
+                                         logger=self.logger)
         
         # self.results: SmallSignalStabilityEmtResults = SmallSignalStabilityEmtResults(multipliers=np.empty(0),
         #                                                                               right_vecs=np.empty(0),

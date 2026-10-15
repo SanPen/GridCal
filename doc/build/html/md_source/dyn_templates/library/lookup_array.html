@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lookup array &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>1D lookup tables &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,13 +15,13 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="Lookup matrix" href="lookup_matrix.html" />
+    <link rel="next" title="2D lookup tables" href="lookup_matrix.html" />
     <link rel="prev" title="Lookup matrix (spline)" href="lookup-matrix-spline.html" /> 
 </head>
 
@@ -74,8 +74,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../dynamic_simulations.html">🧲 Dynamic simulations</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-simulation-theory">1. Dynamic simulation theory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-editor-and-model-construction">2. Dynamic editor and model construction</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-model-library">3. Dynamic model library</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#benchmarking-against-other-software">2. Benchmarking against other software</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-editor-and-model-construction">3. Dynamic editor and model construction</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-model-library">4. Dynamic model library</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="../../dynamic_model_library_index.html">📚 Dynamic model library</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="../../dynamic_model_library_index.html#authoring-models">Authoring models</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../dynamic_model_library_index.html#device-templates">Device templates</a></li>
@@ -88,6 +89,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#end-to-end-workflow">End-to-end workflow</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../license.html">📜 License</a></li>
@@ -112,7 +114,7 @@
           <li class="breadcrumb-item"><a href="../../dynamic_simulations.html">🧲 Dynamic simulations</a></li>
           <li class="breadcrumb-item"><a href="../../dynamic_model_library_index.html">📚 Dynamic model library</a></li>
           <li class="breadcrumb-item"><a href="index.html">Dynamic library blocks</a></li>
-      <li class="breadcrumb-item active">Lookup array</li>
+      <li class="breadcrumb-item active">1D lookup tables</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../../_sources/md_source/dyn_templates/library/lookup_array.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -122,10 +124,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section class="tex2jax_ignore mathjax_ignore" id="lookup-array">
-<h1>Lookup array<a class="headerlink" href="#lookup-array" title="Link to this heading"></a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="d-lookup-tables">
+<h1>1D lookup tables<a class="headerlink" href="#d-lookup-tables" title="Link to this heading"></a></h1>
 <!-- veragrid-block-introduction:start -->
-<p><strong>Lookup array</strong> evaluates a tabulated characteristic instead of assuming one closed-form equation. Interpolation maps measured or commanded inputs to empirical outputs such as efficiency, saturation, capability, or control schedules while preserving the supplied breakpoints.</p>
+<p><strong>1D lookup tables</strong> evaluate a tabulated characteristic instead of assuming one closed-form equation. Interpolation maps measured or commanded inputs to empirical outputs such as efficiency, saturation, capability, or control schedules while preserving the supplied breakpoints.</p>
 <section id="typical-use">
 <h2>Typical use<a class="headerlink" href="#typical-use" title="Link to this heading"></a></h2>
 <ul class="simple">
@@ -135,21 +137,27 @@
 <!-- veragrid-block-introduction:end -->
 <section id="purpose">
 <h3>Purpose<a class="headerlink" href="#purpose" title="Link to this heading"></a></h3>
-<p>This block approximates one nonlinear relation from one one-dimensional stored array.</p>
+<p>The Basic library provides one canonical block for each distinct one-dimensional behavior:</p>
+<ul class="simple">
+<li><p><strong>Linear lookup table</strong> stores a configurable point table and uses linear interpolation. General options select clipping or linear extrapolation outside the table.</p></li>
+<li><p><strong>Spline lookup table</strong> stores a configurable point table and uses a natural cubic spline. Values outside the table are clipped to the first or final sample.</p></li>
+<li><p><strong>Dynamic linear lookup table</strong> receives the lookup points as signals. General options select the number of points and the clipping rule.</p></li>
+</ul>
 </section>
 <section id="behavior">
 <h3>Behavior<a class="headerlink" href="#behavior" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>Receives one scalar input.</p></li>
-<li><p>Interpolates within one stored array.</p></li>
+<li><p>Receives one scalar lookup coordinate.</p></li>
+<li><p>Interpolates between strictly increasing x breakpoints.</p></li>
 <li><p>Outputs the corresponding approximated value.</p></li>
 </ul>
 </section>
 <section id="characteristics">
 <h3>Characteristics<a class="headerlink" href="#characteristics" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>Useful for tabulated nonlinear functions.</p></li>
-<li><p>Available in linear, spline, clipped, unclipped, fixed-size, variable-size, and object-array variants.</p></li>
+<li><p>Stored-table blocks expose their point table in the block settings.</p></li>
+<li><p>The dynamic block exposes <code class="docutils literal notranslate"><span class="pre">arr_x1...N</span></code> and <code class="docutils literal notranslate"><span class="pre">arr_y1...N</span></code> as signal inputs.</p></li>
+<li><p>The former fixed-size and object-array entries remain loadable for legacy files but are no longer duplicated in the Library.</p></li>
 </ul>
 </section>
 </section>
@@ -174,20 +182,30 @@
 <td><p>Interpolated output value</p></td>
 <td><p>model-dependent</p></td>
 </tr>
-<tr class="row-even"><td><p>Parameter</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">array_K</span></code></p></td>
-<td><p>Stored lookup array in direct-array variants</p></td>
-<td><p>data object</p></td>
+<tr class="row-even"><td><p>Setting</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">points</span></code></p></td>
+<td><p>Stored <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y)</span></code> point table for linear and spline blocks</p></td>
+<td><p>model-dependent</p></td>
 </tr>
-<tr class="row-odd"><td><p>Parameter</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">oarray_K</span></code></p></td>
-<td><p>Stored lookup object in object-array variants</p></td>
-<td><p>data object</p></td>
+<tr class="row-odd"><td><p>General option</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">point_count</span></code></p></td>
+<td><p>Number of signal-driven points in a dynamic linear table</p></td>
+<td><p>count</p></td>
 </tr>
-<tr class="row-even"><td><p>Parameter</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">vClip</span></code></p></td>
-<td><p>Clipping control parameter in variants that support clipping</p></td>
-<td><p>0/1 or boolean</p></td>
+<tr class="row-even"><td><p>General option</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">clip</span></code></p></td>
+<td><p>Clip to endpoint values instead of extrapolating</p></td>
+<td><p>boolean</p></td>
+</tr>
+<tr class="row-odd"><td><p>Dynamic inputs</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">arr_x1...N</span></code></p></td>
+<td><p>Ordered signal-driven x breakpoints</p></td>
+<td><p>model-dependent</p></td>
+</tr>
+<tr class="row-even"><td><p>Dynamic inputs</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">arr_y1...N</span></code></p></td>
+<td><p>Signal-driven samples corresponding to the x breakpoints</p></td>
+<td><p>model-dependent</p></td>
 </tr>
 </tbody>
 </table>
@@ -195,7 +213,9 @@
 <section id="how-to-use-it">
 <h2>How to use it<a class="headerlink" href="#how-to-use-it" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Use this block when a nonlinear relation is easier to define by one table than by one closed-form expression.</p></li>
+<li><p>Use a stored-table block for fixed calibration data.</p></li>
+<li><p>Use the dynamic block only when another part of the model must drive the table coordinates or samples.</p></li>
+<li><p>Keep every x breakpoint strictly greater than the preceding breakpoint.</p></li>
 </ul>
 </section>
 </section>
@@ -205,7 +225,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="lookup-matrix-spline.html" class="btn btn-neutral float-left" title="Lookup matrix (spline)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="lookup_matrix.html" class="btn btn-neutral float-right" title="Lookup matrix" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="lookup_matrix.html" class="btn btn-neutral float-right" title="2D lookup tables" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

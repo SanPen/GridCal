@@ -1,0 +1,383 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🔌 Functional Mock-up Units (FMUs) &mdash; VeraGrid 6.7.13 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/style.css?v=ba3a54df" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=16fbabd8"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="💻 Development" href="development.html" />
+    <link rel="prev" title="Three-phase carrier sampled modulation" href="dyn_templates/procedural_logic/three_phase_carrier_sampled_modulation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            VeraGrid
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">💽 Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_interface.html">📊 User interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="veragrid_scripting_guide.html">📑 VeraGrid scripting guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="grid_analysis.html">🔎 Grid analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure.html">🌁 Structure of VeraGrid</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modelling.html">📐 Grid Modelling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_debugging.html">🪲 Model debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="file_operations.html">💾 File loading and saving</a></li>
+<li class="toctree-l1"><a class="reference internal" href="topology.html">🌵 Topology</a></li>
+<li class="toctree-l1"><a class="reference internal" href="clustering.html">🎳 Clustering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="grid_reduction.html">👾 Grid Reduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="procedural_grid.html">🕸️ Procedural Grid Expansion</a></li>
+<li class="toctree-l1"><a class="reference internal" href="power_flow.html">🔥 Power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linear_analysis.html">📏 Linear analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimal_power_flow.html">🏁 Optimal power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="short_circuit.html">⚡ Short-Circuit</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stochastic_power_flow.html">🎲 Stochastic power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="continuation_power_flow.html">➿ Continuation power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sigma_analysis.html">🌘 Sigma analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="solar_wizard.html">☀️ Solar power wizard</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contingency_analysis.html">💥 Contingency analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="investment_optimization.html">🏦 Investment optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cascading.html">🎢 Cascading</a></li>
+<li class="toctree-l1"><a class="reference internal" href="net_transfer_capacity.html">🚢 Net transfer capacity optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reliability.html">🚧 Reliability</a></li>
+<li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">🔌 Functional Mock-up Units (FMUs)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#export-a-co-simulation-fmu">Export a Co-Simulation FMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#export-a-model-exchange-fmu">Export a Model Exchange FMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reuse-the-shared-compiler">Reuse the shared compiler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inspect-an-fmu">Inspect an FMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#validate-and-simulate-with-fmpy">Validate and simulate with FMPy</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#attach-an-fmu-to-a-veragrid-device">Attach an FMU to a VeraGrid device</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-rules">Configuration rules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#high-level-operations">High-level operations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_models.html">Data Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rst_source/api/auto/modules.html">VeraGrid</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">VeraGrid</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">🔌 Functional Mock-up Units (FMUs)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/md_source/fmu.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="functional-mock-up-units-fmus">
+<h1>🔌 Functional Mock-up Units (FMUs)<a class="headerlink" href="#functional-mock-up-units-fmus" title="Link to this heading"></a></h1>
+<p>VeraGrid can export symbolic dynamic models as <a class="reference external" href="https://fmi-standard.org/">Functional Mock-up Units
+(FMUs)</a>, inspect existing FMUs, execute them through
+FMPy, and attach them to RMS or EMT devices.</p>
+<p>The package supports FMI 1.0, FMI 2.0, and FMI 3.0:</p>
+<ul class="simple">
+<li><p><strong>Co-Simulation</strong>: the FMU owns its integration step and VeraGrid exchanges
+values at communication points.</p></li>
+<li><p><strong>Model Exchange</strong>: VeraGrid owns the solver and evaluates states,
+derivatives, and events.</p></li>
+</ul>
+<p>FMPy is an explicit dependency for FMI parsing, archive validation, native
+library loading, and execution checks. FMU binaries are compiled through
+VeraGrid’s shared <code class="docutils literal notranslate"><span class="pre">Compiler</span></code> class.</p>
+<section id="export-a-co-simulation-fmu">
+<h2>Export a Co-Simulation FMU<a class="headerlink" href="#export-a-co-simulation-fmu" title="Link to this heading"></a></h2>
+<p>The high-level export operation is <code class="docutils literal notranslate"><span class="pre">export_model_as_fmu()</span></code>. It accepts a
+symbolic <code class="docutils literal notranslate"><span class="pre">Block</span></code> hierarchy, generates FMI C code and XML, compiles the native
+library, and packages the result as a <code class="docutils literal notranslate"><span class="pre">.fmu</span></code> archive.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExportConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">export_model_as_fmu</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.block</span><span class="w"> </span><span class="kn">import</span> <span class="n">Block</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Const</span><span class="p">,</span> <span class="n">Var</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">FmiVersion</span><span class="p">,</span> <span class="n">InterfaceType</span>
+
+
+<span class="n">state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+<span class="n">derivative</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="s2">&quot;dx&quot;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">state</span><span class="p">)</span>
+<span class="n">model</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
+    <span class="n">state_vars</span><span class="o">=</span><span class="p">[</span><span class="n">state</span><span class="p">],</span>
+    <span class="n">state_eqs</span><span class="o">=</span><span class="p">[</span><span class="n">Const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)],</span>
+    <span class="n">diff_vars</span><span class="o">=</span><span class="p">[</span><span class="n">derivative</span><span class="p">],</span>
+    <span class="n">init_values</span><span class="o">=</span><span class="p">{</span><span class="n">state</span><span class="p">:</span> <span class="n">Const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)},</span>
+    <span class="n">out_vars</span><span class="o">=</span><span class="p">[</span><span class="n">state</span><span class="p">],</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;FirstOrder&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">config</span><span class="p">:</span> <span class="n">ExportConfig</span> <span class="o">=</span> <span class="n">ExportConfig</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;FirstOrderCS&quot;</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;build/FirstOrderCS.fmu&quot;</span><span class="p">),</span>
+    <span class="n">interface_type</span><span class="o">=</span><span class="n">InterfaceType</span><span class="o">.</span><span class="n">CO_SIMULATION</span><span class="p">,</span>
+    <span class="n">fmi_version</span><span class="o">=</span><span class="n">FmiVersion</span><span class="o">.</span><span class="n">FMI_2_0</span><span class="p">,</span>
+    <span class="n">fixed_step</span><span class="o">=</span><span class="mf">1.0e-3</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">fmu_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">export_model_as_fmu</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">cfg</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">fmu_path</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">fixed_step</span></code> is the generated Co-Simulation communication step.</p>
+</section>
+<section id="export-a-model-exchange-fmu">
+<h2>Export a Model Exchange FMU<a class="headerlink" href="#export-a-model-exchange-fmu" title="Link to this heading"></a></h2>
+<p>Model Exchange must be selected explicitly because <code class="docutils literal notranslate"><span class="pre">ExportConfig</span></code> defaults to
+Co-Simulation.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span><span class="p">:</span> <span class="n">ExportConfig</span> <span class="o">=</span> <span class="n">ExportConfig</span><span class="p">(</span>
+    <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;FirstOrderME&quot;</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;build/FirstOrderME.fmu&quot;</span><span class="p">),</span>
+    <span class="n">interface_type</span><span class="o">=</span><span class="n">InterfaceType</span><span class="o">.</span><span class="n">MODEL_EXCHANGE</span><span class="p">,</span>
+    <span class="n">fmi_version</span><span class="o">=</span><span class="n">FmiVersion</span><span class="o">.</span><span class="n">FMI_2_0</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">fmu_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">export_model_as_fmu</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">cfg</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For Model Exchange, VeraGrid performs numerical integration and event
+coordination when the FMU is executed.</p>
+</section>
+<section id="reuse-the-shared-compiler">
+<h2>Reuse the shared compiler<a class="headerlink" href="#reuse-the-shared-compiler" title="Link to this heading"></a></h2>
+<p>Most callers should omit the compiler argument. When caller-owned compiler
+selection is required, pass <code class="docutils literal notranslate"><span class="pre">Compiler</span></code> directly. There is no FMU-specific
+compiler session or lifecycle wrapper.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Compiler.interface</span><span class="w"> </span><span class="kn">import</span> <span class="n">Compiler</span>
+
+
+<span class="n">compiler</span><span class="p">:</span> <span class="n">Compiler</span> <span class="o">=</span> <span class="n">Compiler</span><span class="p">()</span>
+<span class="n">fmu_path</span> <span class="o">=</span> <span class="n">export_model_as_fmu</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">cfg</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">compiler</span><span class="o">=</span><span class="n">compiler</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="inspect-an-fmu">
+<h2>Inspect an FMU<a class="headerlink" href="#inspect-an-fmu" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">read_fmu_model_description()</span></code> validates the archive and returns normalized
+metadata without executing native code.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.model_description</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">read_fmu_model_description</span><span class="p">,</span>
+    <span class="n">select_declared_fmu_interface</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">FmuInterfaceMode</span>
+
+
+<span class="n">fmu_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&quot;build/FirstOrderCS.fmu&quot;</span><span class="p">)</span>
+<span class="n">metadata</span> <span class="o">=</span> <span class="n">read_fmu_model_description</span><span class="p">(</span><span class="n">fmu_path</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">fmi_version</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">metadata</span><span class="o">.</span><span class="n">get_variable_names</span><span class="p">())</span>
+
+<span class="n">interface</span><span class="p">:</span> <span class="n">FmuInterfaceMode</span> <span class="o">=</span> <span class="n">select_declared_fmu_interface</span><span class="p">(</span><span class="n">fmu_path</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">interface</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Request a preferred interface explicitly when the archive may declare more than
+one:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">interface</span> <span class="o">=</span> <span class="n">select_declared_fmu_interface</span><span class="p">(</span>
+    <span class="n">fmu_path</span><span class="p">,</span>
+    <span class="n">preferred_interface</span><span class="o">=</span><span class="n">FmuInterfaceMode</span><span class="o">.</span><span class="n">CO_SIMULATION</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="validate-and-simulate-with-fmpy">
+<h2>Validate and simulate with FMPy<a class="headerlink" href="#validate-and-simulate-with-fmpy" title="Link to this heading"></a></h2>
+<p>Use FMPy for an independent standards-level check and standalone execution:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">fmpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">simulate_fmu</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fmpy.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_fmu</span>
+
+
+<span class="n">validation_issues</span> <span class="o">=</span> <span class="n">validate_fmu</span><span class="p">(</span><span class="s2">&quot;build/FirstOrderCS.fmu&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">validation_issues</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">validation_issues</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">simulate_fmu</span><span class="p">(</span>
+    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;build/FirstOrderCS.fmu&quot;</span><span class="p">,</span>
+    <span class="n">start_time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">stop_time</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">step_size</span><span class="o">=</span><span class="mf">1.0e-3</span><span class="p">,</span>
+    <span class="n">output</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,),</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Use VeraGrid’s execution and device APIs when the FMU participates in an RMS
+or EMT simulation.</p>
+</section>
+<section id="attach-an-fmu-to-a-veragrid-device">
+<h2>Attach an FMU to a VeraGrid device<a class="headerlink" href="#attach-an-fmu-to-a-veragrid-device" title="Link to this heading"></a></h2>
+<p>The script-facing device operation is <code class="docutils literal notranslate"><span class="pre">attach_fmu_to_device()</span></code>. Bindings use
+the typed <code class="docutils literal notranslate"><span class="pre">FmuRefBinding</span></code> class rather than unstructured names.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.bindings</span><span class="w"> </span><span class="kn">import</span> <span class="n">FmuRefBinding</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.fmu_device_integration</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">FmuDeviceAttachmentRequest</span><span class="p">,</span>
+    <span class="n">FmuReferenceValue</span><span class="p">,</span>
+    <span class="n">attach_fmu_to_device</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.model_description</span><span class="w"> </span><span class="kn">import</span> <span class="n">FmuInterfaceMode</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">FmuDeviceDomain</span><span class="p">,</span> <span class="n">VarPowerFlowReferenceType</span>
+
+
+<span class="n">request</span><span class="p">:</span> <span class="n">FmuDeviceAttachmentRequest</span> <span class="o">=</span> <span class="n">FmuDeviceAttachmentRequest</span><span class="p">(</span>
+    <span class="n">fmu_path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;build/FirstOrderCS.fmu&quot;</span><span class="p">),</span>
+    <span class="n">domain</span><span class="o">=</span><span class="n">FmuDeviceDomain</span><span class="o">.</span><span class="n">RMS</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="n">FmuInterfaceMode</span><span class="o">.</span><span class="n">CO_SIMULATION</span><span class="p">,</span>
+    <span class="n">input_bindings</span><span class="o">=</span><span class="p">(</span>
+        <span class="n">FmuRefBinding</span><span class="p">(</span>
+            <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vm</span><span class="p">,</span>
+            <span class="n">fmu_variable_name</span><span class="o">=</span><span class="s2">&quot;u&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">output_bindings</span><span class="o">=</span><span class="p">(</span>
+        <span class="n">FmuRefBinding</span><span class="p">(</span>
+            <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">P</span><span class="p">,</span>
+            <span class="n">fmu_variable_name</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+    <span class="n">output_defaults</span><span class="o">=</span><span class="p">(</span>
+        <span class="n">FmuReferenceValue</span><span class="p">(</span>
+            <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">P</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+
+<span class="c1"># `device` is an existing device and `grid` is its MultiCircuit.</span>
+<span class="n">attached_block</span> <span class="o">=</span> <span class="n">attach_fmu_to_device</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span> <span class="n">request</span><span class="o">=</span><span class="n">request</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For Model Exchange, use a Model Exchange FMU and set:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">request</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">FmuInterfaceMode</span><span class="o">.</span><span class="n">MODEL_EXCHANGE</span>
+</pre></div>
+</div>
+<p>FMI 3 worker-based configurations additionally require explicit worker limits
+and typed configuration values.</p>
+</section>
+<section id="configuration-rules">
+<h2>Configuration rules<a class="headerlink" href="#configuration-rules" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Select versions with <code class="docutils literal notranslate"><span class="pre">FmiVersion</span></code>, not ad-hoc strings.</p></li>
+<li><p>Select interfaces with <code class="docutils literal notranslate"><span class="pre">InterfaceType</span></code>.</p></li>
+<li><p>Verify FMU variable names with <code class="docutils literal notranslate"><span class="pre">read_fmu_model_description()</span></code> before binding.</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">FmuRefBinding</span></code> for device signals.</p></li>
+<li><p>Pass a <code class="docutils literal notranslate"><span class="pre">Compiler</span></code> only when caller-owned compiler selection is needed.</p></li>
+<li><p>Do not use the removed <code class="docutils literal notranslate"><span class="pre">runtime/</span></code>, <code class="docutils literal notranslate"><span class="pre">fmi1/</span></code>, <code class="docutils literal notranslate"><span class="pre">fmi2/</span></code>, or CLI paths.</p></li>
+</ul>
+</section>
+<section id="high-level-operations">
+<h2>High-level operations<a class="headerlink" href="#high-level-operations" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Operation</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">export_model_as_fmu()</span></code></p></td>
+<td><p>Generate and package a VeraGrid model as an FMU.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">read_fmu_model_description()</span></code></p></td>
+<td><p>Inspect and validate FMU metadata.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">select_declared_fmu_interface()</span></code></p></td>
+<td><p>Select a declared FMI interface.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">attach_fmu_to_device()</span></code></p></td>
+<td><p>Attach an FMU to an RMS or EMT device.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Compiler</span></code></p></td>
+<td><p>Compile generated native FMU code.</p></td>
+</tr>
+<tr class="row-odd"><td><p>FMPy <code class="docutils literal notranslate"><span class="pre">validate_fmu()</span></code> / <code class="docutils literal notranslate"><span class="pre">simulate_fmu()</span></code></p></td>
+<td><p>Independently validate and execute FMUs.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="dyn_templates/procedural_logic/three_phase_carrier_sampled_modulation.html" class="btn btn-neutral float-left" title="Three-phase carrier sampled modulation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="development.html" class="btn btn-neutral float-right" title="💻 Development" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Santiago Peñate Vera et. al..</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

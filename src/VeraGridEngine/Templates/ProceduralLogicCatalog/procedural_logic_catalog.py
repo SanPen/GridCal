@@ -72,6 +72,51 @@ class ProceduralBlockParameterSpec:
         return self._default_value
 
 
+def build_procedural_block_description(logic_tpe: ProceduralLogicType) -> str:
+    """Return the functional description of one procedural-logic type.
+
+    :param logic_tpe: Procedural behaviour represented by a Library block.
+    :return: Human-facing explanation of the retained or event-driven action.
+    """
+    if logic_tpe == ProceduralLogicType.FixedSample:
+        description: str = "Samples a Boolean condition once during initialization and retains that result."
+    elif logic_tpe == ProceduralLogicType.SampledValue:
+        description = "Stores the latest input value and exposes it as a retained output."
+    elif logic_tpe == ProceduralLogicType.TimeDelay:
+        description = "Outputs the input value from a configurable amount of time in the past."
+    elif logic_tpe == ProceduralLogicType.MovingAverage:
+        description = "Averages the input over a configurable historical time window."
+    elif logic_tpe == ProceduralLogicType.HardSaturation:
+        description = "Clamps the input between configurable minimum and maximum values."
+    elif logic_tpe == ProceduralLogicType.GradientLimiter:
+        description = "Limits the input rate of change between configurable falling and rising rates."
+    elif logic_tpe == ProceduralLogicType.FlipFlop:
+        description = "Stores a Boolean state controlled by separate set and reset inputs."
+    elif logic_tpe == ProceduralLogicType.AnalogFlipFlop:
+        description = "Stores an analog input value when set and clears it when reset."
+    elif logic_tpe == ProceduralLogicType.PickupDropoff:
+        description = "Delays Boolean activation and deactivation by independent pickup and dropoff times."
+    elif logic_tpe == ProceduralLogicType.DelayedThresholdLatch:
+        description = "Latches a threshold comparison after its configured delay has elapsed."
+    elif logic_tpe == ProceduralLogicType.ConditionalDiagnostic:
+        description = "Emits a configured diagnostic event while its Boolean condition is active."
+    elif logic_tpe == ProceduralLogicType.DelayedSwitchEvent:
+        description = "Changes an external switch state after a guarded trigger and configurable delay."
+    elif logic_tpe == ProceduralLogicType.ResetOnRisingEdge:
+        description = "Captures the supplied reset value when the condition has a rising edge."
+    elif logic_tpe == ProceduralLogicType.StartupHandover:
+        description = "Changes from startup to enabled operation at a configurable simulation time."
+    elif logic_tpe == ProceduralLogicType.ValveState:
+        description = "Determines a semiconductor valve state from voltage, current, gate, and valve configuration."
+    elif logic_tpe == ProceduralLogicType.ThreePhaseCarrierPwm:
+        description = "Compares three modulation signals with a carrier to produce three PWM gate signals."
+    elif logic_tpe == ProceduralLogicType.ThreePhaseCarrierSampledModulation:
+        description = "Samples three modulation signals synchronously with the configured switching carrier."
+    else:
+        description = f"Applies the {logic_tpe.value} procedural-logic behaviour."
+    return description
+
+
 class ProceduralBlockTemplateDescriptor:
     """Describe one native, draggable procedural-logic block template."""
 
@@ -83,6 +128,7 @@ class ProceduralBlockTemplateDescriptor:
         "_output_names",
         "_parameter_specs",
         "_requires_configuration",
+        "_description",
     )
 
     def __init__(
@@ -94,6 +140,7 @@ class ProceduralBlockTemplateDescriptor:
             output_names: Sequence[str],
             parameter_specs: Sequence[ProceduralBlockParameterSpec],
             requires_configuration: bool = False,
+            description: str = "",
     ) -> None:
         """Store the immutable public surface of one block template.
 
@@ -104,6 +151,7 @@ class ProceduralBlockTemplateDescriptor:
         :param output_names: Ordered visible output-port names.
         :param parameter_specs: Ordered editable numeric parameters.
         :param requires_configuration: Whether Python code needs external identifiers.
+        :param description: Human-facing explanation of the procedural behaviour.
         :return: None.
         """
         self._logic_tpe: ProceduralLogicType = logic_tpe
@@ -113,6 +161,10 @@ class ProceduralBlockTemplateDescriptor:
         self._output_names: tuple[str, ...] = tuple(output_names)
         self._parameter_specs: tuple[ProceduralBlockParameterSpec, ...] = tuple(parameter_specs)
         self._requires_configuration: bool = requires_configuration
+        if len(description) > 0:
+            self._description: str = description
+        else:
+            self._description = build_procedural_block_description(logic_tpe=logic_tpe)
 
     @property
     def logic_tpe(self) -> ProceduralLogicType:
@@ -171,6 +223,14 @@ class ProceduralBlockTemplateDescriptor:
         return self._requires_configuration
 
     @property
+    def description(self) -> str:
+        """Return the human-facing procedural behaviour description.
+
+        :return: Functional description, or an empty string when unspecified.
+        """
+        return self._description
+
+    @property
     def template_key(self) -> str:
         """Return the stable semantic identifier used by the editor.
 
@@ -186,7 +246,10 @@ class ProceduralBlockTemplateDescriptor:
         """
         input_text: str = " ".join(self._input_names)
         output_text: str = " ".join(self._output_names)
-        return f"{self._display_label} {self._logic_tpe.value} {input_text} {output_text}".strip()
+        return (
+            f"{self._display_label} {self._logic_tpe.value} {input_text} "
+            f"{output_text} {self._description}"
+        ).strip()
 
     @property
     def documentation_relative_path(self) -> str:

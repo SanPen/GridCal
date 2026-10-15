@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -107,7 +108,7 @@
 <span class="c1"># file, You can obtain one at https://mozilla.org/MPL/2.0/.</span>
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numba</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nb</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
@@ -122,13 +123,134 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">deque</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">EmtInitializationMethod</span><span class="p">,</span> <span class="n">EmtInitializationStatus</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">EmtInitializationMethod</span><span class="p">,</span>
+    <span class="n">EmtInitializationStatus</span><span class="p">,</span>
+    <span class="n">SelfImplicitSolveStatus</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.compiled_functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">SymbolicJacobian</span><span class="p">,</span> <span class="n">SymbolicVector</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.jit_compiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">RMSCompiler</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">expression2numba</span><span class="p">,</span> <span class="n">get_expression_vars</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.block</span><span class="w"> </span><span class="kn">import</span> <span class="n">Block</span><span class="p">,</span> <span class="n">normalize_event_parameter_initialization</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">BinOp</span><span class="p">,</span> <span class="n">Comparison</span><span class="p">,</span> <span class="n">Var</span><span class="p">,</span> <span class="n">Const</span><span class="p">,</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">find_vars_order</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.procedural_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">SampledValueLogic</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">BinOp</span><span class="p">,</span>
+    <span class="n">Comparison</span><span class="p">,</span>
+    <span class="n">Var</span><span class="p">,</span>
+    <span class="n">Const</span><span class="p">,</span>
+    <span class="n">Expr</span><span class="p">,</span>
+    <span class="n">find_vars_order</span><span class="p">,</span>
+    <span class="n">hard_sat</span><span class="p">,</span>
+    <span class="n">heaviside</span><span class="p">,</span>
+    <span class="nb">min</span> <span class="k">as</span> <span class="n">symbolic_minimum</span><span class="p">,</span>
+    <span class="nb">max</span> <span class="k">as</span> <span class="n">symbolic_maximum</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.procedural_logic</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">AnalogFlipFlopLogic</span><span class="p">,</span>
+    <span class="n">FixedSampleLogic</span><span class="p">,</span>
+    <span class="n">FlipFlopLogic</span><span class="p">,</span>
+    <span class="n">GradientLimiterLogic</span><span class="p">,</span>
+    <span class="n">HardSaturationLogic</span><span class="p">,</span>
+    <span class="n">MovingAverageLogic</span><span class="p">,</span>
+    <span class="n">SampledValueLogic</span><span class="p">,</span>
+    <span class="n">TimeDelayLogic</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="SelfImplicitSolveResult">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.SelfImplicitSolveResult">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SelfImplicitSolveResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Store the outcome of one scalar self-implicit initialization solve.&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;value&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;converged&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;iterations&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;residual&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+            <span class="n">converged</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+            <span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">residual</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+            <span class="n">status</span><span class="p">:</span> <span class="n">SelfImplicitSolveStatus</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a scalar self-implicit solve result.</span>
+
+<span class="sd">        :param value: Final candidate value. A failed solve does not commit this</span>
+<span class="sd">            candidate to the target array.</span>
+<span class="sd">        :param converged: Whether the residual satisfied the requested tolerance.</span>
+<span class="sd">        :param iterations: Number of secant iterations performed.</span>
+<span class="sd">        :param residual: Absolute fixed-point residual of the final candidate.</span>
+<span class="sd">        :param status: Exact reason why the solve stopped.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">converged</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">iterations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">residual</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">:</span> <span class="n">SelfImplicitSolveStatus</span> <span class="o">=</span> <span class="n">status</span></div>
+
+
+
+<div class="viewcode-block" id="ExplicitInitializationResult">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.ExplicitInitializationResult">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExplicitInitializationResult</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Store the transactional outcome of common explicit initialization.&quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;init_guess&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;diff_init_guess&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;converged&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;failed_variable&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;self_implicit_result&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;message&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">init_guess</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+            <span class="n">diff_init_guess</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span>
+            <span class="n">converged</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+            <span class="n">failed_variable</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">self_implicit_result</span><span class="p">:</span> <span class="n">SelfImplicitSolveResult</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build the result returned by the common explicit initializer.</span>
+
+<span class="sd">        :param init_guess: Committed algebraic and state initialization values.</span>
+<span class="sd">        :param diff_init_guess: Committed differential initialization values.</span>
+<span class="sd">        :param converged: Whether every required explicit equation was resolved.</span>
+<span class="sd">        :param failed_variable: Self-implicit variable that failed, if present.</span>
+<span class="sd">        :param self_implicit_result: Scalar failure diagnostics, if present.</span>
+<span class="sd">        :param message: Human-readable outcome description.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">init_guess</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diff_init_guess</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">diff_init_guess</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">converged</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">failed_variable</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">failed_variable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">self_implicit_result</span><span class="p">:</span> <span class="n">SelfImplicitSolveResult</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">self_implicit_result</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">message</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Expose the historical two-dictionary result without changing legacy callers.</span>
+
+<span class="sd">        A failed result raises before yielding either dictionary, ensuring that</span>
+<span class="sd">        tuple-unpacking callers cannot silently continue with unresolved values.</span>
+
+<span class="sd">        :return: Iterator over the state/algebraic and differential guess dictionaries.</span>
+<span class="sd">        :rtype: Iterator[Dict[int, float | int | complex | None]]</span>
+<span class="sd">        :raises RuntimeError: If explicit initialization did not converge.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_guess</span>
+            <span class="k">yield</span> <span class="bp">self</span><span class="o">.</span><span class="n">diff_init_guess</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">message</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="build_uid_bindings">
@@ -576,65 +698,187 @@
 
 
 
-<div class="viewcode-block" id="apply_sampled_procedural_initializers">
-<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.apply_sampled_procedural_initializers">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">apply_sampled_procedural_initializers</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_procedural_initial_expression</span><span class="p">(</span>
+        <span class="n">expression</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">|</span> <span class="n">Comparison</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert one procedural startup source into a symbolic expression.</span>
+
+<span class="sd">    :param expression: Procedural expression or scalar startup value.</span>
+<span class="sd">    :return: Symbolic expression accepted by the explicit dependency graph.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">Comparison</span><span class="p">):</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">to_expression</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">Expr</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">expression</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">expression</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_coerce_procedural_boolean_initial_expression</span><span class="p">(</span>
+        <span class="n">expression</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">|</span> <span class="n">Comparison</span> <span class="o">|</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">bool</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Expr</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert one procedural condition into its zero-or-one startup value.</span>
+
+<span class="sd">    Procedural runtime conditions use a strict ``&gt; 0.5`` threshold. Explicit</span>
+<span class="sd">    initialization must apply the same rule when a model supplies a numeric</span>
+<span class="sd">    expression rather than a symbolic comparison.</span>
+
+<span class="sd">    :param expression: Procedural condition or scalar startup value.</span>
+<span class="sd">    :return: Symbolic zero-or-one expression matching runtime evaluation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expression</span><span class="p">,</span> <span class="n">Comparison</span><span class="p">):</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">expression</span><span class="o">.</span><span class="n">to_expression</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">numeric_expression</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">_coerce_procedural_initial_expression</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">heaviside</span><span class="p">(</span><span class="n">numeric_expression</span> <span class="o">-</span> <span class="n">Const</span><span class="p">(</span><span class="mf">0.5</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_procedural_initial_output</span><span class="p">(</span>
+        <span class="n">init_event</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]],</span>
+        <span class="n">output_var_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">output_var_uid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve one procedural output against declared runtime parameters.</span>
+
+<span class="sd">    Stable UID is authoritative for current files. Name lookup remains as the</span>
+<span class="sd">    legacy fallback and succeeds only when the name is unambiguous.</span>
+
+<span class="sd">    :param init_event: Declared runtime initialization equations.</span>
+<span class="sd">    :param output_var_name: Persisted output name used by legacy entries.</span>
+<span class="sd">    :param output_var_uid: Stable output UID when present in the entry.</span>
+<span class="sd">    :return: Matching runtime variable, or ``None`` when it cannot be resolved safely.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">output_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">candidate_var</span><span class="p">:</span> <span class="n">Var</span>
+
+    <span class="k">if</span> <span class="n">output_var_uid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">candidate_var</span> <span class="ow">in</span> <span class="n">init_event</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">candidate_var</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">output_var_name</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">output_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">output_var</span> <span class="o">=</span> <span class="n">candidate_var</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">output_var</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">candidate_var</span> <span class="ow">in</span> <span class="n">init_event</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">candidate_var</span><span class="o">.</span><span class="n">uid</span> <span class="o">==</span> <span class="n">output_var_uid</span><span class="p">:</span>
+                <span class="n">output_var</span> <span class="o">=</span> <span class="n">candidate_var</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="n">output_var</span>
+
+
+<div class="viewcode-block" id="apply_procedural_initializers">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.apply_procedural_initializers">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_procedural_initializers</span><span class="p">(</span>
         <span class="n">mdl</span><span class="p">:</span> <span class="n">Block</span><span class="p">,</span>
         <span class="n">init_event</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]],</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use sampled procedural expressions as their startup mode values.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Promote deterministic procedural startup values into the init graph.</span>
 
-<span class="sd">    Generated ``select(...)`` and sampled-value blocks keep their outputs in</span>
-<span class="sd">    ``mode_dict`` because runtime updates occur outside the Newton residual.</span>
-<span class="sd">    Their placeholder mode defaults must not choose the branch used by</span>
-<span class="sd">    ``inc(...)``. At startup, the declared sampled source is the authoritative</span>
-<span class="sd">    value and participates in the same dependency graph as every other</span>
-<span class="sd">    explicit initialization equation.</span>
+<span class="sd">    Pure sampling, delay-history, gradient, saturation and startup-deterministic</span>
+<span class="sd">    latch entries all have a well-defined first value. Their outputs remain in</span>
+<span class="sd">    ``mode_dict`` at runtime, but their first value must participate in the same</span>
+<span class="sd">    dependency graph as ordinary initialization equations. Timed relay and</span>
+<span class="sd">    switching entries are deliberately excluded because their retained fallback</span>
+<span class="sd">    is part of their startup contract and is reconciled by the boundary updater.</span>
 
 <span class="sd">    :param mdl: Symbolic block whose procedural entries are inspected.</span>
 <span class="sd">    :param init_event: Runtime initialization equations updated in place.</span>
 <span class="sd">    :return: None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">event_var_by_uid</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-        <span class="p">(</span><span class="n">event_var</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span> <span class="n">event_var</span><span class="p">)</span> <span class="k">for</span> <span class="n">event_var</span> <span class="ow">in</span> <span class="n">init_event</span>
-    <span class="p">)</span>
     <span class="n">procedural_entry</span><span class="p">:</span> <span class="nb">object</span>
 
     <span class="k">for</span> <span class="n">procedural_entry</span> <span class="ow">in</span> <span class="n">mdl</span><span class="o">.</span><span class="n">procedural_logic</span><span class="p">:</span>
+        <span class="n">source_expression</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">|</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">procedural_entry</span><span class="p">,</span> <span class="n">SampledValueLogic</span><span class="p">):</span>
-            <span class="n">output_var</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">if</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">output_var_uid</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">candidate_var</span><span class="p">:</span> <span class="n">Var</span>
-                <span class="k">for</span> <span class="n">candidate_var</span> <span class="ow">in</span> <span class="n">init_event</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">candidate_var</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">output_var_name</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">output_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                            <span class="n">output_var</span> <span class="o">=</span> <span class="n">candidate_var</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="n">output_var</span> <span class="o">=</span> <span class="kc">None</span>
-                            <span class="k">break</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">pass</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">output_var</span> <span class="o">=</span> <span class="n">event_var_by_uid</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                    <span class="n">procedural_entry</span><span class="o">.</span><span class="n">output_var_uid</span><span class="p">,</span>
-                    <span class="kc">None</span><span class="p">,</span>
-                <span class="p">)</span>
+            <span class="n">output_var_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">output_var_name</span>
+            <span class="n">output_var_uid</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">output_var_uid</span>
+            <span class="n">source_expression</span> <span class="o">=</span> <span class="n">_coerce_procedural_initial_expression</span><span class="p">(</span>
+                <span class="n">expression</span><span class="o">=</span><span class="n">procedural_entry</span><span class="o">.</span><span class="n">source_expr</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">procedural_entry</span><span class="p">,</span> <span class="n">FixedSampleLogic</span><span class="p">):</span>
+            <span class="n">output_var_name</span> <span class="o">=</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">output_var_name</span>
+            <span class="n">output_var_uid</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">source_expression</span> <span class="o">=</span> <span class="n">_coerce_procedural_boolean_initial_expression</span><span class="p">(</span>
+                <span class="n">expression</span><span class="o">=</span><span class="n">procedural_entry</span><span class="o">.</span><span class="n">condition_expr</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">procedural_entry</span><span class="p">,</span> <span class="n">HardSaturationLogic</span><span class="p">):</span>
+            <span class="n">output_var_name</span> <span class="o">=</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">output_var_name</span>
+            <span class="n">output_var_uid</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">saturation_input</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">_coerce_procedural_initial_expression</span><span class="p">(</span>
+                <span class="n">procedural_entry</span><span class="o">.</span><span class="n">u_expr</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">first_limit</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">_coerce_procedural_initial_expression</span><span class="p">(</span>
+                <span class="n">procedural_entry</span><span class="o">.</span><span class="n">u_min_expr</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">second_limit</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">_coerce_procedural_initial_expression</span><span class="p">(</span>
+                <span class="n">procedural_entry</span><span class="o">.</span><span class="n">u_max_expr</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">lower_limit</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">symbolic_minimum</span><span class="p">(</span><span class="n">first_limit</span><span class="p">,</span> <span class="n">second_limit</span><span class="p">)</span>
+            <span class="n">upper_limit</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">symbolic_maximum</span><span class="p">(</span><span class="n">first_limit</span><span class="p">,</span> <span class="n">second_limit</span><span class="p">)</span>
+            <span class="n">source_expression</span> <span class="o">=</span> <span class="n">hard_sat</span><span class="p">(</span>
+                <span class="n">saturation_input</span><span class="p">,</span>
+                <span class="n">lower_limit</span><span class="p">,</span>
+                <span class="n">upper_limit</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">procedural_entry</span><span class="p">,</span> <span class="n">TimeDelayLogic</span><span class="p">):</span>
+            <span class="n">output_var_name</span> <span class="o">=</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">output_var_name</span>
+            <span class="n">output_var_uid</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">source_expression</span> <span class="o">=</span> <span class="n">_coerce_procedural_initial_expression</span><span class="p">(</span>
+                <span class="n">expression</span><span class="o">=</span><span class="n">procedural_entry</span><span class="o">.</span><span class="n">source_expr</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">procedural_entry</span><span class="p">,</span> <span class="n">MovingAverageLogic</span><span class="p">):</span>
+            <span class="n">output_var_name</span> <span class="o">=</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">output_var_name</span>
+            <span class="n">output_var_uid</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">source_expression</span> <span class="o">=</span> <span class="n">_coerce_procedural_initial_expression</span><span class="p">(</span>
+                <span class="n">expression</span><span class="o">=</span><span class="n">procedural_entry</span><span class="o">.</span><span class="n">source_expr</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">procedural_entry</span><span class="p">,</span> <span class="n">GradientLimiterLogic</span><span class="p">):</span>
+            <span class="n">output_var_name</span> <span class="o">=</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">output_var_name</span>
+            <span class="n">output_var_uid</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">source_expression</span> <span class="o">=</span> <span class="n">_coerce_procedural_initial_expression</span><span class="p">(</span>
+                <span class="n">expression</span><span class="o">=</span><span class="n">procedural_entry</span><span class="o">.</span><span class="n">source_expr</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">procedural_entry</span><span class="p">,</span> <span class="n">FlipFlopLogic</span><span class="p">):</span>
+            <span class="n">output_var_name</span> <span class="o">=</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">output_var_name</span>
+            <span class="n">output_var_uid</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">source_expression</span> <span class="o">=</span> <span class="n">_coerce_procedural_boolean_initial_expression</span><span class="p">(</span>
+                <span class="n">expression</span><span class="o">=</span><span class="n">procedural_entry</span><span class="o">.</span><span class="n">set_expr</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">procedural_entry</span><span class="p">,</span> <span class="n">AnalogFlipFlopLogic</span><span class="p">):</span>
+            <span class="n">output_var_name</span> <span class="o">=</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">output_var_name</span>
+            <span class="n">output_var_uid</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">source_expression</span> <span class="o">=</span> <span class="n">_coerce_procedural_initial_expression</span><span class="p">(</span>
+                <span class="n">expression</span><span class="o">=</span><span class="n">procedural_entry</span><span class="o">.</span><span class="n">input_expr</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_var_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">output_var_uid</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">source_expression</span> <span class="o">=</span> <span class="kc">None</span>
 
+        <span class="k">if</span> <span class="n">output_var_name</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">or</span> <span class="n">source_expression</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">_find_procedural_initial_output</span><span class="p">(</span>
+                <span class="n">init_event</span><span class="o">=</span><span class="n">init_event</span><span class="p">,</span>
+                <span class="n">output_var_name</span><span class="o">=</span><span class="n">output_var_name</span><span class="p">,</span>
+                <span class="n">output_var_uid</span><span class="o">=</span><span class="n">output_var_uid</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="k">if</span> <span class="n">output_var</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">pass</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">source_expression</span><span class="p">:</span> <span class="n">Expr</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">procedural_entry</span><span class="o">.</span><span class="n">source_expr</span><span class="p">,</span> <span class="n">Comparison</span><span class="p">):</span>
-                    <span class="n">source_expression</span> <span class="o">=</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">source_expr</span><span class="o">.</span><span class="n">to_expression</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">source_expression</span> <span class="o">=</span> <span class="n">procedural_entry</span><span class="o">.</span><span class="n">source_expr</span>
                 <span class="n">init_event</span><span class="p">[</span><span class="n">output_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">source_expression</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">pass</span>
 
     <span class="n">child_block</span><span class="p">:</span> <span class="n">Block</span>
     <span class="k">for</span> <span class="n">child_block</span> <span class="ow">in</span> <span class="n">mdl</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
-        <span class="n">apply_sampled_procedural_initializers</span><span class="p">(</span>
+        <span class="n">apply_procedural_initializers</span><span class="p">(</span>
             <span class="n">mdl</span><span class="o">=</span><span class="n">child_block</span><span class="p">,</span>
             <span class="n">init_event</span><span class="o">=</span><span class="n">init_event</span><span class="p">,</span>
         <span class="p">)</span></div>
@@ -707,6 +951,67 @@
 
 
 
+<div class="viewcode-block" id="initialization_dependency_reaches_uid">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.initialization_dependency_reaches_uid">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">initialization_dependency_reaches_uid</span><span class="p">(</span>
+        <span class="n">start_var</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span>
+        <span class="n">target_uid</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">init_vars</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]],</span>
+        <span class="n">visited_uids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check whether one initialization dependency reaches a target variable.</span>
+
+<span class="sd">    Direct algebraic assignments are inferred from DAE residuals rather than</span>
+<span class="sd">    explicitly declared as initialization equations. Before admitting one of</span>
+<span class="sd">    those inferred assignments, its dependency chain must remain acyclic with</span>
+<span class="sd">    the authoritative explicit initialization equations.</span>
+
+<span class="sd">    :param start_var: Dependency from which to traverse initialization equations.</span>
+<span class="sd">    :param target_uid: Candidate variable whose re-entry would close a cycle.</span>
+<span class="sd">    :param init_vars: Candidate initialization equations indexed by target variable.</span>
+<span class="sd">    :param visited_uids: Variable identities already inspected during this traversal.</span>
+<span class="sd">    :return: Whether the dependency chain reaches ``target_uid``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">start_var</span><span class="o">.</span><span class="n">uid</span> <span class="o">==</span> <span class="n">target_uid</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">start_var</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">visited_uids</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">visited_uids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">start_var</span><span class="o">.</span><span class="n">uid</span><span class="p">)</span>
+
+    <span class="n">start_equation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">equation_var</span><span class="p">:</span> <span class="n">Var</span>
+    <span class="n">equation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">equation_var</span><span class="p">,</span> <span class="n">equation</span> <span class="ow">in</span> <span class="n">init_vars</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">start_equation</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">equation_var</span><span class="o">.</span><span class="n">uid</span> <span class="o">==</span> <span class="n">start_var</span><span class="o">.</span><span class="n">uid</span><span class="p">:</span>
+            <span class="n">start_equation</span> <span class="o">=</span> <span class="n">equation</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">start_equation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="n">dependency_var</span><span class="p">:</span> <span class="n">Var</span>
+    <span class="k">for</span> <span class="n">dependency_var</span> <span class="ow">in</span> <span class="n">get_expression_vars</span><span class="p">(</span><span class="n">start_equation</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">initialization_dependency_reaches_uid</span><span class="p">(</span>
+                <span class="n">start_var</span><span class="o">=</span><span class="n">dependency_var</span><span class="p">,</span>
+                <span class="n">target_uid</span><span class="o">=</span><span class="n">target_uid</span><span class="p">,</span>
+                <span class="n">init_vars</span><span class="o">=</span><span class="n">init_vars</span><span class="p">,</span>
+                <span class="n">visited_uids</span><span class="o">=</span><span class="n">visited_uids</span><span class="p">,</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+
 <div class="viewcode-block" id="add_direct_algebraic_init_dependencies">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.explicit_initialization_symbolic.add_direct_algebraic_init_dependencies">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">add_direct_algebraic_init_dependencies</span><span class="p">(</span>
@@ -742,8 +1047,34 @@
                         <span class="k">if</span> <span class="n">direct_eq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                             <span class="k">pass</span>
                         <span class="k">else</span><span class="p">:</span>
-                            <span class="n">init_vars</span><span class="p">[</span><span class="n">dependency_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">direct_eq</span>
-                            <span class="n">dependency_added</span> <span class="o">=</span> <span class="kc">True</span></div>
+                            <span class="c1"># A legacy EMT terminal output can be both the seed</span>
+                            <span class="c1"># of an explicit state initializer and a direct DAE</span>
+                            <span class="c1"># result of that same state. Pulling the inferred DAE</span>
+                            <span class="c1"># assignment into the explicit graph would turn two</span>
+                            <span class="c1"># equivalent relations into an artificial cycle.</span>
+                            <span class="n">candidate_init_vars</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">init_vars</span><span class="p">)</span>
+                            <span class="n">candidate_init_vars</span><span class="p">[</span><span class="n">dependency_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">direct_eq</span>
+                            <span class="n">creates_cycle</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+                            <span class="n">direct_dependency_var</span><span class="p">:</span> <span class="n">Var</span>
+                            <span class="k">for</span> <span class="n">direct_dependency_var</span> <span class="ow">in</span> <span class="n">get_expression_vars</span><span class="p">(</span><span class="n">direct_eq</span><span class="p">):</span>
+                                <span class="k">if</span> <span class="n">initialization_dependency_reaches_uid</span><span class="p">(</span>
+                                        <span class="n">start_var</span><span class="o">=</span><span class="n">direct_dependency_var</span><span class="p">,</span>
+                                        <span class="n">target_uid</span><span class="o">=</span><span class="n">dependency_var</span><span class="o">.</span><span class="n">uid</span><span class="p">,</span>
+                                        <span class="n">init_vars</span><span class="o">=</span><span class="n">candidate_init_vars</span><span class="p">,</span>
+                                        <span class="n">visited_uids</span><span class="o">=</span><span class="nb">set</span><span class="p">(),</span>
+                                <span class="p">):</span>
+                                    <span class="n">creates_cycle</span> <span class="o">=</span> <span class="kc">True</span>
+                                <span class="k">else</span><span class="p">:</span>
+                                    <span class="k">pass</span>
+
+                            <span class="k">if</span> <span class="n">creates_cycle</span><span class="p">:</span>
+                                <span class="c1"># Keep the existing work-vector/PF seed as the</span>
+                                <span class="c1"># boundary value. Explicit declarations remain</span>
+                                <span class="c1"># authoritative over inferred DAE assignments.</span>
+                                <span class="k">pass</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">init_vars</span><span class="p">[</span><span class="n">dependency_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">direct_eq</span>
+                                <span class="n">dependency_added</span> <span class="o">=</span> <span class="kc">True</span></div>
 
 
 <div class="viewcode-block" id="build_explicit_init_graph">
@@ -772,7 +1103,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">preserved_uids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">preserved_var_uids</span><span class="p">)</span>
     <span class="n">build_init_dict</span><span class="p">(</span><span class="n">mdl</span><span class="p">,</span> <span class="n">init_vars</span><span class="p">,</span> <span class="n">init_event</span><span class="p">)</span>
-    <span class="n">apply_sampled_procedural_initializers</span><span class="p">(</span>
+    <span class="n">apply_procedural_initializers</span><span class="p">(</span>
         <span class="n">mdl</span><span class="o">=</span><span class="n">mdl</span><span class="p">,</span>
         <span class="n">init_event</span><span class="o">=</span><span class="n">init_event</span><span class="p">,</span>
     <span class="p">)</span>
@@ -791,16 +1122,6 @@
         <span class="n">mdl</span><span class="o">=</span><span class="n">mdl</span><span class="p">,</span>
         <span class="n">direct_initializers</span><span class="o">=</span><span class="n">direct_initializers</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">direct_var</span><span class="p">:</span> <span class="n">Var</span>
-    <span class="n">direct_eq</span><span class="p">:</span> <span class="n">Expr</span>
-    <span class="k">for</span> <span class="n">direct_var</span><span class="p">,</span> <span class="n">direct_eq</span> <span class="ow">in</span> <span class="n">direct_initializers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">direct_var</span> <span class="ow">in</span> <span class="n">init_vars</span><span class="p">:</span>
-            <span class="k">pass</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">direct_var</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">preserved_uids</span><span class="p">:</span>
-                <span class="k">pass</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">init_vars</span><span class="p">[</span><span class="n">direct_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">direct_eq</span>
     <span class="n">add_direct_algebraic_init_dependencies</span><span class="p">(</span>
         <span class="n">init_vars</span><span class="o">=</span><span class="n">init_vars</span><span class="p">,</span>
         <span class="n">direct_initializers</span><span class="o">=</span><span class="n">direct_initializers</span><span class="p">,</span>
@@ -963,7 +1284,7 @@
         <span class="n">params_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
         <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-8</span><span class="p">,</span>
         <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SelfImplicitSolveResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Solve a scalar self-implicit initialization equation with the shared signature.</span>
 
@@ -985,37 +1306,135 @@
 <span class="sd">    :type tol: float</span>
 <span class="sd">    :param max_iter: Maximum secant iterations.</span>
 <span class="sd">    :type max_iter: int</span>
-<span class="sd">    :return: Solved scalar value.</span>
-<span class="sd">    :rtype: float</span>
+<span class="sd">    :return: Scalar solution candidate and exact convergence diagnostics. Failed</span>
+<span class="sd">        candidates are never committed to ``target_array``.</span>
+<span class="sd">    :rtype: SelfImplicitSolveResult</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">initial_guess</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">])</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">initial_guess</span><span class="p">):</span>
-        <span class="n">initial_guess</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">original_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">original_value</span><span class="p">):</span>
+        <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">initial_guess</span> <span class="o">=</span> <span class="n">initial_guess</span>
+        <span class="k">return</span> <span class="n">SelfImplicitSolveResult</span><span class="p">(</span>
+            <span class="n">value</span><span class="o">=</span><span class="n">original_value</span><span class="p">,</span>
+            <span class="n">converged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">residual</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span>
+            <span class="n">status</span><span class="o">=</span><span class="n">SelfImplicitSolveStatus</span><span class="o">.</span><span class="n">INVALID_INITIAL_GUESS</span><span class="p">,</span>
+        <span class="p">)</span>
 
-    <span class="n">x0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">initial_guess</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">initial_guess</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-12</span> <span class="k">else</span> <span class="mf">1.0</span>
-    <span class="n">x1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-12</span> <span class="k">else</span> <span class="mf">1.1</span>
+    <span class="c1"># Preserve an exact zero seed. Dead-network and black-start models use zero</span>
+    <span class="c1"># as a physical operating point, so it must be evaluated before introducing</span>
+    <span class="c1"># the second secant point.</span>
+    <span class="n">x0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">original_value</span>
+    <span class="n">x1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="mf">0.1</span>
+    <span class="n">final_candidate</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">x0</span>
+    <span class="n">final_residual</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>
+    <span class="n">iteration_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
         <span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">x0</span>
-        <span class="n">f0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">evaluate_single_equation_fn</span><span class="p">(</span><span class="n">eq_fn</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">event_params_array</span><span class="p">,</span> <span class="n">params_array</span><span class="p">)</span> <span class="o">-</span> <span class="n">x0</span>
-
-        <span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">x1</span>
-        <span class="n">f1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">evaluate_single_equation_fn</span><span class="p">(</span><span class="n">eq_fn</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">event_params_array</span><span class="p">,</span> <span class="n">params_array</span><span class="p">)</span> <span class="o">-</span> <span class="n">x1</span>
-
-        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">f1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">x1</span>
+        <span class="n">f0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">evaluate_single_equation_fn</span><span class="p">(</span>
+            <span class="n">eq_fn</span><span class="p">,</span>
+            <span class="n">x</span><span class="p">,</span>
+            <span class="n">dx</span><span class="p">,</span>
+            <span class="n">event_params_array</span><span class="p">,</span>
+            <span class="n">params_array</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">-</span> <span class="n">x0</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">f0</span><span class="p">):</span>
+            <span class="n">final_residual</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">f0</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">denominator</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">f1</span> <span class="o">-</span> <span class="n">f0</span>
-            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">denominator</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-12</span><span class="p">:</span>
-                <span class="k">break</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">x2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">f1</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="n">denominator</span>
-                <span class="n">x0</span> <span class="o">=</span> <span class="n">x1</span>
-                <span class="n">x1</span> <span class="o">=</span> <span class="n">x2</span>
+            <span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">original_value</span>
+            <span class="k">return</span> <span class="n">SelfImplicitSolveResult</span><span class="p">(</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span>
+                <span class="n">converged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">residual</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span>
+                <span class="n">status</span><span class="o">=</span><span class="n">SelfImplicitSolveStatus</span><span class="o">.</span><span class="n">NON_FINITE_RESIDUAL</span><span class="p">,</span>
+            <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">x1</span></div>
+        <span class="k">if</span> <span class="n">final_residual</span> <span class="o">&lt;=</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">x0</span>
+            <span class="k">return</span> <span class="n">SelfImplicitSolveResult</span><span class="p">(</span>
+                <span class="n">value</span><span class="o">=</span><span class="n">x0</span><span class="p">,</span>
+                <span class="n">converged</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">iterations</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">residual</span><span class="o">=</span><span class="n">final_residual</span><span class="p">,</span>
+                <span class="n">status</span><span class="o">=</span><span class="n">SelfImplicitSolveStatus</span><span class="o">.</span><span class="n">CONVERGED</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">for</span> <span class="n">iteration_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">x1</span>
+            <span class="n">f1</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">evaluate_single_equation_fn</span><span class="p">(</span>
+                <span class="n">eq_fn</span><span class="p">,</span>
+                <span class="n">x</span><span class="p">,</span>
+                <span class="n">dx</span><span class="p">,</span>
+                <span class="n">event_params_array</span><span class="p">,</span>
+                <span class="n">params_array</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">-</span> <span class="n">x1</span>
+            <span class="n">final_candidate</span> <span class="o">=</span> <span class="n">x1</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">f1</span><span class="p">):</span>
+                <span class="n">final_residual</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">f1</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">original_value</span>
+                <span class="k">return</span> <span class="n">SelfImplicitSolveResult</span><span class="p">(</span>
+                    <span class="n">value</span><span class="o">=</span><span class="n">final_candidate</span><span class="p">,</span>
+                    <span class="n">converged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">iterations</span><span class="o">=</span><span class="n">iteration_index</span><span class="p">,</span>
+                    <span class="n">residual</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span>
+                    <span class="n">status</span><span class="o">=</span><span class="n">SelfImplicitSolveStatus</span><span class="o">.</span><span class="n">NON_FINITE_RESIDUAL</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">final_residual</span> <span class="o">&lt;=</span> <span class="n">tol</span><span class="p">:</span>
+                <span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">final_candidate</span>
+                <span class="k">return</span> <span class="n">SelfImplicitSolveResult</span><span class="p">(</span>
+                    <span class="n">value</span><span class="o">=</span><span class="n">final_candidate</span><span class="p">,</span>
+                    <span class="n">converged</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">iterations</span><span class="o">=</span><span class="n">iteration_index</span><span class="p">,</span>
+                    <span class="n">residual</span><span class="o">=</span><span class="n">final_residual</span><span class="p">,</span>
+                    <span class="n">status</span><span class="o">=</span><span class="n">SelfImplicitSolveStatus</span><span class="o">.</span><span class="n">CONVERGED</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">denominator</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">f1</span> <span class="o">-</span> <span class="n">f0</span>
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">denominator</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-12</span><span class="p">:</span>
+                    <span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">original_value</span>
+                    <span class="k">return</span> <span class="n">SelfImplicitSolveResult</span><span class="p">(</span>
+                        <span class="n">value</span><span class="o">=</span><span class="n">final_candidate</span><span class="p">,</span>
+                        <span class="n">converged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">iterations</span><span class="o">=</span><span class="n">iteration_index</span><span class="p">,</span>
+                        <span class="n">residual</span><span class="o">=</span><span class="n">final_residual</span><span class="p">,</span>
+                        <span class="n">status</span><span class="o">=</span><span class="n">SelfImplicitSolveStatus</span><span class="o">.</span><span class="n">SINGULAR_SECANT</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">x2</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">f1</span> <span class="o">*</span> <span class="p">(</span><span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="n">denominator</span>
+                    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">x2</span><span class="p">):</span>
+                        <span class="n">x0</span> <span class="o">=</span> <span class="n">x1</span>
+                        <span class="n">f0</span> <span class="o">=</span> <span class="n">f1</span>
+                        <span class="n">x1</span> <span class="o">=</span> <span class="n">x2</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">original_value</span>
+                        <span class="k">return</span> <span class="n">SelfImplicitSolveResult</span><span class="p">(</span>
+                            <span class="n">value</span><span class="o">=</span><span class="n">x2</span><span class="p">,</span>
+                            <span class="n">converged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">iterations</span><span class="o">=</span><span class="n">iteration_index</span><span class="p">,</span>
+                            <span class="n">residual</span><span class="o">=</span><span class="n">final_residual</span><span class="p">,</span>
+                            <span class="n">status</span><span class="o">=</span><span class="n">SelfImplicitSolveStatus</span><span class="o">.</span><span class="n">NON_FINITE_ITERATE</span><span class="p">,</span>
+                        <span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="c1"># Equation compilation/evaluation errors remain exceptional, but the</span>
+        <span class="c1"># numerical workspace must still be restored before propagating them.</span>
+        <span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">original_value</span>
+        <span class="k">raise</span>
+
+    <span class="n">target_array</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">original_value</span>
+    <span class="k">return</span> <span class="n">SelfImplicitSolveResult</span><span class="p">(</span>
+        <span class="n">value</span><span class="o">=</span><span class="n">final_candidate</span><span class="p">,</span>
+        <span class="n">converged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">iterations</span><span class="o">=</span><span class="n">iteration_index</span><span class="p">,</span>
+        <span class="n">residual</span><span class="o">=</span><span class="n">final_residual</span><span class="p">,</span>
+        <span class="n">status</span><span class="o">=</span><span class="n">SelfImplicitSolveStatus</span><span class="o">.</span><span class="n">MAX_ITERATIONS</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 
 
@@ -1097,16 +1516,16 @@
         <span class="n">external_uid_values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">event_params_array_seed</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]]:</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExplicitInitializationResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Run the universal explicit initialization core shared by RMS and EMT flows.</span>
 
-<span class="sd">    :param sys_diff_vars:</span>
-<span class="sd">    :type sys_diff_vars:</span>
-<span class="sd">    :param sys_vars:</span>
-<span class="sd">    :type sys_vars:</span>
 <span class="sd">    :param mdl: Symbolic model block.</span>
 <span class="sd">    :type mdl: Block</span>
+<span class="sd">    :param sys_vars: System state and algebraic variables keyed by UID.</span>
+<span class="sd">    :type sys_vars: Dict[int, Var]</span>
+<span class="sd">    :param sys_diff_vars: System differential variables keyed by UID.</span>
+<span class="sd">    :type sys_diff_vars: Dict[int, Var]</span>
 <span class="sd">    :param variable_parameters: Runtime or event parameters.</span>
 <span class="sd">    :type variable_parameters: List[Var]</span>
 <span class="sd">    :param event_parameters_eqs: Runtime parameter equations storage.</span>
@@ -1115,7 +1534,8 @@
 <span class="sd">    :type constant_parameters: List[Var]</span>
 <span class="sd">    :param init_guess: Initialization guesses for algebraic or state variables.</span>
 <span class="sd">    :type init_guess: Dict[int, float]</span>
-<span class="sd">    :param event_param_init_dict: Event parameter initialization dictionary.</span>
+<span class="sd">    :param event_param_init_dict: Resolved runtime-parameter values keyed by UID.</span>
+<span class="sd">    :type event_param_init_dict: Dict[int, float | int | complex | None]</span>
 <span class="sd">    :param diff_init_guess: Initialization guesses for differential variables.</span>
 <span class="sd">    :type diff_init_guess: Dict[int, float]</span>
 <span class="sd">    :param uid2idx_vars: Variable index map.</span>
@@ -1131,12 +1551,24 @@
 <span class="sd">    :param compile_single_equation: Backend-specific single-equation compiler wrapper.</span>
 <span class="sd">    :type compile_single_equation: Union[SymbolicVectorSingleEquationCompiler, RmsSingleEquationCompiler]</span>
 <span class="sd">    :param external_uid_values: Explicit values for variables owned outside the symbolic block.</span>
+<span class="sd">    :type external_uid_values: Optional[Dict[int, float]]</span>
+<span class="sd">    :param event_params_array_seed: Optional complete runtime-parameter seed vector.</span>
+<span class="sd">    :type event_params_array_seed: np.ndarray | None</span>
 <span class="sd">    :param verbose: Print initialization progress.</span>
 <span class="sd">    :type verbose: bool</span>
-<span class="sd">    :return: Updated algebraic or state and differential guesses.</span>
-<span class="sd">    :rtype: Tuple[Dict[int, float], Dict[int, float]]</span>
+<span class="sd">    :return: Transactional explicit-initialization result. The caller-owned</span>
+<span class="sd">        dictionaries and runtime-equation list are updated only on success.</span>
+<span class="sd">    :rtype: ExplicitInitializationResult</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">_</span> <span class="o">=</span> <span class="n">constant_parameters</span>
+
+    <span class="c1"># Resolve the complete block on local stores. A failed self-implicit</span>
+    <span class="c1"># equation must not leave earlier variables or runtime parameters partially</span>
+    <span class="c1"># committed to the problem.</span>
+    <span class="n">working_init_guess</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">init_guess</span><span class="p">)</span>
+    <span class="n">working_diff_init_guess</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">diff_init_guess</span><span class="p">)</span>
+    <span class="n">working_event_param_init_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">event_param_init_dict</span><span class="p">)</span>
+    <span class="n">working_event_parameters_eqs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">event_parameters_eqs</span><span class="p">)</span>
 
     <span class="c1"># initialize array for model variables</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sys_vars</span><span class="p">))</span>
@@ -1150,6 +1582,8 @@
                 <span class="s2">&quot;Explicit initialization runtime seed has shape &quot;</span>
                 <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">event_params_array</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">; expected </span><span class="si">{</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">variable_parameters</span><span class="p">),)</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
 
     <span class="c1"># RMS problem assembly retains Const wrappers so symbolic ownership is not</span>
     <span class="c1"># lost before compilation. Explicit evaluation consumes only concrete</span>
@@ -1172,30 +1606,44 @@
     <span class="c1"># Seed the working vectors with the guesses already assembled before the</span>
     <span class="c1"># explicit stage. The problem relies on those PF-driven values and on previously</span>
     <span class="c1"># resolved block values when evaluating downstream explicit equations.</span>
-    <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">init_guess</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">uid</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">working_init_guess</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_vars</span><span class="p">:</span>
             <span class="n">x</span><span class="p">[</span><span class="n">uid2idx_vars</span><span class="p">[</span><span class="n">uid</span><span class="p">]]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
 
-    <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">diff_init_guess</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">working_diff_init_guess</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_diff</span><span class="p">:</span>
             <span class="n">dx</span><span class="p">[</span><span class="n">uid2idx_diff</span><span class="p">[</span><span class="n">uid</span><span class="p">]]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
 
-    <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">event_param_init_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">working_event_param_init_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_event_params</span> <span class="ow">and</span> <span class="n">val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">event_params_array</span><span class="p">[</span><span class="n">uid2idx_event_params</span><span class="p">[</span><span class="n">uid</span><span class="p">]]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
 
 
+    <span class="n">dic_total</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]]</span>
+    <span class="n">dependencies</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]]</span>
+    <span class="n">topo_order</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span>
+    <span class="n">init_event</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Var</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]]</span>
     <span class="n">dic_total</span><span class="p">,</span> <span class="n">dependencies</span><span class="p">,</span> <span class="n">topo_order</span><span class="p">,</span> <span class="n">init_event</span> <span class="o">=</span> <span class="n">build_explicit_init_graph</span><span class="p">(</span>
         <span class="n">mdl</span><span class="o">=</span><span class="n">mdl</span><span class="p">,</span>
-        <span class="n">preserved_var_uids</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">init_guess</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
+        <span class="n">preserved_var_uids</span><span class="o">=</span><span class="nb">set</span><span class="p">(</span><span class="n">working_init_guess</span><span class="o">.</span><span class="n">keys</span><span class="p">()),</span>
     <span class="p">)</span>
 
+    <span class="n">result</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="nb">complex</span> <span class="o">|</span> <span class="kc">None</span>
+    <span class="n">var</span><span class="p">:</span> <span class="n">Var</span>
     <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">topo_order</span><span class="p">:</span>
         <span class="n">eq</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Const</span><span class="p">]</span> <span class="o">=</span> <span class="n">dic_total</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">init_event</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">event_param_init_dict</span> <span class="ow">and</span> <span class="n">event_param_init_dict</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">result</span> <span class="o">=</span> <span class="n">event_param_init_dict</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">working_event_param_init_dict</span> <span class="ow">and</span> <span class="n">working_event_param_init_dict</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">working_event_param_init_dict</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="n">evaluate_explicit_init_equation</span><span class="p">(</span>
                     <span class="n">eq</span><span class="o">=</span><span class="n">eq</span><span class="p">,</span>
@@ -1207,24 +1655,26 @@
                     <span class="n">uid2idx_vars</span><span class="o">=</span><span class="n">uid2idx_vars</span><span class="p">,</span>
                     <span class="n">uid2idx_params</span><span class="o">=</span><span class="n">uid2idx_params</span><span class="p">,</span>
                     <span class="n">uid2idx_diff</span><span class="o">=</span><span class="n">uid2idx_diff</span><span class="p">,</span>
-                    <span class="n">init_guess</span><span class="o">=</span><span class="n">init_guess</span><span class="p">,</span>
-                    <span class="n">diff_init_guess</span><span class="o">=</span><span class="n">diff_init_guess</span><span class="p">,</span>
+                    <span class="n">init_guess</span><span class="o">=</span><span class="n">working_init_guess</span><span class="p">,</span>
+                    <span class="n">diff_init_guess</span><span class="o">=</span><span class="n">working_diff_init_guess</span><span class="p">,</span>
                     <span class="n">external_uid_values</span><span class="o">=</span><span class="n">external_uid_values</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="n">event_params_array</span><span class="p">[</span><span class="n">uid2idx_event_params</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]]</span> <span class="o">=</span> <span class="n">result</span>
             <span class="n">store_resolved_event_parameter</span><span class="p">(</span>
                 <span class="n">event_param</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
-                <span class="n">event_params_init_dict</span><span class="o">=</span><span class="n">event_param_init_dict</span><span class="p">,</span>
-                <span class="n">event_parameters_eqs</span><span class="o">=</span><span class="n">event_parameters_eqs</span><span class="p">,</span>
+                <span class="n">event_params_init_dict</span><span class="o">=</span><span class="n">working_event_param_init_dict</span><span class="p">,</span>
+                <span class="n">event_parameters_eqs</span><span class="o">=</span><span class="n">working_event_parameters_eqs</span><span class="p">,</span>
                 <span class="n">event_eq_idx</span><span class="o">=</span><span class="n">uid2idx_event_params</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">],</span>
                 <span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
             <span class="p">)</span>
 
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;event_param:</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> initialized with: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
 
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">dependencies</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">var</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dependencies</span><span class="p">[</span><span class="n">var</span><span class="p">]:</span>
                 <span class="n">result</span> <span class="o">=</span> <span class="n">evaluate_explicit_init_equation</span><span class="p">(</span>
                     <span class="n">eq</span><span class="o">=</span><span class="n">eq</span><span class="p">,</span>
                     <span class="n">event_params_array</span><span class="o">=</span><span class="n">event_params_array</span><span class="p">,</span>
@@ -1235,17 +1685,17 @@
                     <span class="n">uid2idx_vars</span><span class="o">=</span><span class="n">uid2idx_vars</span><span class="p">,</span>
                     <span class="n">uid2idx_params</span><span class="o">=</span><span class="n">uid2idx_params</span><span class="p">,</span>
                     <span class="n">uid2idx_diff</span><span class="o">=</span><span class="n">uid2idx_diff</span><span class="p">,</span>
-                    <span class="n">init_guess</span><span class="o">=</span><span class="n">init_guess</span><span class="p">,</span>
-                    <span class="n">diff_init_guess</span><span class="o">=</span><span class="n">diff_init_guess</span><span class="p">,</span>
+                    <span class="n">init_guess</span><span class="o">=</span><span class="n">working_init_guess</span><span class="p">,</span>
+                    <span class="n">diff_init_guess</span><span class="o">=</span><span class="n">working_diff_init_guess</span><span class="p">,</span>
                     <span class="n">external_uid_values</span><span class="o">=</span><span class="n">external_uid_values</span><span class="p">,</span>
                 <span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_vars</span><span class="p">:</span>
                     <span class="n">x</span><span class="p">[</span><span class="n">uid2idx_vars</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]]</span> <span class="o">=</span> <span class="n">result</span>
-                    <span class="n">init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                    <span class="n">working_init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
                 <span class="k">elif</span> <span class="n">var</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_diff</span><span class="p">:</span>
                     <span class="n">dx</span><span class="p">[</span><span class="n">uid2idx_diff</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]]</span> <span class="o">=</span> <span class="n">result</span>
-                    <span class="n">diff_init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                    <span class="n">working_diff_init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to classify explicit variable </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -1256,7 +1706,7 @@
 
                 <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_vars</span><span class="p">:</span>
                     <span class="n">target_idx</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">uid2idx_vars</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span>
-                    <span class="n">result</span> <span class="o">=</span> <span class="n">solve_self_implicit</span><span class="p">(</span>
+                    <span class="n">self_implicit_result</span><span class="p">:</span> <span class="n">SelfImplicitSolveResult</span> <span class="o">=</span> <span class="n">solve_self_implicit</span><span class="p">(</span>
                         <span class="n">eq_fn</span><span class="o">=</span><span class="n">eq_fn</span><span class="p">,</span>
                         <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
                         <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">,</span>
@@ -1265,11 +1715,28 @@
                         <span class="n">event_params_array</span><span class="o">=</span><span class="n">event_params_array</span><span class="p">,</span>
                         <span class="n">params_array</span><span class="o">=</span><span class="n">numeric_params_array</span><span class="p">,</span>
                     <span class="p">)</span>
-                    <span class="n">x</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
-                    <span class="n">init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                    <span class="k">if</span> <span class="n">self_implicit_result</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="n">self_implicit_result</span><span class="o">.</span><span class="n">value</span>
+                        <span class="n">x</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                        <span class="n">working_init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">failure_message</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Self-implicit initialization did not converge for &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;: &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;status=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">, &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;iterations=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">iterations</span><span class="si">}</span><span class="s2">, &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;residual=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">residual</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">.&quot;</span>
+                        <span class="p">)</span>
+                        <span class="k">return</span> <span class="n">ExplicitInitializationResult</span><span class="p">(</span>
+                            <span class="n">init_guess</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">init_guess</span><span class="p">),</span>
+                            <span class="n">diff_init_guess</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">diff_init_guess</span><span class="p">),</span>
+                            <span class="n">converged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">failed_variable</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+                            <span class="n">self_implicit_result</span><span class="o">=</span><span class="n">self_implicit_result</span><span class="p">,</span>
+                            <span class="n">message</span><span class="o">=</span><span class="n">failure_message</span><span class="p">,</span>
+                        <span class="p">)</span>
                 <span class="k">elif</span> <span class="n">var</span><span class="o">.</span><span class="n">uid</span> <span class="ow">in</span> <span class="n">uid2idx_diff</span><span class="p">:</span>
                     <span class="n">target_idx</span> <span class="o">=</span> <span class="n">uid2idx_diff</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span>
-                    <span class="n">result</span> <span class="o">=</span> <span class="n">solve_self_implicit</span><span class="p">(</span>
+                    <span class="n">self_implicit_result</span> <span class="o">=</span> <span class="n">solve_self_implicit</span><span class="p">(</span>
                         <span class="n">eq_fn</span><span class="o">=</span><span class="n">eq_fn</span><span class="p">,</span>
                         <span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
                         <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">,</span>
@@ -1278,16 +1745,54 @@
                         <span class="n">event_params_array</span><span class="o">=</span><span class="n">event_params_array</span><span class="p">,</span>
                         <span class="n">params_array</span><span class="o">=</span><span class="n">numeric_params_array</span><span class="p">,</span>
                     <span class="p">)</span>
-                    <span class="n">dx</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
-                    <span class="n">diff_init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                    <span class="k">if</span> <span class="n">self_implicit_result</span><span class="o">.</span><span class="n">converged</span><span class="p">:</span>
+                        <span class="n">result</span> <span class="o">=</span> <span class="n">self_implicit_result</span><span class="o">.</span><span class="n">value</span>
+                        <span class="n">dx</span><span class="p">[</span><span class="n">target_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                        <span class="n">working_diff_init_guess</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">failure_message</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Self-implicit initialization did not converge for &#39;</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;: &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;status=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">status</span><span class="si">}</span><span class="s2">, &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;iterations=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">iterations</span><span class="si">}</span><span class="s2">, &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;residual=</span><span class="si">{</span><span class="n">self_implicit_result</span><span class="o">.</span><span class="n">residual</span><span class="si">:</span><span class="s2">.6g</span><span class="si">}</span><span class="s2">.&quot;</span>
+                        <span class="p">)</span>
+                        <span class="k">return</span> <span class="n">ExplicitInitializationResult</span><span class="p">(</span>
+                            <span class="n">init_guess</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">init_guess</span><span class="p">),</span>
+                            <span class="n">diff_init_guess</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">diff_init_guess</span><span class="p">),</span>
+                            <span class="n">converged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                            <span class="n">failed_variable</span><span class="o">=</span><span class="n">var</span><span class="p">,</span>
+                            <span class="n">self_implicit_result</span><span class="o">=</span><span class="n">self_implicit_result</span><span class="p">,</span>
+                            <span class="n">message</span><span class="o">=</span><span class="n">failure_message</span><span class="p">,</span>
+                        <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to classify self-implicit variable </span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;explicit_init:</span><span class="si">{</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> = </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
 
 
-    <span class="k">return</span> <span class="n">init_guess</span><span class="p">,</span> <span class="n">diff_init_guess</span></div>
+    <span class="c1"># Commit all problem-facing stores together only after every explicit</span>
+    <span class="c1"># equation has completed successfully.</span>
+    <span class="n">init_guess</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="n">init_guess</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">working_init_guess</span><span class="p">)</span>
+    <span class="n">diff_init_guess</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="n">diff_init_guess</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">working_diff_init_guess</span><span class="p">)</span>
+    <span class="n">event_param_init_dict</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="n">event_param_init_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">working_event_param_init_dict</span><span class="p">)</span>
+    <span class="n">event_equation_index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="k">for</span> <span class="n">event_equation_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">event_parameters_eqs</span><span class="p">)):</span>
+        <span class="n">event_parameters_eqs</span><span class="p">[</span><span class="n">event_equation_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">working_event_parameters_eqs</span><span class="p">[</span><span class="n">event_equation_index</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">ExplicitInitializationResult</span><span class="p">(</span>
+        <span class="n">init_guess</span><span class="o">=</span><span class="n">init_guess</span><span class="p">,</span>
+        <span class="n">diff_init_guess</span><span class="o">=</span><span class="n">diff_init_guess</span><span class="p">,</span>
+        <span class="n">converged</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">failed_variable</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">self_implicit_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Explicit initialization completed successfully.&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
 </pre></div>
 

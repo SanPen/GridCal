@@ -20,6 +20,9 @@ EMT is appropriate for:
 
 Use [RMS simulation](rms_simulations.md) when the main interest is electromechanical or outer-control behaviour. The shared DAE and initialization concepts are described in [Dynamic simulation theory](dynamic_theory.md).
 
+The EMT comparison with STAMP is collected in
+[Dynamic simulation benchmarks](dynamic_benchmarks.md).
+
 ## EMT workflow
 
 1. Build or import the static network.

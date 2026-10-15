@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.emt_solver_factory &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.emt_solver_factory &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -189,7 +190,8 @@
                           <span class="n">sparse_solver_backend_provider</span><span class="o">=</span><span class="n">sparse_backend_provider</span><span class="p">,</span>
                           <span class="n">newton_diag_config</span><span class="o">=</span><span class="n">newton_diag_config</span><span class="p">,</span>
                           <span class="n">progress_signal</span><span class="o">=</span><span class="n">progress_signal</span><span class="p">,</span>
-                          <span class="n">cancel_checker</span><span class="o">=</span><span class="n">cancel_checker</span><span class="p">)</span>
+                          <span class="n">cancel_checker</span><span class="o">=</span><span class="n">cancel_checker</span><span class="p">,</span>
+                          <span class="n">newton_tolerance</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">tolerance</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">options</span><span class="o">.</span><span class="n">solver_type</span> <span class="o">==</span> <span class="n">EmtSolverTypes</span><span class="o">.</span><span class="n">StructuralAD</span><span class="p">:</span>
         <span class="n">sparse_backend_provider</span> <span class="o">=</span> <span class="n">resolve_emt_sparse_solver_backend_provider</span><span class="p">(</span>
             <span class="n">solver_type</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">sparse_solver</span><span class="p">,</span>
@@ -206,7 +208,8 @@
                           <span class="n">sparse_solver_backend_provider</span><span class="o">=</span><span class="n">sparse_backend_provider</span><span class="p">,</span>
                           <span class="n">newton_diag_config</span><span class="o">=</span><span class="n">newton_diag_config</span><span class="p">,</span>
                           <span class="n">progress_signal</span><span class="o">=</span><span class="n">progress_signal</span><span class="p">,</span>
-                          <span class="n">cancel_checker</span><span class="o">=</span><span class="n">cancel_checker</span><span class="p">)</span>
+                          <span class="n">cancel_checker</span><span class="o">=</span><span class="n">cancel_checker</span><span class="p">,</span>
+                          <span class="n">newton_tolerance</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">tolerance</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">solver_cls</span><span class="p">(</span><span class="n">problem</span><span class="o">=</span><span class="n">problem</span><span class="p">,</span>
                           <span class="n">t0</span><span class="o">=</span><span class="n">t0</span><span class="p">,</span>
@@ -216,7 +219,8 @@
                           <span class="n">newton_max_iter</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">init_newton_max_iter</span><span class="p">,</span>
                           <span class="n">newton_diag_config</span><span class="o">=</span><span class="n">newton_diag_config</span><span class="p">,</span>
                           <span class="n">progress_signal</span><span class="o">=</span><span class="n">progress_signal</span><span class="p">,</span>
-                          <span class="n">cancel_checker</span><span class="o">=</span><span class="n">cancel_checker</span><span class="p">)</span></div>
+                          <span class="n">cancel_checker</span><span class="o">=</span><span class="n">cancel_checker</span><span class="p">,</span>
+                          <span class="n">newton_tolerance</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">tolerance</span><span class="p">)</span></div>
 
 </pre></div>
 

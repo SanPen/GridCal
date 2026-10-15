@@ -189,6 +189,8 @@ def get_exponential_load_emt(
     # Shared constants stay scalar because every per-phase equation reuses the
     # same EMT formulation and only the active phase list changes the sizing.
     c2: Expr = vf.add_const(2.0)
+    # P0/Q0 are per-phase powers on the system three-phase Sbase.
+    c3: Expr = vf.add_const(3.0)
     c05: Expr = vf.add_const(0.5)
 
     # Runtime parameters remain global to the load object because they are fed by
@@ -322,7 +324,7 @@ def get_exponential_load_emt(
         algebraic_eqs.append(ratio_sq_var - safe_ratio_sq_expr)
         algebraic_eqs.append(p_var + (p0_var * p_power_expr))
         algebraic_eqs.append(q_load_var + (q0_var * q_power_expr))
-        algebraic_eqs.append(current_var - (c2 * (u_var * p_var + q_var * q_load_var) / safe_v2_expr))
+        algebraic_eqs.append(current_var - (c3 * c2 * (u_var * p_var + q_var * q_load_var) / safe_v2_expr))
 
         # The explicit initializer consumes these seeds phase by phase using the
         # same formulas as before, now limited to the active subset.
@@ -334,7 +336,7 @@ def get_exponential_load_emt(
         init_eqs[ratio_sq_var] = safe_ratio_sq_expr
         init_eqs[p_var] = -(p0_var * p_power_expr)
         init_eqs[q_load_var] = -(q0_var * q_power_expr)
-        init_eqs[current_var] = c2 * (u_var * p_var + q_var * q_load_var) / safe_v2_expr
+        init_eqs[current_var] = c3 * c2 * (u_var * p_var + q_var * q_load_var) / safe_v2_expr
 
         diff_init_eqs[d_u_var] = voltage_derivative_var
         diff_init_eqs[d_q_var] = omega * u_var

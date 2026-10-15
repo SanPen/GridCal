@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.BasicBlockCatalog package &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Templates.BasicBlockCatalog package &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -73,6 +73,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../md_source/license.html">📜 License</a></li>
@@ -2905,281 +2906,14 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 </section>
-<section id="module-VeraGridEngine.Templates.BasicBlockCatalog.catalog">
-<span id="veragridengine-templates-basicblockcatalog-catalog-module"></span><h2>VeraGridEngine.Templates.BasicBlockCatalog.catalog module<a class="headerlink" href="#module-VeraGridEngine.Templates.BasicBlockCatalog.catalog" title="Link to this heading"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.catalog.</span></span><span class="sig-name descname"><span class="pre">BasicBlockTemplateDescriptor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blkdef_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_display_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unsupported_lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/catalog.html#BasicBlockTemplateDescriptor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Explicit, typed description of one shipped catalog template.</p>
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.blkdef_name">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">blkdef_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.blkdef_name" title="Link to this definition"></a></dt>
-<dd><p>Return the raw imported block name.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Raw block name.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.category_path">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">category_path</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.category_path" title="Link to this definition"></a></dt>
-<dd><p>Return the full library category path.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Category path.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.display_label">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">display_label</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.display_label" title="Link to this definition"></a></dt>
-<dd><p>Return the unique label exposed by the editor.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Unique label.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.inputs">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">inputs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.inputs" title="Link to this definition"></a></dt>
-<dd><p>Return the input names.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Input-name tuple.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.is_editor_ready">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">is_editor_ready</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.is_editor_ready" title="Link to this definition"></a></dt>
-<dd><p>Return whether the template can be exposed in the editor.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">True</span></code> when the template has executable content.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.module_filename">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">module_filename</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.module_filename" title="Link to this definition"></a></dt>
-<dd><p>Return the standalone Python filename.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Module filename.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.module_name">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">module_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.module_name" title="Link to this definition"></a></dt>
-<dd><p>Return the standalone Python module stem.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Module stem.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.outputs">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">outputs</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.outputs" title="Link to this definition"></a></dt>
-<dd><p>Return the output names.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Output-name tuple.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.params">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">params</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.params" title="Link to this definition"></a></dt>
-<dd><p>Return the runtime parameter names.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Parameter-name tuple.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.sample_display_name">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">sample_display_name</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.sample_display_name" title="Link to this definition"></a></dt>
-<dd><p>Return the clean display name derived from the shipped module.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Clean source name.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.search_text">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">search_text</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.search_text" title="Link to this definition"></a></dt>
-<dd><p>Build the normalized search text used by the editor filter.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Search text.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.states">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">states</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.states" title="Link to this definition"></a></dt>
-<dd><p>Return the state names.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>State-name tuple.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.template_key">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">template_key</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.template_key" title="Link to this definition"></a></dt>
-<dd><p>Return the stable semantic lookup key.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Template lookup key.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.typ_id">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">typ_id</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.typ_id" title="Link to this definition"></a></dt>
-<dd><p>Return the imported numeric type identifier.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Imported type identifier.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.unsupported_lines">
-<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">unsupported_lines</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor.unsupported_lines" title="Link to this definition"></a></dt>
-<dd><p>Return the pending markers for non editor-ready templates.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Unsupported marker tuple.</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_basic_block_catalog_descriptor_by_key">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.catalog.</span></span><span class="sig-name descname"><span class="pre">get_basic_block_catalog_descriptor_by_key</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor" title="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor"><span class="pre">BasicBlockTemplateDescriptor</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/catalog.html#get_basic_block_catalog_descriptor_by_key"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_basic_block_catalog_descriptor_by_key" title="Link to this definition"></a></dt>
-<dd><p>Return the descriptor lookup indexed by semantic key.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Descriptor lookup by semantic key.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_basic_block_catalog_descriptors">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.catalog.</span></span><span class="sig-name descname"><span class="pre">get_basic_block_catalog_descriptors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor" title="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor"><span class="pre">BasicBlockTemplateDescriptor</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/catalog.html#get_basic_block_catalog_descriptors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_basic_block_catalog_descriptors" title="Link to this definition"></a></dt>
-<dd><p>Return the shipped basic block catalog descriptors.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Full descriptor tuple.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_basic_block_catalog_pending_template_reason">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.catalog.</span></span><span class="sig-name descname"><span class="pre">get_basic_block_catalog_pending_template_reason</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/catalog.html#get_basic_block_catalog_pending_template_reason"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_basic_block_catalog_pending_template_reason" title="Link to this definition"></a></dt>
-<dd><p>Return the canonical pending reason for non-executable catalog templates.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Pending reason.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_basic_block_catalog_root">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.catalog.</span></span><span class="sig-name descname"><span class="pre">get_basic_block_catalog_root</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/catalog.html#get_basic_block_catalog_root"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_basic_block_catalog_root" title="Link to this definition"></a></dt>
-<dd><p>Return the directory containing the shipped basic block catalog.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Catalog root directory.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_basic_block_catalog_templates_dir">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.catalog.</span></span><span class="sig-name descname"><span class="pre">get_basic_block_catalog_templates_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/catalog.html#get_basic_block_catalog_templates_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_basic_block_catalog_templates_dir" title="Link to this definition"></a></dt>
-<dd><p>Return the directory with the shipped standalone template modules.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Standalone-template directory.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_editor_ready_basic_block_catalog_descriptors">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.catalog.</span></span><span class="sig-name descname"><span class="pre">get_editor_ready_basic_block_catalog_descriptors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor" title="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor"><span class="pre">BasicBlockTemplateDescriptor</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/catalog.html#get_editor_ready_basic_block_catalog_descriptors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_editor_ready_basic_block_catalog_descriptors" title="Link to this definition"></a></dt>
-<dd><p>Return only the shipped templates that are ready for editor exposure.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Editor-ready descriptor tuple.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_pending_basic_block_catalog_descriptors">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.catalog.</span></span><span class="sig-name descname"><span class="pre">get_pending_basic_block_catalog_descriptors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor" title="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor"><span class="pre">BasicBlockTemplateDescriptor</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/catalog.html#get_pending_basic_block_catalog_descriptors"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.get_pending_basic_block_catalog_descriptors" title="Link to this definition"></a></dt>
-<dd><p>Return only the shipped templates that are not ready for editor exposure.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Pending descriptor tuple.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog.load_basic_block_catalog_template">
-<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.catalog.</span></span><span class="sig-name descname"><span class="pre">load_basic_block_catalog_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">descriptor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor" title="VeraGridEngine.Templates.BasicBlockCatalog.catalog.BasicBlockTemplateDescriptor"><span class="pre">BasicBlockTemplateDescriptor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate" title="VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate"><span class="pre">EmtModelTemplate</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/catalog.html#load_basic_block_catalog_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog.load_basic_block_catalog_template" title="Link to this definition"></a></dt>
-<dd><p>Materialize one shipped catalog-derived template on demand.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>descriptor</strong> – Template descriptor.</p></li>
-<li><p><strong>var_factory</strong> – Variable factory for the new instance.</p></li>
-<li><p><strong>name</strong> – Optional explicit instance name.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Materialized EMT template.</p>
-</dd>
-</dl>
-</dd></dl>
-
+<section id="veragridengine-templates-basicblockcatalog-catalog-module">
+<h2>VeraGridEngine.Templates.BasicBlockCatalog.catalog module<a class="headerlink" href="#veragridengine-templates-basicblockcatalog-catalog-module" title="Link to this heading"></a></h2>
 </section>
 <section id="module-VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry">
 <span id="veragridengine-templates-basicblockcatalog-catalog-static-registry-module"></span><h2>VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry module<a class="headerlink" href="#module-VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry.BasicBlockCatalogStaticRecord">
-<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry.</span></span><span class="sig-name descname"><span class="pre">BasicBlockCatalogStaticRecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blkdef_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_display_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unsupported_lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/catalog_static_registry.html#BasicBlockCatalogStaticRecord"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry.BasicBlockCatalogStaticRecord" title="Link to this definition"></a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry.</span></span><span class="sig-name descname"><span class="pre">BasicBlockCatalogStaticRecord</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">typ_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">blkdef_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_display_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_label</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">category_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unsupported_lines</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/catalog_static_registry.html#BasicBlockCatalogStaticRecord"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry.BasicBlockCatalogStaticRecord" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Immutable static record for one shipped basic-block catalog template.</p>
 <dl class="py property">
@@ -3200,6 +2934,17 @@
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Value.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry.BasicBlockCatalogStaticRecord.description">
+<span class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></span><span class="sig-name descname"><span class="pre">description</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></span><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.catalog_static_registry.BasicBlockCatalogStaticRecord.description" title="Link to this definition"></a></dt>
+<dd><p>Return the human-facing behavior description.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Block behavior description, or an empty string when unspecified.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3375,6 +3120,24 @@
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.LookupArrayLinearVariableRuntimeTemplate">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.</span></span><span class="sig-name descname"><span class="pre">LookupArrayLinearVariableRuntimeTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/lookup_array_runtime_templates.html#LookupArrayLinearVariableRuntimeTemplate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.LookupArrayLinearVariableRuntimeTemplate" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="VeraGridEngine.Templates.html#VeraGridEngine.Templates.template_definition.TemplateDefinition" title="VeraGridEngine.Templates.template_definition.TemplateDefinition"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemplateDefinition</span></code></a></p>
+<p>Build a linear lookup whose tabulated coordinates are signal inputs.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.LookupArrayLinearVariableRuntimeTemplate.eval">
+<span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate" title="VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate"><span class="pre">EmtModelTemplate</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/lookup_array_runtime_templates.html#LookupArrayLinearVariableRuntimeTemplate.eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.LookupArrayLinearVariableRuntimeTemplate.eval" title="Link to this definition"></a></dt>
+<dd><p>Materialize the dynamic lookup using the selected structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>EMT template whose breakpoints and samples are input ports.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.LookupArraySplineRuntimeTemplate">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.</span></span><span class="sig-name descname"><span class="pre">LookupArraySplineRuntimeTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/lookup_array_runtime_templates.html#LookupArraySplineRuntimeTemplate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.LookupArraySplineRuntimeTemplate" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="VeraGridEngine.Templates.html#VeraGridEngine.Templates.template_definition.TemplateDefinition" title="VeraGridEngine.Templates.template_definition.TemplateDefinition"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemplateDefinition</span></code></a></p>
@@ -3442,6 +3205,32 @@
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Materialized EMT template.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.build_lookup_array_linear_variable_runtime_template">
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.</span></span><span class="sig-name descname"><span class="pre">build_lookup_array_linear_variable_runtime_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate" title="VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate"><span class="pre">EmtModelTemplate</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/lookup_array_runtime_templates.html#build_lookup_array_linear_variable_runtime_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates.build_lookup_array_linear_variable_runtime_template" title="Link to this definition"></a></dt>
+<dd><p>Build a linear lookup whose complete table is supplied by signals.</p>
+<p>The first port is the lookup coordinate, followed by every x breakpoint
+and then every y sample. A stable positional naming scheme allows General
+Options to increase or decrease the point count while retaining surviving
+diagram connections.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vf</strong> – Variable factory used to allocate symbolic objects.</p></li>
+<li><p><strong>point_count</strong> – Number of dynamic table points; at least two are required.</p></li>
+<li><p><strong>clip</strong> – Whether values outside the table are clipped or extrapolated.</p></li>
+<li><p><strong>name</strong> – Optional explicit runtime template name.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Materialized EMT template with signal-driven table coordinates.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If fewer than two points are requested.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -3625,6 +3414,42 @@
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.MaximumTemplate">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.</span></span><span class="sig-name descname"><span class="pre">MaximumTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/predefined_blocks.html#MaximumTemplate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.MaximumTemplate" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="VeraGridEngine.Templates.html#VeraGridEngine.Templates.template_definition.TemplateDefinition" title="VeraGridEngine.Templates.template_definition.TemplateDefinition"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemplateDefinition</span></code></a></p>
+<p>Structural definition of a maximum block with configurable arity.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.MaximumTemplate.eval">
+<span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate" title="VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate"><span class="pre">EmtModelTemplate</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/predefined_blocks.html#MaximumTemplate.eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.MaximumTemplate.eval" title="Link to this definition"></a></dt>
+<dd><p>Build the maximum block using the configured input count.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>EMT template containing a maximum block with the requested input count.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.MinimumTemplate">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.</span></span><span class="sig-name descname"><span class="pre">MinimumTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/predefined_blocks.html#MinimumTemplate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.MinimumTemplate" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="VeraGridEngine.Templates.html#VeraGridEngine.Templates.template_definition.TemplateDefinition" title="VeraGridEngine.Templates.template_definition.TemplateDefinition"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemplateDefinition</span></code></a></p>
+<p>Structural definition of a minimum block with configurable arity.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.MinimumTemplate.eval">
+<span class="sig-name descname"><span class="pre">eval</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate" title="VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate"><span class="pre">EmtModelTemplate</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/predefined_blocks.html#MinimumTemplate.eval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.MinimumTemplate.eval" title="Link to this definition"></a></dt>
+<dd><p>Build the minimum block using the configured input count.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>EMT template containing a minimum block with the requested input count.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.ProductTemplate">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.</span></span><span class="sig-name descname"><span class="pre">ProductTemplate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/predefined_blocks.html#ProductTemplate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.ProductTemplate" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="VeraGridEngine.Templates.html#VeraGridEngine.Templates.template_definition.TemplateDefinition" title="VeraGridEngine.Templates.template_definition.TemplateDefinition"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemplateDefinition</span></code></a></p>
@@ -3670,6 +3495,28 @@
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.build_extremum_template">
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.</span></span><span class="sig-name descname"><span class="pre">build_extremum_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.html#VeraGridEngine.enumerations.BlockType" title="VeraGridEngine.enumerations.BlockType"><span class="pre">BlockType</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate" title="VeraGridEngine.Devices.Dynamic.emt_template.EmtModelTemplate"><span class="pre">EmtModelTemplate</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/predefined_blocks.html#build_extremum_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.build_extremum_template" title="Link to this definition"></a></dt>
+<dd><p>Wrap a configurable minimum or maximum block in the builder contract.</p>
+<p>Builder-backed Library entries return model templates so creation,
+preflight validation, and structural editing all consume the same type.
+The inner block remains an ordinary symbolic block and retains the
+configurable <code class="docutils literal notranslate"><span class="pre">input_count</span></code> structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>var_factory</strong> – Variable factory receiving the generated variables.</p></li>
+<li><p><strong>input_count</strong> – Number of signals participating in the reduction.</p></li>
+<li><p><strong>block_type</strong> – <code class="docutils literal notranslate"><span class="pre">BlockType.MIN</span></code> or <code class="docutils literal notranslate"><span class="pre">BlockType.MAX</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>EMT template containing the requested extremum block.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.constant">
 <span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.</span></span><span class="sig-name descname"><span class="pre">constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">item_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.Block" title="VeraGridEngine.Utils.Symbolic.block.Block"><span class="pre">Block</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/predefined_blocks.html#constant"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.constant" title="Link to this definition"></a></dt>
 <dd><dl class="field-list simple">
@@ -3697,6 +3544,30 @@
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.extremum">
+<span class="sig-prename descclassname"><span class="pre">VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.</span></span><span class="sig-name descname"><span class="pre">extremum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_factory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.Devices.Dynamic.html#VeraGridEngine.Devices.Dynamic.var_factory.VarFactory" title="VeraGridEngine.Devices.Dynamic.var_factory.VarFactory"><span class="pre">VarFactory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="VeraGridEngine.html#VeraGridEngine.enumerations.BlockType" title="VeraGridEngine.enumerations.BlockType"><span class="pre">BlockType</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="VeraGridEngine.Utils.Symbolic.html#VeraGridEngine.Utils.Symbolic.block.Block" title="VeraGridEngine.Utils.Symbolic.block.Block"><span class="pre">Block</span></a></span></span><a class="reference internal" href="../../../_modules/VeraGridEngine/Templates/BasicBlockCatalog/predefined_blocks.html#extremum"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#VeraGridEngine.Templates.BasicBlockCatalog.predefined_blocks.extremum" title="Link to this definition"></a></dt>
+<dd><p>Build a minimum or maximum reduction over a configurable number of inputs.</p>
+<p>The operation is represented by ordinary binary symbolic function nodes.
+Folding those nodes keeps the model proportional to the number of inputs
+instead of expanding every comparison into repeated Heaviside expressions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>var_factory</strong> – Variable factory receiving the generated block variables.</p></li>
+<li><p><strong>input_count</strong> – Number of input signals participating in the reduction.</p></li>
+<li><p><strong>block_type</strong> – <code class="docutils literal notranslate"><span class="pre">BlockType.MIN</span></code> or <code class="docutils literal notranslate"><span class="pre">BlockType.MAX</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Structural minimum or maximum block.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If fewer than two inputs or an unsupported block type is requested.</p>
 </dd>
 </dl>
 </dd></dl>

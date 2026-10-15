@@ -40,6 +40,7 @@ class DynamicEventsPage(QtWidgets.QWidget):
         "events_delegate",
         "_prepared_to_delete",
         "_event_column_widths",
+        "_toolbar_leading_spacer",
     )
 
     def __init__(
@@ -62,6 +63,23 @@ class DynamicEventsPage(QtWidgets.QWidget):
         self._event_column_widths: List[int] = list()
         self.ui: Ui_DynamicEventsPage = Ui_DynamicEventsPage()
         self.ui.setupUi(self)
+
+        # The separator reserves a style-defined extent after the first button,
+        # with its line painted in the middle. Insert the same half-extent as a
+        # real toolbar item before the button so its exterior blank margins are
+        # symmetric. A widget item is required because QToolBar does not apply
+        # QWidget content margins to the internal action layout consistently.
+        toolbar_separator_extent: int = self.ui.eventsToolBar.style().pixelMetric(
+            QtWidgets.QStyle.PixelMetric.PM_ToolBarSeparatorExtent,
+            None,
+            self.ui.eventsToolBar,
+        )
+        toolbar_leading_space: int = toolbar_separator_extent // 2
+        self._toolbar_leading_spacer: QtWidgets.QWidget = QtWidgets.QWidget(self.ui.eventsToolBar)
+        self._toolbar_leading_spacer.setObjectName("eventsToolBarLeadingSpacer")
+        self._toolbar_leading_spacer.setFixedWidth(toolbar_leading_space)
+        self.ui.eventsToolBar.insertWidget(self.ui.actionNewGroup, self._toolbar_leading_spacer)
+
         self.toast_manager: ToastManager = ToastManager(parent=self, position_top=False)
         self.handler: DynamicEventsHandler = DynamicEventsHandler(
             circuit=circuit,
@@ -562,6 +580,7 @@ class DynamicEventsPage(QtWidgets.QWidget):
         else:
             pass
         self._prepared_to_delete = True
+        self._toolbar_leading_spacer.deleteLater()
         selection_model: QtCore.QItemSelectionModel | None = self.ui.eventsTreeView.selectionModel()
         if selection_model is not None:
             try:

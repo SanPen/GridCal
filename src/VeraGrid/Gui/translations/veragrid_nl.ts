@@ -211,6 +211,201 @@ li.checked::markering { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;
     </message>
 </context>
 <context>
+    <name>AddSymbolDialog</name>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="12"/>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
+        <source>Add block property</source>
+        <translation>Blokeigenschap toevoegen</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="31"/>
+        <source>Define a new property for the selected block.</source>
+        <translation>Definieer een nieuwe eigenschap voor het geselecteerde blok.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="48"/>
+        <source>Owner block</source>
+        <translation>Eigenaar blok</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="58"/>
+        <source>Name</source>
+        <translation>Naam</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="64"/>
+        <source>Enter a valid symbol name</source>
+        <translation>Voer een geldige symboolnaam in</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="70"/>
+        <source>Variable type</source>
+        <translation>Variabeltype</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="80"/>
+        <source>Choose how this symbol participates in the dynamic model.</source>
+        <translation>Kies hoe dit symbool deelneemt aan het dynamische model.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="98"/>
+        <source>Options</source>
+        <translation>Opties</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="111"/>
+        <source>Expose as output</source>
+        <translation>Blootstellen als output</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="116"/>
+        <source>Create derivative variable</source>
+        <translation>Afgeleide variabele creëren</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="130"/>
+        <source>Power-flow variable used to initialize this dynamic variable.</source>
+        <translation>Vermogensstroomvariabele gebruikt om deze dynamische variabele te initialiseren.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="131"/>
+        <source>Power-flow initialization source</source>
+        <translation>Power-flow initialisatierbron</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="154"/>
+        <source>Local initial value</source>
+        <translation>Lokale initiële waarde</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="167"/>
+        <source>Device initial value</source>
+        <translation>Apparaatinitiële waarde</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="186"/>
+        <source>Retained modes preserve discrete state between simulation steps.</source>
+        <translation>Behouden modi bewaren de discrete staat tussen simulatiestappen.</translation>
+    </message>
+    <message>
+        <source>Add parameter</source>
+        <translation>Parameter toevoegen</translation>
+    </message>
+    <message>
+        <source>Add retained mode</source>
+        <translation>Behouden modus toevoegen</translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation>Variabele toevoegen</translation>
+    </message>
+    <message>
+        <source>Algebraic</source>
+        <translation>Algebraïsch</translation>
+    </message>
+    <message>
+        <source>Declare a configurable value owned by the selected dynamic block.</source>
+        <translation>Declareer een configureerbare waarde die eigendom is van het geselecteerde dynamische blok.</translation>
+    </message>
+    <message>
+        <source>Declare a variable owned by the selected dynamic block.</source>
+        <translation>Declareer een variabele die eigendom is van het geselecteerde dynamische blok.</translation>
+    </message>
+    <message>
+        <source>Declare discrete state that persists between simulation steps.</source>
+        <translation>Declareer een discrete staat die behouden blijft tussen simulatiestappen.</translation>
+    </message>
+    <message>
+        <source>Dynamic parameter</source>
+        <translation>Dynamische parameter</translation>
+    </message>
+    <message>
+        <source>Enter a valid Python symbol name.</source>
+        <translation>Voer een geldige Python symboolnaam in.</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>Input</translation>
+    </message>
+    <message>
+        <source>May change during the simulation and can optionally start from a grid-device value.</source>
+        <translation>Kan veranderen tijdens de simulatie en kan optioneel starten vanaf een grid-apparaatwaarde.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Geen</translation>
+    </message>
+    <message>
+        <source>Nothing was added: {message}</source>
+        <translation>Niets toegevoegd: {message}</translation>
+    </message>
+    <message>
+        <source>Parameter type</source>
+        <translation>Parameter type</translation>
+    </message>
+    <message>
+        <source>Preserves discrete state between simulation steps.</source>
+        <translation>Bewaar de discrete staat tussen simulatiestappen.</translation>
+    </message>
+    <message>
+        <source>Receives its value from an incoming block connection.</source>
+        <translation>Ontvangt zijn waarde van een inkomende blokverbinding.</translation>
+    </message>
+    <message>
+        <source>Remains fixed during the simulation and can optionally start from a grid-device value.</source>
+        <translation>Blijft vast tijdens de simulatie en kan optioneel starten vanaf een grid-apparaatwaarde.</translation>
+    </message>
+    <message>
+        <source>Represents a differential state integrated during the simulation.</source>
+        <translation>Representeert een differentiaalstaat die tijdens de simulatie wordt geïntegreerd.</translation>
+    </message>
+    <message>
+        <source>Represents a value solved by the algebraic equations.</source>
+        <translation>Representeert een waarde die wordt opgelost door de algebraïsche vergelijkingen.</translation>
+    </message>
+    <message>
+        <source>Retained mode</source>
+        <translation>Behouden modus</translation>
+    </message>
+    <message>
+        <source>Search device parameters</source>
+        <translation>Apparaatparameters zoeken</translation>
+    </message>
+    <message>
+        <source>Search power-flow variables</source>
+        <translation>Power-flow variabelen zoeken</translation>
+    </message>
+    <message>
+        <source>Select a device initialization source from the list.</source>
+        <translation>Selecteer een apparaatinitialisatierbron uit de lijst.</translation>
+    </message>
+    <message>
+        <source>Select a power-flow initialization source from the list.</source>
+        <translation>Selecteer een power-flow initialisatierbron uit de lijst.</translation>
+    </message>
+    <message>
+        <source>Select a valid owner block.</source>
+        <translation>Selecteer een geldig eigenaarblok.</translation>
+    </message>
+    <message>
+        <source>Select a valid symbol type.</source>
+        <translation>Selecteer een geldig symboeltype.</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>Status</translation>
+    </message>
+    <message>
+        <source>Static parameter</source>
+        <translation>Statische parameter</translation>
+    </message>
+    <message>
+        <source>Use local numeric value</source>
+        <translation>Gebruik lokale numerieke waarde</translation>
+    </message>
+</context>
+<context>
     <name>AdmittanceMatrixEditorWidget</name>
     <message>
         <location filename="../DeviceEditors/AdmittanceMatrixEditor/admittance_matrix_editor_gui.ui" line="19"/>
@@ -802,7 +997,7 @@ li.checked::markering { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;
     <name>BlockPropertyTreeModel</name>
     <message>
         <source>Missing PF mapping</source>
-        <translation>Ontbrekende PF-mapping</translation>
+        <translation type="vanished">Ontbrekende PF-mapping</translation>
     </message>
     <message>
         <source>Name</source>
@@ -818,7 +1013,7 @@ li.checked::markering { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;
     </message>
     <message>
         <source>Template issue: static parameters require api_obj_mapping. An independently editable parameter should be in event_dict. This refactor does not migrate templates automatically.</source>
-        <translation>Templateprobleem: statische parameters vereisen api_obj_mapping. Een onafhankelijk bewerkbare parameter moet in event_dict staan. Deze refactor migreert templates niet automatisch.</translation>
+        <translation type="vanished">Templateprobleem: statische parameters vereisen api_obj_mapping. Een onafhankelijk bewerkbare parameter moet in event_dict staan. Deze refactor migreert templates niet automatisch.</translation>
     </message>
     <message>
         <source>Type</source>
@@ -827,6 +1022,14 @@ li.checked::markering { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;
     <message>
         <source>Value / PF reference</source>
         <translation>Waarde / PF-referentie</translation>
+    </message>
+    <message>
+        <source>Fixed local value. Select a device initialization mapping only when this value must come from the associated grid device.</source>
+        <translation>Vaste lokale waarde. Selecteer een apparaatinitialisatiekoppeling alleen wanneer deze waarde afkomstig moet zijn van het bijbehorende grid-apparaat.</translation>
+    </message>
+    <message>
+        <source>Invalid device initialization mapping: the target is not declared in this block's parameters or event_dict.</source>
+        <translation>Ongeldige apparaatinitialisatiekoppeling: het doel is niet gedeclareerd in de parameters of event_dict van dit blok.</translation>
     </message>
 </context>
 <context>
@@ -3246,6 +3449,58 @@ Referentie: {status}</translation>
         <source>Valid</source>
         <translation>Geldig</translation>
     </message>
+    <message>
+        <source>Equation counts</source>
+        <translation>Vergelijkingentellingen</translation>
+    </message>
+    <message>
+        <source>Repeated variable names</source>
+        <translation>Herhaalde variabele namen</translation>
+    </message>
+    <message>
+        <source>Static parameter mappings</source>
+        <translation>Statische parameterkoppelingen</translation>
+    </message>
+    <message>
+        <source>Unnamed block</source>
+        <translation>Onbenoemd blok</translation>
+    </message>
+    <message>
+        <source>Variable initialization</source>
+        <translation>Variabele initialisatie</translation>
+    </message>
+    <message>
+        <source>algebraic variables={variable_count}, algebraic equations={equation_count}</source>
+        <translation>algebraïsche variabelen={variable_count}, algebraïsche vergelijkingen={equation_count}</translation>
+    </message>
+    <message>
+        <source>derivative variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>afgeleide variabelen missen initialisatie of een power-flow bron: {variable_names}</translation>
+    </message>
+    <message>
+        <source>event parameters with no value: {parameter_names}</source>
+        <translation>event parameters zonder waarde: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>mapping targets not declared as local parameters: {parameter_names}</source>
+        <translation>koppelingdoelen niet gedeclareerd als lokale parameters: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>parameters missing a static mapping: {parameter_names}</source>
+        <translation>parameters missen een statische koppeling: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>state variables={variable_count}, state equations={equation_count}</source>
+        <translation>toestandsvariabelen={variable_count}, toestandsvergelijkingen={equation_count}</translation>
+    </message>
+    <message>
+        <source>variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>variabelen missen initialisatie of een power-flow bron: {variable_names}</translation>
+    </message>
+    <message>
+        <source>variables: {variable_names}</source>
+        <translation>variabelen: {variable_names}</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -3354,7 +3609,7 @@ Referentie: {status}</translation>
     </message>
     <message>
         <source>Enter a valid Python symbol name.</source>
-        <translation>Voer een geldige Python-symboolnaam in.</translation>
+        <translation type="vanished">Voer een geldige Python-symboolnaam in.</translation>
     </message>
     <message>
         <source>Equation PDF created: {path}</source>
@@ -3457,7 +3712,7 @@ Referentie: {status}</translation>
     </message>
     <message>
         <source>None</source>
-        <translation>Geen</translation>
+        <translation type="vanished">Geen</translation>
     </message>
     <message>
         <source>Nothing was applied: {message}</source>
@@ -3489,7 +3744,7 @@ Referentie: {status}</translation>
     </message>
     <message>
         <source>Parameter whose value may change during the simulation.</source>
-        <translation>Parameter waarvan de waarde tijdens de simulatie kan veranderen.</translation>
+        <translation type="vanished">Parameter waarvan de waarde tijdens de simulatie kan veranderen.</translation>
     </message>
     <message>
         <source>Parameters</source>
@@ -3538,11 +3793,11 @@ Referentie: {status}</translation>
     </message>
     <message>
         <source>Select a valid owner block.</source>
-        <translation>Selecteer een geldige eigenaarscel.</translation>
+        <translation type="vanished">Selecteer een geldige eigenaarscel.</translation>
     </message>
     <message>
         <source>Select a valid symbol type.</source>
-        <translation>Selecteer een geldig symbooltype.</translation>
+        <translation type="vanished">Selecteer een geldig symbooltype.</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="319"/>
@@ -3643,7 +3898,7 @@ Referentie: {status}</translation>
     </message>
     <message>
         <source>Retained mode</source>
-        <translation>Behouden modus</translation>
+        <translation type="vanished">Behouden modus</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="82"/>
@@ -3698,7 +3953,7 @@ Referentie: {status}</translation>
     </message>
     <message>
         <source>Nothing was added: {message}</source>
-        <translation>Niets toegevoegd: {message}</translation>
+        <translation type="vanished">Niets toegevoegd: {message}</translation>
     </message>
     <message>
         <source>Add to plot...</source>
@@ -4955,74 +5210,60 @@ selecteer het verwachte verwerkingsformaat</translation>
 <context>
     <name>Form</name>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="14"/>
         <source>Add block property</source>
-        <translation>Blokeigenschap toevoegen</translation>
+        <translation type="vanished">Blokeigenschap toevoegen</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
         <source>Add symbol to selected block</source>
-        <translation>Symbool aan geselecteerd blok toevoegen</translation>
+        <translation type="vanished">Symbool aan geselecteerd blok toevoegen</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="71"/>
         <source>Output</source>
-        <translation>Uitgang</translation>
+        <translation type="vanished">Uitgang</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="78"/>
         <source>Create derivative variable</source>
-        <translation>Afgeleide variabele creëren</translation>
+        <translation type="vanished">Afgeleide variabele creëren</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="144"/>
         <source>New symbol name</source>
-        <translation>Nieuwe symboolnaam</translation>
+        <translation type="vanished">Nieuwe symboolnaam</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="151"/>
         <source>Symbol category</source>
-        <translation>Symboolcategorie</translation>
+        <translation type="vanished">Symboolcategorie</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="158"/>
         <source>Owner block</source>
-        <translation>Eigenaar blok</translation>
+        <translation type="vanished">Eigenaar blok</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="165"/>
         <source>Type</source>
-        <translation>Type</translation>
+        <translation type="vanished">Type</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="172"/>
         <source>Add symbol</source>
-        <translation>Symbool toevoegen</translation>
+        <translation type="vanished">Symbool toevoegen</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="195"/>
         <source>Static device mapping</source>
-        <translation>Statische apparaatmapping</translation>
+        <translation type="vanished">Statische apparaatmapping</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="202"/>
         <source>Power-flow variable used to initialize this dynamic variable.</source>
-        <translation>Vermogensstroomvariabele gebruikt om deze dynamische variabele te initialiseren.</translation>
+        <translation type="vanished">Vermogensstroomvariabele gebruikt om deze dynamische variabele te initialiseren.</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="205"/>
         <source>Power-flow variable</source>
-        <translation>Vermogensstroomvariabele</translation>
+        <translation type="vanished">Vermogensstroomvariabele</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="266"/>
         <source>Enter a name</source>
-        <translation>Voer een naam in</translation>
+        <translation type="vanished">Voer een naam in</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="273"/>
         <source>Initial numeric value</source>
-        <translation>Initiële numerieke waarde</translation>
+        <translation type="vanished">Initiële numerieke waarde</translation>
     </message>
 </context>
 <context>
@@ -7717,6 +7958,195 @@ Wilt u doorgaan zonder een sjabloon?</translation>
     <message>
         <source>Stability boundary</source>
         <translation>Stabiliteitsgrens</translation>
+    </message>
+</context>
+<context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>Beide verklaringen zijn onderdeel van het leveringscontract van de fabrikant en zijn vereist vóór kwalificatie.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>Blader...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>Kies een bestaaire fabrikant binaire.</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>Voltooi de vereiste fabrikantverklaringen voor de geselecteerde interface.</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>Bestemmingsprovider</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>Elke komma-gescheiden waarde is de bestemmingsordinale voor de bronordinale op die positie. Voorbeeld: 1,0 wijst bron 0 naar bestemming 1 en bron 1 naar bestemming 0.</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>Voorbeeld: 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>Voorbeeld: 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>Voorbeeld: 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>Fabrikant native model importeren</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>Input bestemmingsordinale</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>Variant inspecteren en toevoegen</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>Inspecteren en importeren</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>Inspecteren van de binaire in een geïsoleerde worker...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>Linux bibliotheken (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>Fabrikant binaire</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>Fabrikant interface</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>Fabrikant native model klaar</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>Fabrikant native model varianten</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>Er is nog geen provider geïmporteerd.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>Geen</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>Output bestemmingsordinale</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>Parameter bestemmingsordinale</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>Platform variant</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>Provider: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>Provider: {provider}
+Platform toegevoegd: {platform}
+Templates aangemaakt: Geen (bestaande templates behouden).</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>Provider: {provider}
+Platform: {platform}
+RMS templates aangemaakt: {rms}
+EMT templates aangemaakt: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>Gekwalificeerd en toegevoegd {platform}: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>Gekwalificeerd en geïmporteerd {name}. {rms} RMS en {emt} EMT template(s) aangemaakt.</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>Herbind een bestaate template</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>Herbind geselecteerde template</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>Hergekoppeld {consumer} aan {provider}.</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>Selecteer een bron, bestemming en template.</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>Selecteer fabrikantbibliotheek</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>Selecteer het fabrikantencontract en de vooraf gecompileerde platformbibliotheek. VeraGrid valideert en voert de binaire bestanden uit in een geïsoleerde worker.</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>Sjabloon</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>De fabrikant verklaart dat alle muteerbare modelstatus eigendom is van elke Instantie.</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>De fabrikant verklaart dat de bibliotheek geen late native loading uitvoert.</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>Windows bibliotheken (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: ontbreekt</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
+    </message>
+    <message>
+        <source>Choose the LLVM bin directory</source>
+        <translation>Selecteer de LLVM bin-directory</translation>
+    </message>
+    <message>
+        <source>Choose the MinGW/UCRT support directory</source>
+        <translation>Selecteer de MinGW/UCRT support-directory</translation>
+    </message>
+    <message>
+        <source>LLVM selection was cancelled; the manufacturer model was not imported.</source>
+        <translation>Selectie van LLVM was geannuleerd; het fabrikantenmodel is niet geïmporteerd.</translation>
     </message>
 </context>
 <context>
@@ -10582,6 +11012,10 @@ Pas het aantal clusters aan in de ML-instellingen.</translation>
         <source>The short-circuit worker finished without results.</source>
         <translation>De kortsluitingsworker is voltooid zonder resultaten.</translation>
     </message>
+    <message>
+        <source>Power flow 3ph failed</source>
+        <translation>Stroomstroom 3f mislukt</translation>
+    </message>
 </context>
 <context>
     <name>SolarPvWizard</name>
@@ -11513,12 +11947,91 @@ U moet een net laden of aanmaken!</translation>
         <translation type="vanished">Problemen gevonden in dit gedeelte</translation>
     </message>
     <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="20"/>
         <source>Model Consistency Validation</source>
-        <translation type="vanished">Modelconsistentievalidatie</translation>
+        <translation>Modelconsistentievalidatie</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="31"/>
+        <source>Check the edited model&apos;s equation counts, variable names, parameter mappings, and variable initialization. This report is informational and does not block saving the model.</source>
+        <translation>Controleer het aantal vergelijkingen, variabele namen, parametermappen en variabele initialisatie van het bewerkte model. Dit rapport is informatief en blokkeert het opslaan van het model niet.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="53"/>
+        <source>Show:</source>
+        <translation>Tonen:</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="60"/>
+        <source>Filter validation results by check</source>
+        <translation>Filter validatiegegevens op controle</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="85"/>
+        <source>No validation results match this filter.</source>
+        <translation>Er zijn geen validatiegegevens die aan dit filter voldoen.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="95"/>
+        <source>Show issues in the model</source>
+        <translation>Toon problemen in het model</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="96"/>
+        <source>Show Issues</source>
+        <translation>Problemen tonen</translation>
     </message>
     <message>
         <source>Run an informational validation of the edited model structure, mappings, initialization, and port connectivity. This check reports issues but does not block saving the model.</source>
         <translation type="vanished">Voer een informatieve validatie uit van de bewerkte modelstructuur, mappings, initialisatie en poortverbindingen. Deze controle rapporteert problemen, maar blokkeert het opslaan van het model niet.</translation>
+    </message>
+    <message>
+        <source>All checks</source>
+        <translation>Alle controles</translation>
+    </message>
+    <message>
+        <source>Block</source>
+        <translation>Blokkeren</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>Controleren</translation>
+    </message>
+    <message>
+        <source>Details</source>
+        <translation>Details</translation>
+    </message>
+    <message>
+        <source>Issue</source>
+        <translation>Probleem</translation>
+    </message>
+    <message>
+        <source>Issues only</source>
+        <translation>Alleen problemen</translation>
+    </message>
+    <message>
+        <source>No issues found</source>
+        <translation>Geen problemen gevonden</translation>
+    </message>
+    <message>
+        <source>No issues found.</source>
+        <translation>Geen problemen gevonden.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>OK</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>Status</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · No issues found</source>
+        <translation>{check_count} controles · Geen problemen gevonden</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · {issue_section_count} checks with issues · {finding_count} findings</source>
+        <translation>{check_count} controles · {issue_section_count} controles met problemen · {finding_count} bevindingen</translation>
     </message>
 </context>
 <context>
@@ -17471,183 +17984,6 @@ U moet een net laden of aanmaken!</translation>
     <message>
         <source>Question</source>
         <translation>Vraag</translation>
-    </message>
-</context>
-<context>
-    <name>ManufacturerNativeImporterDialog</name>
-    <message>
-        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
-        <translation>Beide verklaringen zijn onderdeel van het leveringscontract van de fabrikant en zijn vereist vóór kwalificatie.</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>Blader...</translation>
-    </message>
-    <message>
-        <source>Choose an existing manufacturer binary.</source>
-        <translation>Kies een bestaaire fabrikant binaire.</translation>
-    </message>
-    <message>
-        <source>Complete the manufacturer declarations required by the selected interface.</source>
-        <translation>Voltooi de vereiste fabrikantverklaringen voor de geselecteerde interface.</translation>
-    </message>
-    <message>
-        <source>Destination provider</source>
-        <translation>Bestemmingsprovider</translation>
-    </message>
-    <message>
-        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
-        <translation>Elke komma-gescheiden waarde is de bestemmingsordinale voor de bronordinale op die positie. Voorbeeld: 1,0 wijst bron 0 naar bestemming 1 en bron 1 naar bestemming 0.</translation>
-    </message>
-    <message>
-        <source>Example: 0,1</source>
-        <translation>Voorbeeld: 0,1</translation>
-    </message>
-    <message>
-        <source>Example: 1,0</source>
-        <translation>Voorbeeld: 1,0</translation>
-    </message>
-    <message>
-        <source>Example: 2,0,1</source>
-        <translation>Voorbeeld: 2,0,1</translation>
-    </message>
-    <message>
-        <source>Import manufacturer native model</source>
-        <translation>Fabrikant native model importeren</translation>
-    </message>
-    <message>
-        <source>Input destination ordinals</source>
-        <translation>Input bestemmingsordinale</translation>
-    </message>
-    <message>
-        <source>Inspect and attach variant</source>
-        <translation>Variant inspecteren en toevoegen</translation>
-    </message>
-    <message>
-        <source>Inspect and import</source>
-        <translation>Inspecteren en importeren</translation>
-    </message>
-    <message>
-        <source>Inspecting the binary in an isolated worker...</source>
-        <translation>Inspecteren van de binaire in een geïsoleerde worker...</translation>
-    </message>
-    <message>
-        <source>Linux libraries (*.so)</source>
-        <translation>Linux bibliotheken (*.so)</translation>
-    </message>
-    <message>
-        <source>Manufacturer binary</source>
-        <translation>Fabrikant binaire</translation>
-    </message>
-    <message>
-        <source>Manufacturer interface</source>
-        <translation>Fabrikant interface</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model ready</source>
-        <translation>Fabrikant native model klaar</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model variants</source>
-        <translation>Fabrikant native model varianten</translation>
-    </message>
-    <message>
-        <source>No provider has been imported yet.</source>
-        <translation>Er is nog geen provider geïmporteerd.</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>Geen</translation>
-    </message>
-    <message>
-        <source>Output destination ordinals</source>
-        <translation>Output bestemmingsordinale</translation>
-    </message>
-    <message>
-        <source>Parameter destination ordinals</source>
-        <translation>Parameter bestemmingsordinale</translation>
-    </message>
-    <message>
-        <source>Platform variant</source>
-        <translation>Platform variant</translation>
-    </message>
-    <message>
-        <source>Provider: {name}</source>
-        <translation>Provider: {name}</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform attached: {platform}
-Templates created: None (existing templates retained).</source>
-        <translation>Provider: {provider}
-Platform toegevoegd: {platform}
-Templates aangemaakt: Geen (bestaande templates behouden).</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform: {platform}
-RMS templates created: {rms}
-EMT templates created: {emt}</source>
-        <translation>Provider: {provider}
-Platform: {platform}
-RMS templates aangemaakt: {rms}
-EMT templates aangemaakt: {emt}</translation>
-    </message>
-    <message>
-        <source>Qualified and attached {platform}: {digest}</source>
-        <translation>Gekwalificeerd en toegevoegd {platform}: {digest}</translation>
-    </message>
-    <message>
-        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
-        <translation>Gekwalificeerd en geïmporteerd {name}. {rms} RMS en {emt} EMT template(s) aangemaakt.</translation>
-    </message>
-    <message>
-        <source>Rebind an existing template</source>
-        <translation>Herbind een bestaate template</translation>
-    </message>
-    <message>
-        <source>Rebind selected template</source>
-        <translation>Herbind geselecteerde template</translation>
-    </message>
-    <message>
-        <source>Rebound {consumer} to {provider}.</source>
-        <translation>Hergekoppeld {consumer} aan {provider}.</translation>
-    </message>
-    <message>
-        <source>Select a source, destination and template.</source>
-        <translation>Selecteer een bron, bestemming en template.</translation>
-    </message>
-    <message>
-        <source>Select manufacturer library</source>
-        <translation>Selecteer fabrikantbibliotheek</translation>
-    </message>
-    <message>
-        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
-        <translation>Selecteer het fabrikantencontract en de vooraf gecompileerde platformbibliotheek. VeraGrid valideert en voert de binaire bestanden uit in een geïsoleerde worker.</translation>
-    </message>
-    <message>
-        <source>Template</source>
-        <translation>Sjabloon</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
-        <translation>De fabrikant verklaart dat alle muteerbare modelstatus eigendom is van elke Instantie.</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that the library performs no late native loading.</source>
-        <translation>De fabrikant verklaart dat de bibliotheek geen late native loading uitvoert.</translation>
-    </message>
-    <message>
-        <source>Windows libraries (*.dll)</source>
-        <translation>Windows bibliotheken (*.dll)</translation>
-    </message>
-    <message>
-        <source>{platform}: missing</source>
-        <translation>{platform}: ontbreekt</translation>
-    </message>
-    <message>
-        <source>{platform}: {status}, SHA-256 {digest}</source>
-        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

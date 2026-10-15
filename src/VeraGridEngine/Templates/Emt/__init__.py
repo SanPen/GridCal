@@ -87,4 +87,11 @@ from VeraGridEngine.Templates.Emt.bergeron_line_emt_template import BergeronLine
 from VeraGridEngine.Templates.Emt.pi_line_emt_template import PiLineEmtTemplate
 from VeraGridEngine.Templates.Emt.nonlinear_resistor_emt_template import NonLinearResistorEmtTemplate, get_nonlinear_resistor_emt_template
 from VeraGridEngine.Templates.Emt.jmarti_line_emt_template import JmartiLineEmtTemplate
-from VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates import LookupArrayLinearRuntimeTemplate, InverseLookupArrayLinearRuntimeTemplate, LookupArraySplineRuntimeTemplate, LookupMatrixLinearRuntimeTemplate, LookupMatrixSplineRuntimeTemplate
+from VeraGridEngine.Templates.BasicBlockCatalog.lookup_array_runtime_templates import (
+    InverseLookupArrayLinearRuntimeTemplate,
+    LookupArrayLinearRuntimeTemplate,
+    LookupArrayLinearVariableRuntimeTemplate,
+    LookupArraySplineRuntimeTemplate,
+    LookupMatrixLinearRuntimeTemplate,
+    LookupMatrixSplineRuntimeTemplate,
+)

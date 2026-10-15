@@ -34,7 +34,7 @@ from VeraGridEngine.IO.dgs.dgs_objects import (
     StaCubic,
     StaSwitch,
 )
-from VeraGridEngine.Templates.BasicBlockCatalog.catalog import (
+from VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog import (
     get_basic_block_catalog_descriptors,
 )
 from VeraGridEngine.Utils.procedural_logic import (
@@ -1437,6 +1437,12 @@ def _connect_direct_root_graphical_signals(
         else:
             entry_by_slot_id[entry.slot_id] = entry
 
+    # Resolve every cable against the original slot interfaces before applying
+    # any substitution. ``Block.connect()`` replaces variables in ``in_vars``
+    # and ``out_vars``; applying one cable while resolving the next one can
+    # therefore create duplicate port names and make connector ordinals
+    # ambiguous even though the DGS slot contract itself is unambiguous.
+    pending_connections: List[Tuple[Block, List[Var], List[Var]]] = list()
     graphical_signal: BlkSig
     for graphical_signal in circuit.blksigs:
         source_slot_id: str = _normalize_dgs_pointer_id(
@@ -1531,10 +1537,24 @@ def _connect_direct_root_graphical_signals(
                         )
                     else:
                         pass
-                    consumer_block.connect(
-                        vars_to_subs=vars_to_subs,
-                        incoming_vars=incoming_vars,
-                    )
+                    pending_connections.append((
+                        consumer_block,
+                        vars_to_subs,
+                        incoming_vars,
+                    ))
+
+    # Apply the already-resolved substitutions only after the complete cable
+    # plan is stable. Stored Var identities remain valid even when an earlier
+    # substitution changes the visible interface lists of the same block.
+    pending_connection: Tuple[Block, List[Var], List[Var]]
+    for pending_connection in pending_connections:
+        pending_consumer_block: Block = pending_connection[0]
+        pending_vars_to_subs: List[Var] = pending_connection[1]
+        pending_incoming_vars: List[Var] = pending_connection[2]
+        pending_consumer_block.connect(
+            vars_to_subs=pending_vars_to_subs,
+            incoming_vars=pending_incoming_vars,
+        )
 
 
 class DgsBlockInstanceSelection:
@@ -4135,6 +4155,59 @@ def _build_block_from_parsed(
     )
 
 
+def _internalize_initialized_dgs_slot_inputs(
+    block: Block,
+    parsed: ParsedDgsBlockDefinition,
+    entry: ElmCompInstanceEntry,
+) -> None:
+    """Internalize initialized definition inputs omitted by one DGS slot.
+
+    A ``BlkDef`` declares every symbol required to parse its equations, while
+    the owning ``BlkSlot`` declares the public interface of the concrete
+    instance. PowerFactory uses ``inc()`` assignments for held setpoints that
+    remain definition inputs but are deliberately absent from the slot. Move
+    those values to the runtime-parameter store so they retain their startup
+    expression without becoming unconnected graphical ports.
+
+    Inputs omitted by the slot without an ``inc()`` assignment remain public.
+    Their semantics are not sufficient to classify them as internal values,
+    and silently removing them would create an unowned equation dependency.
+
+    :param block: Materialized formula block for the concrete slot instance.
+    :param parsed: Parsed block definition supplying declarations and ``inc()``.
+    :param entry: Concrete DGS slot contract supplying the public inputs.
+    :return: None.
+    """
+    slot_input_names: Set[str] = set(
+        entry.get_slot_signal_components(
+            direction=DgsSlotSignalDirection.Input,
+        )
+    )
+    definition_input_names: Set[str] = set(parsed.blkdef.inputs)
+    retained_inputs: List[Var] = list()
+    input_var: Var
+    for input_var in block.in_vars:
+        is_definition_input: bool = input_var.name in definition_input_names
+        is_public_slot_input: bool = input_var.name in slot_input_names
+        initial_expression: Expr | None = block.init_eqs.get(input_var, None)
+        if (
+                is_definition_input
+                and not is_public_slot_input
+                and initial_expression is not None
+        ):
+            # This value is sampled from the startup operating point and then
+            # retained as an internal controller setpoint during simulation.
+            block.event_dict[input_var] = initial_expression
+            block.init_eqs.pop(input_var, None)
+        else:
+            # Public slot inputs and ambiguous omissions must remain visible
+            # until an authoritative producer or outer interface owns them.
+            retained_inputs.append(input_var)
+    else:
+        pass
+    block.in_vars = retained_inputs
+
+
 def _build_dependency_graph(parsed_blocks: Dict[str, ParsedDgsBlockDefinition]) -> Tuple[Dict[str, Set[str]], Dict[str, Set[str]], Dict[str, Set[str]]]:
     producer_map: Dict[str, Set[str]] = dict()
     consumer_map: Dict[str, Set[str]] = dict()
@@ -4589,6 +4662,14 @@ def build_direct_root_elmcomp_block(
                         parameter_values=entry.parameter_values,
                         event_targets_by_slot_name=event_targets_by_slot_name,
                         instance_dgs_id=entry.element_id,
+                    )
+                    # The type definition contains private initialized
+                    # setpoints as input symbols. The concrete slot is the
+                    # authoritative public interface for this occurrence.
+                    _internalize_initialized_dgs_slot_inputs(
+                        block=child_block,
+                        parsed=parsed_block,
+                        entry=entry,
                     )
                 else:
                     if len(

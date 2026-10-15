@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'MainWindow.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.11.2
+## Created by: Qt User Interface Compiler version 6.11.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -3721,7 +3721,6 @@ class Ui_mainWindow(object):
         self.usePfValuesForAtcCheckBox = QCheckBox(self.groupBox_6)
         self.usePfValuesForAtcCheckBox.setObjectName(u"usePfValuesForAtcCheckBox")
         self.usePfValuesForAtcCheckBox.setFont(font)
-        self.usePfValuesForAtcCheckBox.setChecked(True)
 
         self.gridLayout_29.addWidget(self.usePfValuesForAtcCheckBox, 3, 0, 1, 1)
 

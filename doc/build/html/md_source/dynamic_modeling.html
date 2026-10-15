@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Building dynamic models &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>Building dynamic models &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,14 +15,14 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Dynamic workspace and editors" href="dynamic_editor.html" />
-    <link rel="prev" title="🧬 EMT Small-Signal stability: Floquet analysis" href="small_signal_stability_emt.html" /> 
+    <link rel="prev" title="🧪 Dynamic simulation benchmarks" href="dynamic_benchmarks.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -74,7 +74,8 @@
 <li class="toctree-l1"><a class="reference internal" href="state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-simulation-theory">1. Dynamic simulation theory</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="dynamic_simulations.html#dynamic-editor-and-model-construction">2. Dynamic editor and model construction</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#benchmarking-against-other-software">2. Benchmarking against other software</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dynamic_simulations.html#dynamic-editor-and-model-construction">3. Dynamic editor and model construction</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Building dynamic models</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#general-block-structure">General block structure</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#model-ownership-and-connections">Model ownership and connections</a></li>
@@ -89,11 +90,12 @@
 <li class="toctree-l3"><a class="reference internal" href="dynamic_editor.html">Dynamic workspace and editors</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-model-library">3. Dynamic model library</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#dynamic-model-library">4. Dynamic model library</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#recommended-reading-paths">Recommended reading paths</a></li>
 <li class="toctree-l2"><a class="reference internal" href="dynamic_simulations.html#end-to-end-workflow">End-to-end workflow</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
@@ -213,17 +215,17 @@
         <span class="n">time_constant_seconds</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Block</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Build a first-order lag whose output is also its dynamic state.</span>
 
 <span class="sd">    :param var_factory: Grid-owned factory used to create symbolic identities.</span>
 <span class="sd">    :param time_constant_seconds: Positive lag time constant in seconds.</span>
 <span class="sd">    :param name: Human-readable block name.</span>
 <span class="sd">    :return: Unconnected first-order lag block.</span>
-<span class="sd">    """</span>
-    <span class="n">input_signal</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">"_input"</span><span class="p">)</span>
-    <span class="n">output_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">"_output"</span><span class="p">)</span>
-    <span class="n">time_constant</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">"_time_constant"</span><span class="p">)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">input_signal</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_input&quot;</span><span class="p">)</span>
+    <span class="n">output_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_output&quot;</span><span class="p">)</span>
+    <span class="n">time_constant</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_time_constant&quot;</span><span class="p">)</span>
     <span class="n">time_constant_value</span><span class="p">:</span> <span class="n">Const</span> <span class="o">=</span> <span class="n">var_factory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="n">time_constant_seconds</span><span class="p">)</span>
 
     <span class="n">block</span><span class="p">:</span> <span class="n">Block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
@@ -258,7 +260,7 @@
         <span class="n">var_factory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span>
         <span class="n">use_emt</span><span class="p">:</span> <span class="nb">bool</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Assign an already constructed dynamic model to one grid device.</span>
 
 <span class="sd">    :param device: Grid device that owns the dynamic model.</span>
@@ -266,7 +268,7 @@
 <span class="sd">    :param var_factory: Variable factory owned by the target circuit.</span>
 <span class="sd">    :param use_emt: ``True`` for an EMT model and ``False`` for an RMS model.</span>
 <span class="sd">    :return: Nothing.</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">use_emt</span><span class="p">:</span>
         <span class="n">set_emt_model</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">var_factory</span><span class="o">=</span><span class="n">var_factory</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
@@ -314,7 +316,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="small_signal_stability_emt.html" class="btn btn-neutral float-left" title="🧬 EMT Small-Signal stability: Floquet analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="dynamic_benchmarks.html" class="btn btn-neutral float-left" title="🧪 Dynamic simulation benchmarks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="dynamic_editor.html" class="btn btn-neutral float-right" title="Dynamic workspace and editors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

@@ -5,16 +5,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Events.remedial_action_group &mdash; VeraGrid 6.4.4 documentation</title>
+  <title>VeraGridEngine.Devices.Events.remedial_action_group &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
-      <link rel="stylesheet" type="text/css" href="../../../../_static/style.css?v=b3745da1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/style.css?v=ba3a54df" />
 
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=f2c0b4ab"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -44,6 +44,7 @@
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/installation.html">💽 Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/user_interface.html">📊 User interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/veragrid_scripting_guide.html">📑 VeraGrid scripting guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/grid_analysis.html">🔎 Grid analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/structure.html">🌁 Structure of VeraGrid</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/modelling.html">📐 Grid Modelling</a></li>
@@ -59,6 +60,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/short_circuit.html">⚡ Short-Circuit</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/stochastic_power_flow.html">🎲 Stochastic power flow</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/continuation_power_flow.html">➿ Continuation power flow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/sigma_analysis.html">🌘 Sigma analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/solar_wizard.html">☀️ Solar power wizard</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/contingency_analysis.html">💥 Contingency analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/investment_optimization.html">🏦 Investment optimization</a></li>
@@ -68,13 +70,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/rms_simulations.html">📝 RMS simulations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/small_signal_stability.html">Small-Signal Stability Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/emt_simulations.html">🔬 EMT simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../rst_source/change_log.html">Change log</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/data_models.html">Data Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../rst_source/api/auto/modules.html">VeraGrid</a></li>
 </ul>
@@ -110,19 +109,32 @@
 <span class="c1"># SPDX-License-Identifier: MPL-2.0</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Parents.editable_device</span><span class="w"> </span><span class="kn">import</span> <span class="n">EditableDevice</span><span class="p">,</span> <span class="n">DeviceType</span><span class="p">,</span> <span class="n">GCProp</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Parents.physical_device</span><span class="w"> </span><span class="kn">import</span> <span class="n">PhysicalDevice</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Events.contingency_group</span><span class="w"> </span><span class="kn">import</span> <span class="n">ContingencyGroup</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrpCat</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">PrpCat</span><span class="p">,</span> <span class="n">RemedialActionPropertyEnum</span>
 
 
 <div class="viewcode-block" id="RemedialActionGroup">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Events.html#VeraGridEngine.Devices.Events.remedial_action_group.RemedialActionGroup">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RemedialActionGroup</span><span class="p">(</span><span class="n">EditableDevice</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The RemedialAction group</span>
+<span class="sd">    Group remedial actions and describe the condition that makes them eligible.</span>
+
+<span class="sd">    The contingency reference is optional. A missing reference means that the</span>
+<span class="sd">    condition applies to the base scenario. Condition evaluation is deliberately</span>
+<span class="sd">    solver-independent: simulation tools or external scripts provide the observed</span>
+<span class="sd">    per-unit voltage or loading after obtaining it from their own result object.</span>
+<span class="sd">    The selected property identifies the limit stored by the monitored device.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;category&#39;</span><span class="p">,</span> <span class="s1">&#39;_conn_group&#39;</span><span class="p">)</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s1">&#39;category&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_conn_group&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_prev_ra&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_monitored_device&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_property_type&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
 
     <span class="n">LOCAL_PROPERTY_DECLARATIONS</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">GCProp</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">GCProp</span><span class="p">(</span>
@@ -130,27 +142,57 @@
             <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
             <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Some tag to category the contingency group&#39;</span><span class="p">,</span>
-            <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">REL</span><span class="p">],</span>
+            <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
         <span class="n">GCProp</span><span class="p">(</span>
             <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;conn_group&#39;</span><span class="p">,</span>
             <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
             <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">ContingencyGroupDevice</span><span class="p">,</span>
-            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Contingency group&#39;</span><span class="p">,</span>
-            <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">REL</span><span class="p">],</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Optional contingency scenario associated with this group&#39;</span><span class="p">,</span>
+            <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
+        <span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;prev_ra&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">RemedialActionGroupDevice</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Optional remedial action group that must precede this group&#39;</span><span class="p">,</span>
+            <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
+            <span class="n">reflexive</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;monitored_device&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">tpe</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">PhysicalDeviceType</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Physical model element whose result is monitored&#39;</span><span class="p">,</span>
+            <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
+        <span class="p">),</span>
+        <span class="n">GCProp</span><span class="p">(</span>
+            <span class="n">prop_name</span><span class="o">=</span><span class="s1">&#39;property_type&#39;</span><span class="p">,</span>
+            <span class="n">units</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="n">tpe</span><span class="o">=</span><span class="n">RemedialActionPropertyEnum</span><span class="p">,</span>
+            <span class="n">definition</span><span class="o">=</span><span class="s1">&#39;Limit of the monitored device used by the condition&#39;</span><span class="p">,</span>
+            <span class="n">cat</span><span class="o">=</span><span class="p">[</span><span class="n">PrpCat</span><span class="o">.</span><span class="n">OPF</span><span class="p">,</span> <span class="n">PrpCat</span><span class="o">.</span><span class="n">TP</span><span class="p">],</span>
         <span class="p">),</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">idtag</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">name</span><span class="o">=</span><span class="s2">&quot;RemedialActionGroup&quot;</span><span class="p">,</span>
-                 <span class="n">category</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
-                 <span class="n">conn_group</span><span class="p">:</span> <span class="n">ContingencyGroup</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,):</span>
+                 <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;RemedialActionGroup&quot;</span><span class="p">,</span>
+                 <span class="n">category</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="n">conn_group</span><span class="p">:</span> <span class="n">ContingencyGroup</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">remedial_action_dependency</span><span class="p">:</span> <span class="n">RemedialActionGroup</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">monitored_device</span><span class="p">:</span> <span class="n">PhysicalDevice</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">property_type</span><span class="p">:</span> <span class="n">RemedialActionPropertyEnum</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        RemedialAction group</span>
+<span class="sd">        Create a remedial action group.</span>
+
 <span class="sd">        :param idtag: Unique identifier</span>
-<span class="sd">        :param name: contingency group name</span>
-<span class="sd">        :param category: tag to category the group</span>
+<span class="sd">        :param name: Remedial action group name.</span>
+<span class="sd">        :param category: User-defined category tag.</span>
+<span class="sd">        :param conn_group: Optional contingency scenario; None denotes the base scenario.</span>
+<span class="sd">        :param remedial_action_dependency: Optional remedial action group that precedes this group.</span>
+<span class="sd">        :param monitored_device: Physical model element to monitor.</span>
+<span class="sd">        :param property_type: Device limit to monitor.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">EditableDevice</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -159,24 +201,242 @@
                                 <span class="n">code</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
                                 <span class="n">device_type</span><span class="o">=</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">RemedialActionGroupDevice</span><span class="p">)</span>
 
-        <span class="c1"># Contingency type</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">category</span> <span class="o">=</span> <span class="n">category</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">category</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">category</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_conn_group</span><span class="p">:</span> <span class="n">ContingencyGroup</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_ra</span><span class="p">:</span> <span class="n">RemedialActionGroup</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_monitored_device</span><span class="p">:</span> <span class="n">PhysicalDevice</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_property_type</span><span class="p">:</span> <span class="n">RemedialActionPropertyEnum</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">_conn_group</span><span class="p">:</span> <span class="n">ContingencyGroup</span> <span class="o">=</span> <span class="n">conn_group</span>
-
-
+        <span class="c1"># self.conn_group = conn_group</span>
+        <span class="c1"># self.parent_ra = remedial_action_dependency</span>
+        <span class="c1"># self.monitored_device = monitored_device</span>
+        <span class="c1"># self.property_type = property_type</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">conn_group</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContingencyGroup</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">conn_group</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ContingencyGroup</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Contingency group</span>
-<span class="sd">        :return:</span>
+<span class="sd">        Return the optional contingency scenario.</span>
+
+<span class="sd">        :return: Contingency group, or None for a base-scenario condition.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_conn_group</span>
 
     <span class="nd">@conn_group</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">conn_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="p">:</span> <span class="n">ContingencyGroup</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_conn_group</span> <span class="o">=</span> <span class="n">val</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">conn_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">ContingencyGroup</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the optional contingency scenario.</span>
+
+<span class="sd">        :param value: Contingency group, or None for a base-scenario condition.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">ContingencyGroup</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_conn_group</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;conn_group must be a ContingencyGroup or None&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prev_ra</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RemedialActionGroup</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the remedial action group that must precede this group.</span>
+
+<span class="sd">        :return: Dependency group, or None when this group starts a cascade.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_ra</span>
+
+    <span class="nd">@prev_ra</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prev_ra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">RemedialActionGroup</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the remedial action group that must precede this group.</span>
+
+<span class="sd">        :param value: Dependency group, or None for an independent group.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_ra</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">RemedialActionGroup</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;remedial_action_dependency must be a RemedialActionGroup or None&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dependency</span><span class="p">:</span> <span class="n">RemedialActionGroup</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="n">visited_dependencies</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">while</span> <span class="n">dependency</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dependency</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;A remedial action group cannot depend on itself directly or indirectly&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+                <span class="n">dependency_identity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">id</span><span class="p">(</span><span class="n">dependency</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">dependency_identity</span> <span class="ow">in</span> <span class="n">visited_dependencies</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The remedial action dependency chain contains a cycle&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">visited_dependencies</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">dependency_identity</span><span class="p">)</span>
+                    <span class="n">dependency</span> <span class="o">=</span> <span class="n">dependency</span><span class="o">.</span><span class="n">_prev_ra</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_ra</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">monitored_device</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PhysicalDevice</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the monitored physical model element.</span>
+
+<span class="sd">        :return: Monitored device, if one is configured.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_monitored_device</span>
+
+    <span class="nd">@monitored_device</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">monitored_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">PhysicalDevice</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the monitored physical model element.</span>
+
+<span class="sd">        :param value: Physical device, or None.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">PhysicalDevice</span><span class="p">):</span>
+            <span class="n">allowed_device_types</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">DeviceType</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">,</span>
+                <span class="n">DeviceType</span><span class="o">.</span><span class="n">LineDevice</span><span class="p">,</span>
+                <span class="n">DeviceType</span><span class="o">.</span><span class="n">Transformer2WDevice</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">value</span><span class="o">.</span><span class="n">device_type</span> <span class="ow">in</span> <span class="n">allowed_device_types</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_monitored_device</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="n">allowed_property_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RemedialActionPropertyEnum</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_allowed_property_types</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed_property_types</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_property_type</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;monitored_device must be a bus, line, or two-winding transformer&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;monitored_device must be a PhysicalDevice or None&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RemedialActionGroup.get_allowed_property_types_for_device">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Events.html#VeraGridEngine.Devices.Events.remedial_action_group.RemedialActionGroup.get_allowed_property_types_for_device">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_allowed_property_types_for_device</span><span class="p">(</span>
+            <span class="n">monitored_device</span><span class="p">:</span> <span class="n">PhysicalDevice</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">RemedialActionPropertyEnum</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return monitorable limits applicable to one physical device.</span>
+
+<span class="sd">        :param monitored_device: Physical device whose results will be monitored.</span>
+<span class="sd">        :return: Applicable result properties in enumeration order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">monitored_device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">property_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RemedialActionPropertyEnum</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">device_type</span><span class="p">:</span> <span class="n">DeviceType</span> <span class="o">=</span> <span class="n">monitored_device</span><span class="o">.</span><span class="n">device_type</span>
+            <span class="k">if</span> <span class="n">device_type</span> <span class="o">==</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">BusDevice</span><span class="p">:</span>
+                <span class="n">property_types</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">RemedialActionPropertyEnum</span><span class="o">.</span><span class="n">Vmin</span><span class="p">,</span>
+                    <span class="n">RemedialActionPropertyEnum</span><span class="o">.</span><span class="n">Vmax</span><span class="p">,</span>
+                <span class="p">]</span>
+            <span class="k">elif</span> <span class="n">device_type</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DeviceType</span><span class="o">.</span><span class="n">LineDevice</span><span class="p">,</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">Transformer2WDevice</span><span class="p">):</span>
+                <span class="n">property_types</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">RemedialActionPropertyEnum</span><span class="o">.</span><span class="n">Loading</span><span class="p">,</span>
+                    <span class="n">RemedialActionPropertyEnum</span><span class="o">.</span><span class="n">ContingencyLoading</span><span class="p">,</span>
+                <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">property_types</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">property_types</span></div>
+
+
+<div class="viewcode-block" id="RemedialActionGroup.get_allowed_property_types">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Events.html#VeraGridEngine.Devices.Events.remedial_action_group.RemedialActionGroup.get_allowed_property_types">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_allowed_property_types</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">RemedialActionPropertyEnum</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return result properties applicable to the monitored device.</span>
+
+<span class="sd">        :return: Applicable result properties in enumeration order.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">property_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RemedialActionPropertyEnum</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_allowed_property_types_for_device</span><span class="p">(</span>
+            <span class="n">monitored_device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">monitored_device</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">property_types</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">property_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RemedialActionPropertyEnum</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the monitored result property.</span>
+
+<span class="sd">        :return: Selected monitored limit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_property_type</span>
+
+    <span class="nd">@property_type</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">property_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">RemedialActionPropertyEnum</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set the monitored result property.</span>
+
+<span class="sd">        :param value: Monitored device limit.</span>
+<span class="sd">        :return: None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_property_type</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">RemedialActionPropertyEnum</span><span class="p">):</span>
+            <span class="n">allowed_property_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">RemedialActionPropertyEnum</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_allowed_property_types</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">allowed_property_types</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_property_type</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;property_type is not applicable to monitored_device&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;property_type must be a RemedialActionPropertyEnum member or None&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RemedialActionGroup.get_limit_value">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Events.html#VeraGridEngine.Devices.Events.remedial_action_group.RemedialActionGroup.get_limit_value">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_limit_value</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the selected limit from the monitored device.</span>
+
+<span class="sd">        Loading values are per-unit values relative to the normal rating.</span>
+
+<span class="sd">        :return: Limit value, or None when no monitored property is selected.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">limit_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitored_device</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;A monitored device is required to resolve the selected limit&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_type</span> <span class="o">==</span> <span class="n">RemedialActionPropertyEnum</span><span class="o">.</span><span class="n">Vmin</span><span class="p">:</span>
+                    <span class="n">limit_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitored_device</span><span class="o">.</span><span class="n">get_snapshot_value_by_name</span><span class="p">(</span><span class="s1">&#39;Vmin&#39;</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_type</span> <span class="o">==</span> <span class="n">RemedialActionPropertyEnum</span><span class="o">.</span><span class="n">Vmax</span><span class="p">:</span>
+                    <span class="n">limit_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitored_device</span><span class="o">.</span><span class="n">get_snapshot_value_by_name</span><span class="p">(</span><span class="s1">&#39;Vmax&#39;</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_type</span> <span class="o">==</span> <span class="n">RemedialActionPropertyEnum</span><span class="o">.</span><span class="n">Loading</span><span class="p">:</span>
+                    <span class="n">limit_value</span> <span class="o">=</span> <span class="mf">1.0</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_type</span> <span class="o">==</span> <span class="n">RemedialActionPropertyEnum</span><span class="o">.</span><span class="n">ContingencyLoading</span><span class="p">:</span>
+                    <span class="n">limit_value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitored_device</span><span class="o">.</span><span class="n">get_snapshot_value_by_name</span><span class="p">(</span><span class="s1">&#39;contingency_factor&#39;</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unsupported remedial action property&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">limit_value</span></div>
+
+
+<div class="viewcode-block" id="RemedialActionGroup.is_condition_met">
+<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Events.html#VeraGridEngine.Devices.Events.remedial_action_group.RemedialActionGroup.is_condition_met">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_condition_met</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observed_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">complex</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check whether an observed value violates the selected device limit.</span>
+
+<span class="sd">        Complex power-flow values are evaluated by magnitude.</span>
+
+<span class="sd">        :param observed_value: Value obtained from the model or a simulation result.</span>
+<span class="sd">        :return: True when the group is unconditional or the value violates its limit.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">condition_met</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">limit_value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_limit_value</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">limit_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">condition_met</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">observed_magnitude</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">observed_value</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_type</span> <span class="o">==</span> <span class="n">RemedialActionPropertyEnum</span><span class="o">.</span><span class="n">Vmin</span><span class="p">:</span>
+                    <span class="n">condition_met</span> <span class="o">=</span> <span class="n">observed_magnitude</span> <span class="o">&lt;</span> <span class="n">limit_value</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">property_type</span> <span class="o">==</span> <span class="n">RemedialActionPropertyEnum</span><span class="o">.</span><span class="n">Vmax</span><span class="p">:</span>
+                    <span class="n">condition_met</span> <span class="o">=</span> <span class="n">observed_magnitude</span> <span class="o">&gt;</span> <span class="n">limit_value</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">condition_met</span> <span class="o">=</span> <span class="n">observed_magnitude</span> <span class="o">&gt;</span> <span class="n">limit_value</span>
+
+        <span class="k">return</span> <span class="n">condition_met</span></div>
+</div>
 
 </pre></div>
 

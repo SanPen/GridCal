@@ -1,0 +1,53 @@
+diff --git a/SourceCode/fmu-export-prep-shared/fmu-export-idf-data.cpp b/SourceCode/fmu-export-prep-shared/fmu-export-idf-data.cpp
+--- a/SourceCode/fmu-export-prep-shared/fmu-export-idf-data.cpp
++++ b/SourceCode/fmu-export-prep-shared/fmu-export-idf-data.cpp
+@@ -858,14 +858,8 @@ int fmuExportIdfData::writeInputFile(fileReaderData& frIdf, int leapYear, int id
+ 					}
+ 					else {
+ 						// g_desc_runPer_idf = "ANNNNNNAAAAAAA";
+-						string startYear;
+-						string endYear;
+-
+ 						istringstream(tStartFMU) >> t_start_fmu;
+ 						istringstream(tStopFMU) >> t_stop_fmu;
+-
+-						istringstream(startYear) >> _runPer_numerics[2];
+-						istringstream(endYear) >> _runPer_numerics[5];
+ 
+ 						handleKey_runPer(frIdf, idfVer);
+ 						std::string runPeriod("RUNPERIOD, \n");
+diff --git a/SourceCode/v10/EnergyPlus/main.c b/SourceCode/v10/EnergyPlus/main.c
+--- a/SourceCode/v10/EnergyPlus/main.c
++++ b/SourceCode/v10/EnergyPlus/main.c
+@@ -937,8 +937,7 @@ DllExport fmiStatus fmiInitializeSlave(fmiComponent c, fmiReal tStart, fmiBoolea
+ #endif
+ 	struct sockaddr_in   server_addr;
+ 	int                  port_num;
+-	char                 ThisHost[10000];
+-	struct  hostent *hp;
++	const char          *loopbackHost = "127.0.0.1";
+ 
+ #ifdef _MSC_VER
+ 	WORD wVersionRequested=MAKEWORD(2,2);
+@@ -1053,17 +1052,10 @@ DllExport fmiStatus fmiInitializeSlave(fmiComponent c, fmiReal tStart, fmiBoolea
+ 	port_num=ntohs(server_addr.sin_port);
+ 	_c->functions.logger(NULL, _c->instanceName, fmiOK, "ok",  "fmiInitializeSlave: The port number is %d.\n", port_num);
+ 
+-	// get the hostname information
+-	gethostname(ThisHost, MAXHOSTNAME);
+-	if  ((hp=gethostbyname(ThisHost))==NULL ) {
+-		_c->functions.logger(NULL,  _c->instanceName, fmiError,
+-			"error", "fmiInitializeSlave: Get host by name failed.\n");
+-		return fmiError;
+-	}
+-
+-	// write socket cfg file
+-	retVal=write_socket_cfg (_c, port_num, ThisHost);
+-	_c->functions.logger(NULL, _c->instanceName, fmiOK, "ok",  "fmiInitializeSlave: This hostname is %s.\n", ThisHost);
++	// Both socket endpoints run on this machine. A numeric loopback address
++	// avoids locale-dependent hostname encoding and external name resolution.
++	retVal=write_socket_cfg (_c, port_num, loopbackHost);
++	_c->functions.logger(NULL, _c->instanceName, fmiOK, "ok",  "fmiInitializeSlave: This hostname is %s.\n", loopbackHost);
+ 	if  (retVal !=0) {
+ 		_c->functions.logger(NULL,  _c->instanceName, fmiError,
+ 			"error", "fmiInitializeSlave: Write socket cfg failed.\n");

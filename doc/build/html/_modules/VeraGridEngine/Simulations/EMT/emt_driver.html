@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.emt_driver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.emt_driver &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -109,7 +110,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.multi_circuit</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiCircuit</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.driver_template</span><span class="w"> </span><span class="kn">import</span> <span class="n">DriverTemplate</span>
@@ -122,10 +123,77 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow3ph.power_flow_results_3ph</span><span class="w"> </span><span class="kn">import</span> <span class="n">PowerFlowResults3Ph</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Simulations.PowerFlow.power_flow_results</span><span class="w"> </span><span class="kn">import</span> <span class="n">PowerFlowResults</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.diagnostic</span><span class="w"> </span><span class="kn">import</span> <span class="n">NewtonDiagnosticsConfig</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.importer.emt_boundary</span><span class="w"> </span><span class="kn">import</span> <span class="n">CompositeEmtBoundaryUpdater</span><span class="p">,</span> <span class="n">build_emt_boundary_updater</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.fmu.fmu_device_integration</span><span class="w"> </span><span class="kn">import</span> <span class="n">CompositeEmtBoundaryUpdater</span><span class="p">,</span> <span class="n">build_emt_boundary_updater</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.basic_structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">StrVec</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.manufacturer_native.runtime_session</span><span class="w"> </span><span class="kn">import</span> <span class="n">ManufacturerNativeRuntimeSession</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.IO.native_runtime</span><span class="w"> </span><span class="kn">import</span> <span class="n">NativeWorkerLimits</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Var</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">EngineType</span><span class="p">,</span> <span class="n">PlotSimulationType</span><span class="p">,</span> <span class="n">SimulationTypes</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_compare_first_step_non_angle_states</span><span class="p">(</span>
+        <span class="n">values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">state_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span>
+        <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-4</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compare non-angle model states across the first integration step.</span>
+
+<span class="sd">    This is a local sample-to-sample diagnostic. It does not establish an EMT</span>
+<span class="sd">    equilibrium or periodic steady state because sinusoidal physical states are</span>
+<span class="sd">    expected to evolve even when their phasors are stationary.</span>
+
+<span class="sd">    :param values: Simulated variable samples with time along the first axis.</span>
+<span class="sd">    :param state_vars: State variables corresponding to the leading columns.</span>
+<span class="sd">    :param tolerance: Relative change accepted as unchanged.</span>
+<span class="sd">    :return: ``True`` when every compared state remains within tolerance,</span>
+<span class="sd">        ``False`` when at least one changes, or ``None`` when comparison is not</span>
+<span class="sd">        possible.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">values_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">inputs_are_valid</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="n">tolerance</span> <span class="o">&gt;=</span> <span class="mf">0.0</span>
+        <span class="ow">and</span> <span class="n">values_array</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">2</span>
+        <span class="ow">and</span> <span class="n">values_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">2</span>
+        <span class="ow">and</span> <span class="n">values_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">state_vars</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">inputs_are_valid</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">indices</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">state_index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">state_var</span><span class="p">:</span> <span class="n">Var</span>
+    <span class="k">for</span> <span class="n">state_index</span><span class="p">,</span> <span class="n">state_var</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">state_vars</span><span class="p">):</span>
+        <span class="n">is_angle_state</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">state_var</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;theta&quot;</span><span class="p">,</span> <span class="s2">&quot;angle&quot;</span><span class="p">,</span> <span class="s2">&quot;phi&quot;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">is_angle_state</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">state_index</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="n">first_values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">values_array</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">indices</span><span class="p">]</span>
+    <span class="n">second_values</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">values_array</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">indices</span><span class="p">]</span>
+    <span class="n">samples_are_finite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">first_values</span><span class="p">))</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">second_values</span><span class="p">))</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">samples_are_finite</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">scale</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+        <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">first_values</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">second_values</span><span class="p">)),</span>
+    <span class="p">)</span>
+    <span class="n">relative_change</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">second_values</span> <span class="o">-</span> <span class="n">first_values</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale</span>
+    <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">relative_change</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">))</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_collect_emt_group_parameter_values</span><span class="p">(</span><span class="n">problem</span><span class="p">:</span> <span class="n">EmtProblemDae</span><span class="p">,</span>
@@ -140,7 +208,9 @@
     <span class="n">parameter_values</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">collect_declared_dynamic_parameter_values</span><span class="p">(</span>
         <span class="n">grid</span><span class="o">=</span><span class="n">grid</span><span class="p">,</span>
         <span class="n">simulation_type</span><span class="o">=</span><span class="n">PlotSimulationType</span><span class="o">.</span><span class="n">EMT</span><span class="p">,</span>
-        <span class="n">logger</span><span class="o">=</span><span class="n">problem</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+        <span class="c1"># The problem builder already reported mapping diagnostics. Rebuilding</span>
+        <span class="c1"># result metadata must not emit them again for every saved snapshot.</span>
+        <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">event_parameter_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">get_variable_parameters</span><span class="p">())</span>
     <span class="n">parameter_index</span><span class="p">:</span> <span class="nb">int</span>
@@ -228,9 +298,6 @@
 <span class="sd">        Performs the EMTP loop using the chosen method.</span>
 <span class="sd">        :return:</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># TODO: into the loop add &quot; self.report_text(&#39;Time series at &#39; + str(self.grid.time_profile[t]) + &#39;...&#39;)</span>
-        <span class="c1">#                     self.report_progress2(it, len(time_indices)) &quot;</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">progress_signal</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="c1"># set emt events groups</span>
@@ -344,13 +411,28 @@
                     <span class="n">cancel_checker</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">is_cancel</span><span class="p">,</span>
                 <span class="p">)</span>
 
+                <span class="n">native_session</span><span class="p">:</span> <span class="n">ManufacturerNativeRuntimeSession</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">manufacturer_native_models</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">native_session</span> <span class="o">=</span> <span class="n">ManufacturerNativeRuntimeSession</span><span class="p">(</span>
+                        <span class="n">providers</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="o">.</span><span class="n">manufacturer_native_models</span><span class="p">,</span>
+                        <span class="n">platform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                        <span class="n">limits</span><span class="o">=</span><span class="n">NativeWorkerLimits</span><span class="p">(),</span>
+                        <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">problem</span><span class="o">.</span><span class="n">resolve_manufacturer_native_boundary</span><span class="p">(</span><span class="n">native_session</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+                        <span class="n">native_session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                        <span class="k">raise</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
                 <span class="c1"># EMT runtime parameters are initialized by problem/solver</span>
                 <span class="c1"># construction. Snapshot them now, before any event evolution.</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">initial_parameter_value_maps</span><span class="p">[</span><span class="n">group_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">_collect_emt_group_parameter_values</span><span class="p">(</span>
                     <span class="n">problem</span><span class="o">=</span><span class="n">problem</span><span class="p">,</span>
                     <span class="n">grid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">,</span>
                 <span class="p">)</span>
-
                 <span class="n">boundary_updater</span><span class="p">:</span> <span class="n">EmtProblemDae</span> <span class="o">|</span> <span class="n">CompositeEmtBoundaryUpdater</span> <span class="o">=</span> <span class="n">build_emt_boundary_updater</span><span class="p">(</span><span class="n">problem</span><span class="p">)</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="c1"># The solver uses the FMU-aware wrapper when native adapters</span>
@@ -361,6 +443,11 @@
                     <span class="c1"># every native runtime on success, failure, or cancellation.</span>
                     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">boundary_updater</span><span class="p">,</span> <span class="n">CompositeEmtBoundaryUpdater</span><span class="p">):</span>
                         <span class="n">boundary_updater</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                    <span class="n">problem</span><span class="o">.</span><span class="n">resolve_manufacturer_native_boundary</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">native_session</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">native_session</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">pass</span>
 
@@ -394,6 +481,32 @@
 
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;converged =</span><span class="si">{</span><span class="n">converged</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;well_initialized =</span><span class="si">{</span><span class="n">well_initialized</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">first_step_states_unchanged</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">|</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="n">well_initialized</span><span class="p">:</span>
+                    <span class="n">first_step_states_unchanged</span> <span class="o">=</span> <span class="n">_compare_first_step_non_angle_states</span><span class="p">(</span>
+                        <span class="n">values</span><span class="o">=</span><span class="n">y</span><span class="p">,</span>
+                        <span class="n">state_vars</span><span class="o">=</span><span class="n">problem</span><span class="o">.</span><span class="n">get_state_vars</span><span class="p">(),</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">first_step_states_unchanged</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="k">if</span> <span class="n">first_step_states_unchanged</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span>
+                        <span class="s2">&quot;First-step non-angle EMT state comparison is unavailable because &quot;</span>
+                        <span class="s2">&quot;initialization failed or comparable finite samples were not produced.&quot;</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">first_step_states_unchanged</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span>
+                            <span class="s2">&quot;Non-angle EMT states remained unchanged between the initial sample &quot;</span>
+                            <span class="s2">&quot;and the first integration sample.&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">report_text</span><span class="p">(</span>
+                            <span class="s2">&quot;Non-angle EMT states changed between the initial sample and the first &quot;</span>
+                            <span class="s2">&quot;integration sample. This sample comparison does not by itself indicate &quot;</span>
+                            <span class="s2">&quot;failed initialization; periodic AC states normally evolve in time.&quot;</span>
+                        <span class="p">)</span>
 
                 <span class="c1"># Persist the solver status in the shared results object so the</span>
                 <span class="c1"># GUI post-processing stage reports the actual simulation</span>

@@ -16,6 +16,7 @@ from VeraGridEngine.IO.fmu.compiler import (
     _required_fmi_symbols,
     fmu_compiler_available,
 )
+from VeraGridEngine.IO.fmu.config import detect_target_platform, library_suffix
 
 
 def test_required_symbols_are_interface_specific() -> None:
@@ -70,7 +71,7 @@ def test_shared_compiler_builds_fmu_library(tmp_path: Path) -> None:
         source_lines.append(f"VG_EXPORT int {symbol}(void) {{ return 0; }}")
     source_path.write_text("\n".join(source_lines) + "\n", encoding="utf-8")
 
-    output_path: Path = tmp_path / "stub.so"
+    output_path: Path = tmp_path / ("stub" + library_suffix(detect_target_platform()))
     compiler: Compiler = Compiler()
     compiled_path: Path = compile_fmu_shared_library(
         source_files=(source_path,),

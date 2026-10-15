@@ -4,10 +4,14 @@
 # SPDX-License-Identifier: MPL-2.0
 
 
-from typing import Tuple
+from typing import Tuple, Union
 
-from VeraGridEngine.Devices.Parents.editable_device import DeviceType, GCProp
-from VeraGridEngine.enumerations import PrpCat, GeneratorControlMode, ParamPowerFlowReferenceType
+import numpy as np
+
+from VeraGridEngine.Devices.Parents.editable_device import DeviceType, GCProp, get_at
+from VeraGridEngine.Devices.Profiles import ProfileEnum
+from VeraGridEngine.enumerations import (PrpCat, GeneratorControlMode, ParamPowerFlowReferenceType,
+                                         BatteryDispatchMode)
 from VeraGridEngine.Devices.Injections.generator import Generator, BuildStatus
 
 
@@ -26,6 +30,8 @@ class Battery(Generator):
         '_discharge_per_cycle',
         '_Enom',
         '_soc_0',
+        '_dispatch_mode',
+        '_dispatch_mode_prof',
         'soc',
         'min_energy',
         'energy',
@@ -88,6 +94,14 @@ class Battery(Generator):
             cat=[PrpCat.OPF],
             dyn_ref=ParamPowerFlowReferenceType.battery_discharge_per_cycle_pu,
         ),
+        GCProp(
+            prop_name='dispatch_mode',
+            units='',
+            tpe=BatteryDispatchMode,
+            profile_name='dispatch_mode_prof',
+            definition='Battery dispatch behaviour.',
+            cat=[PrpCat.OPF],
+        ),
     )
 
     def __init__(self,
@@ -119,7 +133,8 @@ class Battery(Generator):
                  r2=1e-20, x2=1e-20,
                  capex=0, opex=0,
                  srap_enabled: bool = True,
-                 build_status: BuildStatus = BuildStatus.Commissioned):
+                 build_status: BuildStatus = BuildStatus.Commissioned,
+                 dispatch_mode: BatteryDispatchMode = BatteryDispatchMode.Grid):
         """
         :ref:`Battery<battery>` (voltage controlled and dispatchable).
         :param name: Name of the battery
@@ -147,6 +162,7 @@ class Battery(Generator):
         :param soc: Current state of charge
         :param charge_per_cycle: Per unit of power to take per cycle when charging
         :param discharge_per_cycle: Per unit of power to deliver per cycle when discharging
+        :param dispatch_mode: Battery dispatch behaviour
         :param r1:
         :param x1:
         :param r0:
@@ -208,6 +224,10 @@ class Battery(Generator):
 
         self.energy = self.Enom * self.soc
 
+        self._dispatch_mode: BatteryDispatchMode = dispatch_mode
+        self._dispatch_mode_prof: ProfileEnum = ProfileEnum(default_value=dispatch_mode,
+                                                              enum_type=BatteryDispatchMode)
+
 
     def __iadd__(self, other: "Battery"):
         """
@@ -216,6 +236,58 @@ class Battery(Generator):
         """
         super().__iadd__(other)
         self.Enom += other.Enom
+
+    @property
+    def dispatch_mode(self) -> BatteryDispatchMode:
+        """
+        Get the battery dispatch mode.
+
+        :return: Battery dispatch mode.
+        """
+        return self._dispatch_mode
+
+    @dispatch_mode.setter
+    def dispatch_mode(self, val: BatteryDispatchMode) -> None:
+        """
+        Set the battery dispatch mode.
+
+        :param val: Battery dispatch mode.
+        :return: None
+        """
+        self._dispatch_mode = val
+
+    @property
+    def dispatch_mode_prof(self) -> ProfileEnum:
+        """
+        Get the battery dispatch mode profile.
+
+        :return: Battery dispatch mode profile.
+        """
+        return self._dispatch_mode_prof
+
+    @dispatch_mode_prof.setter
+    def dispatch_mode_prof(self, val: Union[ProfileEnum, np.ndarray]) -> None:
+        """
+        Set the battery dispatch mode profile.
+
+        :param val: Enum profile or array of enum values.
+        :return: None
+        """
+        if isinstance(val, ProfileEnum):
+            self._dispatch_mode_prof = val
+        elif isinstance(val, np.ndarray):
+            self._dispatch_mode_prof.set(arr=val)
+        else:
+            raise TypeError(f"Unsupported battery dispatch mode profile: {type(val)!r}")
+
+    def get_dispatch_mode_prof_at(self, t: int | None) -> BatteryDispatchMode:
+        """
+        Get the battery dispatch mode at one time index.
+
+        :param t: Time index, or ``None`` for the scalar value.
+        :return: Battery dispatch mode at the requested time.
+        """
+        return get_at(self.dispatch_mode, self.dispatch_mode_prof, t)
 
     # Scalar property accessors coerce assignments to the declared schema types.
 

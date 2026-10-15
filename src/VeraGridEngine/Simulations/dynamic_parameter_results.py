@@ -10,6 +10,7 @@ from typing import Dict, List
 import numpy as np
 
 from VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified import (
+    StaticParameterMappingDiagnostics,
     assign_static_api_object_mapping_for_device,
 )
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
@@ -19,7 +20,7 @@ from VeraGridEngine.Devices.types import ALL_DEV_TYPES
 from VeraGridEngine.Utils.Symbolic.block import Block
 from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
 from VeraGridEngine.basic_structures import Logger
-from VeraGridEngine.enumerations import PlotSimulationType
+from VeraGridEngine.enumerations import DynamicSimulationMode, PlotSimulationType
 
 
 def _get_numeric_constant_value(expression: Expr | Const | float | int | None) -> float | None:
@@ -108,33 +109,43 @@ def collect_declared_dynamic_parameter_values(grid: MultiCircuit,
     :return: Scalar map keyed by ``device_idtag:param_name``.
     """
     parameter_values: Dict[str, float] = dict()
+    simulation_mode: DynamicSimulationMode
+    if simulation_type == PlotSimulationType.RMS:
+        simulation_mode = DynamicSimulationMode.RMS
+    else:
+        if simulation_type == PlotSimulationType.EMT:
+            simulation_mode = DynamicSimulationMode.EMT
+        else:
+            raise ValueError("Unsupported dynamic simulation type")
+
+    mapping_diagnostics: StaticParameterMappingDiagnostics = StaticParameterMappingDiagnostics(
+        logger=logger,
+        simulation_mode=simulation_mode,
+    )
     device: ALL_DEV_TYPES
 
     for device in grid.get_all_elements_iter():
         if isinstance(device, (DynamicDevice, DynamicBusDevice)):
             model: Block
-            if simulation_type == PlotSimulationType.RMS:
+            if simulation_mode == DynamicSimulationMode.RMS:
                 model = device.rms_model
             else:
-                if simulation_type == PlotSimulationType.EMT:
-                    model = device.emt_model
-                else:
-                    raise ValueError("Unsupported dynamic simulation type")
+                model = device.emt_model
 
             model_blocks: List[Block] = model.get_all_blocks()
             mapped_values: Dict[Var, Const] = dict()
             block_item: Block
 
-            # Resolve every API mapping through the same engine-side mapper used
-            # during numerical problem assembly.
-            for block_item in model_blocks:
-                assign_static_api_object_mapping_for_device(
-                    grid=grid,
-                    device=device,
-                    mdl=block_item,
-                    problem_mapping=mapped_values,
-                    logger=logger,
-                )
+            # The unified mapper owns hierarchy traversal. Calling it once on
+            # the model root matches RMS and EMT problem assembly and prevents
+            # duplicate mapping warnings for descendant blocks.
+            assign_static_api_object_mapping_for_device(
+                grid=grid,
+                device=device,
+                mdl=model,
+                problem_mapping=mapped_values,
+                logger=mapping_diagnostics,
+            )
 
             # API-mapped targets can exist without a mirrored ``parameters``
             # declaration, so export the mapper output explicitly first.

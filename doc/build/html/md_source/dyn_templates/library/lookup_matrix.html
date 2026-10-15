@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lookup matrix &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>2D lookup tables &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
@@ -15,14 +15,14 @@
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="Moving average" href="moving_average.html" />
-    <link rel="prev" title="Lookup array" href="lookup_array.html" /> 
+    <link rel="prev" title="1D lookup tables" href="lookup_array.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -74,8 +74,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../../dynamic_simulations.html">🧲 Dynamic simulations</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-simulation-theory">1. Dynamic simulation theory</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-editor-and-model-construction">2. Dynamic editor and model construction</a></li>
-<li class="toctree-l2 current"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-model-library">3. Dynamic model library</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#benchmarking-against-other-software">2. Benchmarking against other software</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-editor-and-model-construction">3. Dynamic editor and model construction</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../../dynamic_simulations.html#dynamic-model-library">4. Dynamic model library</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="../../dynamic_model_library_index.html">📚 Dynamic model library</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="../../dynamic_model_library_index.html#authoring-models">Authoring models</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../../dynamic_model_library_index.html#device-templates">Device templates</a></li>
@@ -88,6 +89,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../dynamic_simulations.html#end-to-end-workflow">End-to-end workflow</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../license.html">📜 License</a></li>
@@ -112,7 +114,7 @@
           <li class="breadcrumb-item"><a href="../../dynamic_simulations.html">🧲 Dynamic simulations</a></li>
           <li class="breadcrumb-item"><a href="../../dynamic_model_library_index.html">📚 Dynamic model library</a></li>
           <li class="breadcrumb-item"><a href="index.html">Dynamic library blocks</a></li>
-      <li class="breadcrumb-item active">Lookup matrix</li>
+      <li class="breadcrumb-item active">2D lookup tables</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../../_sources/md_source/dyn_templates/library/lookup_matrix.md.txt" rel="nofollow"> View page source</a>
       </li>
@@ -122,10 +124,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section class="tex2jax_ignore mathjax_ignore" id="lookup-matrix">
-<h1>Lookup matrix<a class="headerlink" href="#lookup-matrix" title="Link to this heading"></a></h1>
+  <section class="tex2jax_ignore mathjax_ignore" id="d-lookup-tables">
+<h1>2D lookup tables<a class="headerlink" href="#d-lookup-tables" title="Link to this heading"></a></h1>
 <!-- veragrid-block-introduction:start -->
-<p><strong>Lookup matrix</strong> evaluates a tabulated characteristic instead of assuming one closed-form equation. Interpolation maps measured or commanded inputs to empirical outputs such as efficiency, saturation, capability, or control schedules while preserving the supplied breakpoints.</p>
+<p><strong>2D lookup tables</strong> evaluate a tabulated surface instead of assuming one closed-form equation. They map two measured or commanded inputs to empirical outputs such as efficiency, saturation, capability, or control schedules.</p>
 <section id="typical-use">
 <h2>Typical use<a class="headerlink" href="#typical-use" title="Link to this heading"></a></h2>
 <ul class="simple">
@@ -135,13 +137,18 @@
 <!-- veragrid-block-introduction:end -->
 <section id="purpose">
 <h3>Purpose<a class="headerlink" href="#purpose" title="Link to this heading"></a></h3>
-<p>This block approximates one two-dimensional nonlinear relation from one stored matrix.</p>
+<p>The Basic library exposes two distinct surface interpolators:</p>
+<ul class="simple">
+<li><p><strong>Bilinear lookup table</strong> interpolates linearly inside each grid cell.</p></li>
+<li><p><strong>2D spline lookup table</strong> applies natural cubic interpolation across both axes.</p></li>
+</ul>
+<p>Both blocks clip coordinates outside the table to its nearest boundary.</p>
 </section>
 <section id="behavior">
 <h3>Behavior<a class="headerlink" href="#behavior" title="Link to this heading"></a></h3>
 <ul class="simple">
 <li><p>Receives two independent inputs.</p></li>
-<li><p>Interpolates on a matrix or surface.</p></li>
+<li><p>Interpolates on a stored matrix whose x and y axes are strictly increasing.</p></li>
 <li><p>Outputs one approximated scalar value.</p></li>
 </ul>
 </section>
@@ -178,10 +185,10 @@
 <td><p>Interpolated output value</p></td>
 <td><p>model-dependent</p></td>
 </tr>
-<tr class="row-odd"><td><p>Parameter</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">matrix_K</span></code></p></td>
-<td><p>Stored lookup matrix or surface data</p></td>
-<td><p>data object</p></td>
+<tr class="row-odd"><td><p>Setting</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">x_y_z_values</span></code></p></td>
+<td><p>Ordered x axis, ordered y axis, and row-major z matrix</p></td>
+<td><p>model-dependent</p></td>
 </tr>
 </tbody>
 </table>
@@ -189,7 +196,9 @@
 <section id="how-to-use-it">
 <h2>How to use it<a class="headerlink" href="#how-to-use-it" title="Link to this heading"></a></h2>
 <ul class="simple">
-<li><p>Use this block when the modeled relation depends on two inputs and is best described by tabulated data.</p></li>
+<li><p>Use bilinear interpolation for piecewise-planar data and predictable local behavior.</p></li>
+<li><p>Use the spline variant when a smooth surface is required.</p></li>
+<li><p>Keep each axis strictly increasing and provide one z row per y point with one value per x point.</p></li>
 </ul>
 </section>
 </section>
@@ -198,7 +207,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="lookup_array.html" class="btn btn-neutral float-left" title="Lookup array" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="lookup_array.html" class="btn btn-neutral float-left" title="1D lookup tables" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="moving_average.html" class="btn btn-neutral float-right" title="Moving average" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

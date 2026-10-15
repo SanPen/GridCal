@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🌀 State estimation &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>🌀 State estimation &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/js/theme.js"></script>
@@ -89,6 +89,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="license.html">📜 License</a></li>
@@ -470,13 +471,13 @@ bad-data information as well.</p></li>
 
 <span class="n">m_circuit</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">MultiCircuit</span><span class="p">()</span>
 
-<span class="n">b1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">'B1'</span><span class="p">,</span> <span class="n">is_slack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">b2</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">'B2'</span><span class="p">)</span>
-<span class="n">b3</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">'B3'</span><span class="p">)</span>
+<span class="n">b1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">&#39;B1&#39;</span><span class="p">,</span> <span class="n">is_slack</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">b2</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">&#39;B2&#39;</span><span class="p">)</span>
+<span class="n">b3</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Bus</span><span class="p">(</span><span class="s1">&#39;B3&#39;</span><span class="p">)</span>
 
-<span class="n">br1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'Br1'</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
-<span class="n">br2</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'Br2'</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
-<span class="n">br3</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'Br3'</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.08</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="n">br1</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Br1&#39;</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="n">br2</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Br2&#39;</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.02</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
+<span class="n">br3</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">Line</span><span class="p">(</span><span class="n">b2</span><span class="p">,</span> <span class="n">b3</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Br3&#39;</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.08</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="mf">100.0</span><span class="p">)</span>
 
 <span class="c1"># add measurements</span>
 <span class="n">m_circuit</span><span class="o">.</span><span class="n">add_pf_measurement</span><span class="p">(</span><span class="n">gce</span><span class="o">.</span><span class="n">PfMeasurement</span><span class="p">(</span><span class="mf">0.888</span><span class="p">,</span> <span class="mf">0.008</span><span class="p">,</span> <span class="n">br1</span><span class="p">))</span>
@@ -534,18 +535,18 @@ Br3  38.591163 22.775597  -37.956374 -21.082828  38.591163 0.634789 1.692770
 <span class="n">drv</span> <span class="o">=</span> <span class="n">gce</span><span class="o">.</span><span class="n">StateEstimationDriver</span><span class="p">(</span><span class="n">circuit</span><span class="o">=</span><span class="n">m_circuit</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span>
 <span class="n">drv</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Converged:"</span><span class="p">,</span> <span class="n">drv</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Error:"</span><span class="p">,</span> <span class="n">drv</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converged:&quot;</span><span class="p">,</span> <span class="n">drv</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">converged</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error:&quot;</span><span class="p">,</span> <span class="n">drv</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">drv</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">get_report_dataframe</span><span class="p">())</span>
 </pre></div>
 </div>
 <p>Inspecting the convergence and observability report:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">report</span> <span class="o">=</span> <span class="n">drv</span><span class="o">.</span><span class="n">results</span><span class="o">.</span><span class="n">convergence_reports</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Bad data detected:"</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">get_bad_data_detected</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Unobservable buses:"</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">get_unobservable_buses</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Pseudo measurements:"</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">get_pseudo_measurements</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Measurement profile:"</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">get_measurement_profile</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bad data detected:&quot;</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">get_bad_data_detected</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Unobservable buses:&quot;</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">get_unobservable_buses</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pseudo measurements:&quot;</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">get_pseudo_measurements</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Measurement profile:&quot;</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">get_measurement_profile</span><span class="p">())</span>
 </pre></div>
 </div>
 <p>Accessing result tables:</p>

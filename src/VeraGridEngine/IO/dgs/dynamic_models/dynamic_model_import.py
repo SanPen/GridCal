@@ -16,11 +16,23 @@ from VeraGridEngine.Devices.Diagrams.block_diagram import BlockDiagramConnection
 from VeraGridEngine.Devices.Diagrams.block_diagram import BlockDiagramNode
 from VeraGridEngine.Devices.Dynamic.rms_template import RmsModelTemplate
 from VeraGridEngine.Devices.Dynamic.emt_template import EmtModelTemplate
+from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
+from VeraGridEngine.Devices.Parents.branch_parent import BranchParent
 from VeraGridEngine.Devices.Parents.dynamic_parent import DynamicDevice
+from VeraGridEngine.Devices.Parents.injection_parent import InjectionParent
 from VeraGridEngine.Devices.Branches.vsc import VSC
 from VeraGridEngine.Devices.Injections.generator import Generator
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.IO.dgs.dgs_circuit import DgsCircuit
+from VeraGridEngine.IO.dgs.dgs_rms_measurement_binding import (
+    _build_dgs_element_index,
+    _build_exact_meter_targets,
+    _build_implicit_meter_target_by_slot,
+    _get_native_source_target_signal_names,
+    _get_veragrid_meter_name,
+    _remove_meter_target_fallback_ownership,
+    _resolve_native_pll_element,
+)
 from VeraGridEngine.IO.dgs.dgs_to_blocks import (
     DgsDirectRootBuildResult,
     DgsGraphicalIndexes,
@@ -46,8 +58,13 @@ from VeraGridEngine.IO.dgs.dgs_to_blocks import (
     parse_dgs_block_definitions_from_circuit,
 )
 from VeraGridEngine.IO.dgs.dgs_objects import BlkSlot
+from VeraGridEngine.IO.dgs.dgs_objects import DGSElement
 from VeraGridEngine.IO.dgs.dgs_objects import ElmComp
+from VeraGridEngine.IO.dgs.dgs_objects import ElmPhi
 from VeraGridEngine.IO.dgs.dgs_objects import ElmSvs
+from VeraGridEngine.IO.dgs.dgs_objects import StaImea
+from VeraGridEngine.IO.dgs.dgs_objects import StaPqmea
+from VeraGridEngine.IO.dgs.dgs_objects import StaVmea
 from VeraGridEngine.IO.dynamic_model_import_types import (
     DgsDynamicModelActivationReport,
     DynamicModelImportBundle,
@@ -84,15 +101,34 @@ from VeraGridEngine.IO.dgs.dynamic_models.dgs_elmsvs_runtime_adapter import (
 )
 from VeraGridEngine.IO.file_system import get_create_veragrid_folder
 from VeraGridEngine.IO.dynamic_model_import_utils import sanitize_dynamic_model_file_stem
-from VeraGridEngine.Utils.Symbolic.block import Block
-from VeraGridEngine.Utils.Symbolic.symbolic import Var
+from VeraGridEngine.Utils.Symbolic.block import (
+    Block,
+    RmsPhysicalMeterKind,
+    find_connections,
+)
+from VeraGridEngine.Utils.Symbolic.rms_measurements_functions import (
+    build_rms_pll_measurements,
+    build_rms_pll_measurements_from,
+    build_rms_pll_measurements_to,
+    build_rms_voltage_meter_outputs_from_dc_from,
+    build_rms_voltage_meter_outputs_from_dc_to,
+    build_rms_voltage_meter_outputs_from_dc,
+    build_rms_voltage_meter_outputs_from_polar_from,
+    build_rms_voltage_meter_outputs_from_polar_to,
+    build_rms_voltage_meter_outputs_from_polar,
+    find_measurements_for_inputs_group,
+)
+from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var
+import VeraGridEngine.Utils.Symbolic.symbolic as sym
 from VeraGridEngine.Utils.procedural_logic import ProceduralLogicCodec
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.enumerations import (
     BlockType,
+    ConverterControlType,
     DeviceType,
     DgsDynamicAssociationRole,
     DynamicSimulationMode,
+    RmsTerminalSide,
     VarPowerFlowReferenceType,
 )
 
@@ -109,6 +145,73 @@ class _DgsRuntimeAdapterKind(Enum):
     SYNCHRONOUS_MACHINE = auto()
     STATIC_GENERATOR = auto()
     STATIC_VAR_SYSTEM = auto()
+
+
+class _DgsRmsMeasurementConnection:
+    """Describe one exact native-meter connection to a controller input.
+
+    :param alias_name: Native output alias routed by the DGS signal graph.
+    :param target_var: Exact controller input receiving the measurement.
+    """
+
+    __slots__ = ("alias_name", "target_var")
+
+    def __init__(self, alias_name: str, target_var: Var) -> None:
+        """Store one resolved producer-to-consumer endpoint.
+
+        :param alias_name: Native output alias routed by the DGS signal graph.
+        :param target_var: Exact controller input receiving the measurement.
+        :return: None.
+        """
+        self.alias_name: str = alias_name
+        self.target_var: Var = target_var
+
+
+class _DgsRmsMeasurementSpec:
+    """Carry native DGS meter semantics into early block materialization.
+
+    :param source_fid: Stable native meter identity.
+    :param source_name: Human-readable native meter name.
+    :param meter_kind: Physical measurement family.
+    :param meter_element: Parsed native meter configuration, when exported.
+    :param connections: Exact controller endpoints driven by the meter.
+    :param use_stationary_reference: Whether an ElmPhi exports a fixed frame.
+    """
+
+    __slots__ = (
+        "source_fid",
+        "source_name",
+        "meter_kind",
+        "meter_element",
+        "connections",
+        "use_stationary_reference",
+    )
+
+    def __init__(
+            self,
+            source_fid: str,
+            source_name: str,
+            meter_kind: RmsPhysicalMeterKind,
+            meter_element: DGSElement | None,
+            connections: List[_DgsRmsMeasurementConnection],
+            use_stationary_reference: bool,
+    ) -> None:
+        """Store immutable-shape native measurement construction data.
+
+        :param source_fid: Stable native meter identity.
+        :param source_name: Human-readable native meter name.
+        :param meter_kind: Physical measurement family.
+        :param meter_element: Parsed native meter configuration, when exported.
+        :param connections: Exact controller endpoints driven by the meter.
+        :param use_stationary_reference: Whether an ElmPhi exports a fixed frame.
+        :return: None.
+        """
+        self.source_fid: str = source_fid
+        self.source_name: str = source_name
+        self.meter_kind: RmsPhysicalMeterKind = meter_kind
+        self.meter_element: DGSElement | None = meter_element
+        self.connections: List[_DgsRmsMeasurementConnection] = connections
+        self.use_stationary_reference: bool = use_stationary_reference
 
 
 class DgsDynamicTemplateConversionResult:
@@ -1631,22 +1734,1146 @@ def _apply_composite_child_interface_if_missing(block: Block) -> None:
     else:
         pass
 
+    # first we discard variables that are interconected between child blocks
+    intern_connected_vars_list: List[Var] = list()
+    for child_block1 in block.children:
+        for child_block2 in block.children:
+            pairs, power_flow_pairs = find_connections(child_block1, child_block2)
+            for pair in pairs:
+                for var in pair:
+                    intern_connected_vars_list.append(var)
+            for power_flow_pair in power_flow_pairs:
+                for var in power_flow_pair:
+                    intern_connected_vars_list.append(var)
+
+
     for child_block in block.children:
         # Preserve the child order so imported reusable-template ports stay stable.
         for input_var in child_block.in_vars:
-            if input_var.uid in input_vars_by_uid:
+            if input_var.uid in input_vars_by_uid or input_var in intern_connected_vars_list:
                 pass
             else:
                 input_vars_by_uid[input_var.uid] = input_var
 
         for output_var in child_block.out_vars:
-            if output_var.uid in output_vars_by_uid:
+            if output_var.uid in output_vars_by_uid or input_var in intern_connected_vars_list:
                 pass
             else:
                 output_vars_by_uid[output_var.uid] = output_var
 
     block.in_vars = list(input_vars_by_uid.values())
     block.out_vars = list(output_vars_by_uid.values())
+
+
+def _get_internally_connected_input_object_ids(block: Block) -> Set[int]:
+    """Return child-input object identities supplied by another child.
+
+    The DGS materializer reuses the exact ``Var`` identity, UID or shared
+    reference when it resolves a routed signal. Only inputs absent from this
+    internal graph belong to the public power-flow interface.
+
+    :param block: Composite block whose direct children form the signal graph.
+    :return: Object identities of child inputs connected inside the composite.
+    """
+    connected_input_object_ids: Set[int] = set()
+    source_block: Block
+    target_block: Block
+    signal_pairs: List[tuple[Var, Var]]
+    power_flow_pairs: List[tuple[Var, Var]]
+    signal_pair: tuple[Var, Var]
+
+    # Inspect every directed child pair because DGS signal routing is ordered
+    # from a producer output to a consumer input.
+    for source_block in block.children:
+        for target_block in block.children:
+            if source_block is target_block:
+                pass
+            else:
+                signal_pairs, power_flow_pairs = find_connections(
+                    source_block,
+                    target_block,
+                )
+                for signal_pair in signal_pairs:
+                    connected_input_object_ids.add(id(signal_pair[1]))
+                for signal_pair in power_flow_pairs:
+                    connected_input_object_ids.add(id(signal_pair[1]))
+
+    return connected_input_object_ids
+
+
+def _resolve_dgs_external_input_reference(
+        input_name: str,
+        device_tpe: DeviceType,
+) -> VarPowerFlowReferenceType | None:
+    """Resolve one public DGS input into its power-flow reference.
+
+    Names are interpreted only after topology has proved that the input has no
+    internal producer. Branch-like VSC measurements use terminal-specific
+    references so equal physical quantities at opposite terminals cannot be
+    joined by the editor merely because their generic reference matches.
+
+    :param input_name: Imported DGS signal name.
+    :param device_tpe: Physical device family owning the composite model.
+    :return: Matching power-flow reference, or ``None`` for a control signal.
+    """
+    normalized_name: str = input_name.strip().lower()
+    reference: VarPowerFlowReferenceType | None
+
+    if device_tpe == DeviceType.VscDevice:
+        vsc_references: Dict[str, VarPowerFlowReferenceType] = dict((
+            ("vdc", VarPowerFlowReferenceType.Vf_dc),
+            ("vm", VarPowerFlowReferenceType.Vmt),
+            ("va", VarPowerFlowReferenceType.Vat),
+            ("u", VarPowerFlowReferenceType.Ut),
+            ("ur", VarPowerFlowReferenceType.URt),
+            ("ui", VarPowerFlowReferenceType.UIt),
+            ("ur_a", VarPowerFlowReferenceType.URt_A),
+            ("ur_b", VarPowerFlowReferenceType.URt_B),
+            ("ur_c", VarPowerFlowReferenceType.URt_C),
+            ("ui_a", VarPowerFlowReferenceType.UIt_A),
+            ("ui_b", VarPowerFlowReferenceType.UIt_B),
+            ("ui_c", VarPowerFlowReferenceType.UIt_C),
+            ("p_act", VarPowerFlowReferenceType.Pt),
+            ("q_act", VarPowerFlowReferenceType.Qt),
+            ("cosphi", VarPowerFlowReferenceType.COSPHIt),
+            ("sinphi", VarPowerFlowReferenceType.SINPHIt),
+            ("cosref", VarPowerFlowReferenceType.COSPHIt),
+            ("sinref", VarPowerFlowReferenceType.SINPHIt),
+        ))
+        reference = vsc_references.get(normalized_name, None)
+    else:
+        device_is_injection: bool = device_tpe in (
+            DeviceType.GeneratorDevice,
+            DeviceType.LoadDevice,
+            DeviceType.BatteryDevice,
+            DeviceType.ControllableShuntDevice,
+        )
+        if device_is_injection:
+            injection_references: Dict[str, VarPowerFlowReferenceType] = dict((
+                ("vm", VarPowerFlowReferenceType.Vm),
+                ("va", VarPowerFlowReferenceType.Va),
+                ("u", VarPowerFlowReferenceType.U),
+                ("ur", VarPowerFlowReferenceType.UR),
+                ("ui", VarPowerFlowReferenceType.UI),
+                ("ur_a", VarPowerFlowReferenceType.UR_A),
+                ("ur_b", VarPowerFlowReferenceType.UR_B),
+                ("ur_c", VarPowerFlowReferenceType.UR_C),
+                ("ui_a", VarPowerFlowReferenceType.UI_A),
+                ("ui_b", VarPowerFlowReferenceType.UI_B),
+                ("ui_c", VarPowerFlowReferenceType.UI_C),
+                ("p_act", VarPowerFlowReferenceType.P),
+                ("q_act", VarPowerFlowReferenceType.Q),
+                ("cosphi", VarPowerFlowReferenceType.COSPHI),
+                ("sinphi", VarPowerFlowReferenceType.SINPHI),
+                ("cosref", VarPowerFlowReferenceType.COSPHI),
+                ("sinref", VarPowerFlowReferenceType.SINPHI),
+            ))
+            reference = injection_references.get(normalized_name, None)
+        else:
+            reference = None
+
+    return reference
+
+
+def _assign_dgs_external_input_references(
+        block: Block,
+        device_tpe: DeviceType,
+) -> None:
+    """Type child inputs that remain exposed outside a DGS composite.
+
+    :param block: Fully connected composite built from direct DGS children.
+    :param device_tpe: Physical device family owning the composite model.
+    :return: None.
+    """
+    connected_input_object_ids: Set[int] = (
+        _get_internally_connected_input_object_ids(block=block)
+    )
+    child_block: Block
+    input_var: Var
+    resolved_reference: VarPowerFlowReferenceType | None
+
+    # Preserve internal control signals unchanged. The editor must only create
+    # physical measurement blocks for inputs that cross the root boundary.
+    for child_block in block.children:
+        for input_var in child_block.in_vars:
+            if id(input_var) in connected_input_object_ids:
+                pass
+            else:
+                resolved_reference = _resolve_dgs_external_input_reference(
+                    input_name=input_var.name,
+                    device_tpe=device_tpe,
+                )
+                if resolved_reference is None:
+                    pass
+                else:
+                    input_var.ref = resolved_reference
+
+
+def _collect_unconnected_dgs_child_inputs(
+        block: Block,
+) -> List[Tuple[Block, Var]]:
+    """Collect direct-child inputs that have no producer inside a composite.
+
+    :param block: Composite DGS root whose direct children are inspected.
+    :return: Ordered owner-variable pairs for unconnected child inputs.
+    """
+    connected_input_object_ids: Set[int] = (
+        _get_internally_connected_input_object_ids(block=block)
+    )
+    unconnected_inputs: List[Tuple[Block, Var]] = list()
+    child_block: Block
+    input_var: Var
+    for child_block in block.children:
+        for input_var in child_block.in_vars:
+            if id(input_var) in connected_input_object_ids:
+                pass
+            else:
+                unconnected_inputs.append((child_block, input_var))
+    return unconnected_inputs
+
+
+def _classify_rms_measurement_terminal(
+        reference: VarPowerFlowReferenceType,
+) -> RmsTerminalSide | None:
+    """Classify one measurement reference by its physical terminal.
+
+    :param reference: Typed power-flow or measurement reference.
+    :return: From, to, bus, or ``None`` when the reference is not measurable.
+    """
+    from_references: Set[VarPowerFlowReferenceType] = set((
+        VarPowerFlowReferenceType.Vmf,
+        VarPowerFlowReferenceType.Vaf,
+        VarPowerFlowReferenceType.Vf_dc,
+        VarPowerFlowReferenceType.Pf,
+        VarPowerFlowReferenceType.Qf,
+        VarPowerFlowReferenceType.Uf,
+        VarPowerFlowReferenceType.URf,
+        VarPowerFlowReferenceType.UIf,
+        VarPowerFlowReferenceType.URf_A,
+        VarPowerFlowReferenceType.URf_B,
+        VarPowerFlowReferenceType.URf_C,
+        VarPowerFlowReferenceType.UIf_A,
+        VarPowerFlowReferenceType.UIf_B,
+        VarPowerFlowReferenceType.UIf_C,
+        VarPowerFlowReferenceType.COSPHIf,
+        VarPowerFlowReferenceType.SINPHIf,
+        VarPowerFlowReferenceType.If_dc,
+    ))
+    to_references: Set[VarPowerFlowReferenceType] = set((
+        VarPowerFlowReferenceType.Vmt,
+        VarPowerFlowReferenceType.Vat,
+        VarPowerFlowReferenceType.Vt_dc,
+        VarPowerFlowReferenceType.Pt,
+        VarPowerFlowReferenceType.Qt,
+        VarPowerFlowReferenceType.Ut,
+        VarPowerFlowReferenceType.URt,
+        VarPowerFlowReferenceType.UIt,
+        VarPowerFlowReferenceType.URt_A,
+        VarPowerFlowReferenceType.URt_B,
+        VarPowerFlowReferenceType.URt_C,
+        VarPowerFlowReferenceType.UIt_A,
+        VarPowerFlowReferenceType.UIt_B,
+        VarPowerFlowReferenceType.UIt_C,
+        VarPowerFlowReferenceType.COSPHIt,
+        VarPowerFlowReferenceType.SINPHIt,
+        VarPowerFlowReferenceType.It_dc,
+    ))
+    bus_references: Set[VarPowerFlowReferenceType] = set((
+        VarPowerFlowReferenceType.Vm,
+        VarPowerFlowReferenceType.Va,
+        VarPowerFlowReferenceType.Vdc,
+        VarPowerFlowReferenceType.P,
+        VarPowerFlowReferenceType.Q,
+        VarPowerFlowReferenceType.U,
+        VarPowerFlowReferenceType.UR,
+        VarPowerFlowReferenceType.UI,
+        VarPowerFlowReferenceType.UR_A,
+        VarPowerFlowReferenceType.UR_B,
+        VarPowerFlowReferenceType.UR_C,
+        VarPowerFlowReferenceType.UI_A,
+        VarPowerFlowReferenceType.UI_B,
+        VarPowerFlowReferenceType.UI_C,
+        VarPowerFlowReferenceType.COSPHI,
+        VarPowerFlowReferenceType.SINPHI,
+        VarPowerFlowReferenceType.I_DC,
+    ))
+    if reference in from_references:
+        terminal_side: RmsTerminalSide | None = RmsTerminalSide.FROM
+    else:
+        if reference in to_references:
+            terminal_side = RmsTerminalSide.TO
+        else:
+            if reference in bus_references:
+                terminal_side = RmsTerminalSide.BUS
+            else:
+                terminal_side = None
+    return terminal_side
+
+
+def _get_rms_terminal_physical_references(
+        block_type: BlockType,
+        terminal_side: RmsTerminalSide,
+        is_dc_terminal: bool,
+) -> List[VarPowerFlowReferenceType]:
+    """Return the physical root inputs required by one RMS measurement.
+
+    :param block_type: Measurement family selected for the imported signals.
+    :param terminal_side: Physical terminal represented by the measurement.
+    :param is_dc_terminal: Whether the selected physical terminal is DC.
+    :return: Ordered physical references required to build the measurement.
+    """
+    if terminal_side is RmsTerminalSide.FROM:
+        vm_reference: VarPowerFlowReferenceType = VarPowerFlowReferenceType.Vmf
+        va_reference: VarPowerFlowReferenceType = VarPowerFlowReferenceType.Vaf
+        vdc_reference: VarPowerFlowReferenceType = VarPowerFlowReferenceType.Vf_dc
+        p_reference: VarPowerFlowReferenceType = VarPowerFlowReferenceType.Pf
+        q_reference: VarPowerFlowReferenceType = VarPowerFlowReferenceType.Qf
+    else:
+        if terminal_side is RmsTerminalSide.TO:
+            vm_reference = VarPowerFlowReferenceType.Vmt
+            va_reference = VarPowerFlowReferenceType.Vat
+            vdc_reference = VarPowerFlowReferenceType.Vt_dc
+            p_reference = VarPowerFlowReferenceType.Pt
+            q_reference = VarPowerFlowReferenceType.Qt
+        else:
+            vm_reference = VarPowerFlowReferenceType.Vm
+            va_reference = VarPowerFlowReferenceType.Va
+            vdc_reference = VarPowerFlowReferenceType.Vdc
+            p_reference = VarPowerFlowReferenceType.P
+            q_reference = VarPowerFlowReferenceType.Q
+
+    # Each measurement receives the smallest physical contract from which its
+    # requested derived signals can be calculated.
+    if block_type == BlockType.MEASUREMENTS_VOLTAGE_FROM_POLAR:
+        required_references: List[VarPowerFlowReferenceType] = list((
+            vm_reference,
+            va_reference,
+        ))
+    else:
+        if block_type == BlockType.MEASUREMENTS_PLL:
+            required_references = list((va_reference,))
+        else:
+            if block_type == BlockType.MEASUREMENTS_VOLTAGE_FROM_DC:
+                required_references = list((vdc_reference,))
+            else:
+                if block_type == BlockType.MEASUREMENTS_CURRENT_FROM_PQ:
+                    required_references = list((
+                        vm_reference,
+                        va_reference,
+                        p_reference,
+                        q_reference,
+                    ))
+                else:
+                    if block_type == BlockType.MEASUREMENTS_VOLTAGE_ANGLE:
+                        if is_dc_terminal:
+                            required_references = list((vdc_reference,))
+                        else:
+                            required_references = list((
+                                vm_reference,
+                                va_reference,
+                            ))
+                    else:
+                        if block_type == BlockType.MEASUREMENTS_P_Q:
+                            if is_dc_terminal:
+                                required_references = list((p_reference,))
+                            else:
+                                required_references = list((
+                                    p_reference,
+                                    q_reference,
+                                ))
+                        else:
+                            required_references = list()
+    return required_references
+
+
+def _get_or_create_dgs_physical_input(
+        block: Block,
+        reference: VarPowerFlowReferenceType,
+        physical_inputs_by_reference: Dict[VarPowerFlowReferenceType, Var],
+        var_factory: VarFactory,
+) -> Var:
+    """Resolve one canonical physical input for an imported DGS template.
+
+    :param block: Imported root that exposes the physical input.
+    :param reference: Exact power-flow quantity required by a measurement.
+    :param physical_inputs_by_reference: Canonical inputs already allocated.
+    :param var_factory: Factory owning newly allocated template variables.
+    :return: Canonical physical input for the requested reference.
+    """
+    physical_input: Var | None = physical_inputs_by_reference.get(reference, None)
+    if physical_input is None:
+        # The parser has no bus model yet. Create the same typed boundary
+        # variable used by native templates so device assignment can connect it
+        # to the real bus through ``connect_bus_variables_rms`` later.
+        physical_input = var_factory.add_var(
+            name=reference.name,
+            reference=reference,
+        )
+        physical_inputs_by_reference[reference] = physical_input
+        block.in_vars.append(physical_input)
+    else:
+        pass
+    return physical_input
+
+
+def _build_dgs_rms_measurement_block(
+        block_type: BlockType,
+        terminal_side: RmsTerminalSide,
+        is_dc_terminal: bool,
+        physical_inputs_by_reference: Dict[VarPowerFlowReferenceType, Var],
+        var_factory: VarFactory,
+) -> Block | None:
+    """Build one required RMS measurement for an exact terminal.
+
+    :param block_type: Measurement family selected from the reference catalog.
+    :param terminal_side: Physical terminal represented by the block.
+    :param is_dc_terminal: Whether the selected physical terminal is DC.
+    :param physical_inputs_by_reference: Canonical physical template inputs.
+    :param var_factory: Isolated factory owned by this imported template.
+    :return: Constructed measurement block, or ``None`` without prerequisites.
+    """
+    measurement_block: Block | None = None
+    variables: List[Var]
+    vm: Var | None
+    va: Var | None
+    vdc: Var | None
+    if terminal_side is RmsTerminalSide.FROM:
+        vm = physical_inputs_by_reference.get(VarPowerFlowReferenceType.Vmf, None)
+        va = physical_inputs_by_reference.get(VarPowerFlowReferenceType.Vaf, None)
+        vdc = physical_inputs_by_reference.get(VarPowerFlowReferenceType.Vf_dc, None)
+    else:
+        if terminal_side is RmsTerminalSide.TO:
+            vm = physical_inputs_by_reference.get(VarPowerFlowReferenceType.Vmt, None)
+            va = physical_inputs_by_reference.get(VarPowerFlowReferenceType.Vat, None)
+            vdc = physical_inputs_by_reference.get(VarPowerFlowReferenceType.Vt_dc, None)
+        else:
+            vm = physical_inputs_by_reference.get(VarPowerFlowReferenceType.Vm, None)
+            va = physical_inputs_by_reference.get(VarPowerFlowReferenceType.Va, None)
+            vdc = physical_inputs_by_reference.get(VarPowerFlowReferenceType.Vdc, None)
+
+    if block_type == BlockType.MEASUREMENTS_VOLTAGE_FROM_POLAR:
+        if vm is None or va is None:
+            pass
+        else:
+            if terminal_side is RmsTerminalSide.FROM:
+                measurement_block, variables = build_rms_voltage_meter_outputs_from_polar_from(
+                    var_factory=var_factory,
+                    vm=vm,
+                    va=va,
+                )
+            else:
+                if terminal_side is RmsTerminalSide.TO:
+                    measurement_block, variables = build_rms_voltage_meter_outputs_from_polar_to(
+                        var_factory=var_factory,
+                        vm=vm,
+                        va=va,
+                    )
+                else:
+                    nominal_frequency: Const = var_factory.add_const(50.0)
+                    measurement_block, variables = build_rms_voltage_meter_outputs_from_polar(
+                        var_factory=var_factory,
+                        vm=vm,
+                        va=va,
+                        measured_frequency_hz=nominal_frequency,
+                        nominal_frequency_hz=nominal_frequency,
+                    )
+                    measurement_block.in_vars = list((vm, va))
+                    measurement_block.out_vars = variables
+    else:
+        if block_type == BlockType.MEASUREMENTS_PLL:
+            if va is None:
+                pass
+            else:
+                if terminal_side is RmsTerminalSide.FROM:
+                    measurement_block, variables = build_rms_pll_measurements_from(
+                        va=va,
+                        var_factory=var_factory,
+                    )
+                else:
+                    if terminal_side is RmsTerminalSide.TO:
+                        measurement_block, variables = build_rms_pll_measurements_to(
+                            va=va,
+                            var_factory=var_factory,
+                        )
+                    else:
+                        measurement_block, variables = build_rms_pll_measurements(
+                            va=va,
+                            var_factory=var_factory,
+                        )
+        else:
+            if block_type == BlockType.MEASUREMENTS_VOLTAGE_FROM_DC:
+                if vdc is None:
+                    pass
+                else:
+                    if terminal_side is RmsTerminalSide.FROM:
+                        measurement_block, variables = build_rms_voltage_meter_outputs_from_dc_from(
+                            var_factory=var_factory,
+                            vdc=vdc,
+                        )
+                    else:
+                        if terminal_side is RmsTerminalSide.TO:
+                            measurement_block, variables = build_rms_voltage_meter_outputs_from_dc_to(
+                                var_factory=var_factory,
+                                vdc=vdc,
+                            )
+                        else:
+                            nominal_frequency = var_factory.add_const(50.0)
+                            measurement_block, variables = build_rms_voltage_meter_outputs_from_dc(
+                                var_factory=var_factory,
+                                vdc=vdc,
+                                nominal_frequency_hz=nominal_frequency,
+                            )
+                            measurement_block.in_vars = list((vdc,))
+                            measurement_block.out_vars = variables
+            else:
+                if block_type in (
+                        BlockType.MEASUREMENTS_VOLTAGE_ANGLE,
+                        BlockType.MEASUREMENTS_P_Q,
+                ):
+                    pass_through_vars: List[Var] = list()
+                    required_references: List[VarPowerFlowReferenceType] = (
+                        _get_rms_terminal_physical_references(
+                            block_type=block_type,
+                            terminal_side=terminal_side,
+                            is_dc_terminal=is_dc_terminal,
+                        )
+                    )
+                    required_reference: VarPowerFlowReferenceType
+                    for required_reference in required_references:
+                        input_var: Var | None = physical_inputs_by_reference.get(
+                            required_reference,
+                            None,
+                        )
+                        if block_type == BlockType.MEASUREMENTS_VOLTAGE_ANGLE:
+                            include_var: bool = input_var in (vm, va, vdc)
+                        else:
+                            include_var = (
+                                input_var is not None
+                                and input_var.ref == required_reference
+                            )
+                        if (
+                                include_var
+                                and input_var is not None
+                                and input_var not in pass_through_vars
+                        ):
+                            pass_through_vars.append(input_var)
+                        else:
+                            pass
+                    if len(pass_through_vars) == 0:
+                        pass
+                    else:
+                        measurement_block = Block(
+                            in_vars=list(pass_through_vars),
+                            out_vars=pass_through_vars,
+                        )
+                else:
+                    pass
+
+    if measurement_block is None:
+        pass
+    else:
+        measurement_block.name = block_type.name + "_" + terminal_side.name
+    return measurement_block
+
+
+def _collect_native_dgs_rms_measurement_specs(
+        dgs_circuit: DgsCircuit,
+        root_element: ElmComp,
+        direct_result: DgsDirectRootBuildResult,
+        host_device: DynamicDevice | None,
+) -> List[_DgsRmsMeasurementSpec]:
+    """Resolve native meter semantics and exact consumers before adaptation.
+
+    :param dgs_circuit: Parsed source graph retaining native meter objects.
+    :param root_element: Composite root whose direct slots are materialized.
+    :param direct_result: Exact direct-slot lookup for the controller root.
+    :param host_device: Physical host used to interpret implicit ElmPhi frames.
+    :return: Ordered native measurement construction specifications.
+    """
+    element_by_id: Dict[str, DGSElement] = _build_dgs_element_index(
+        dgs_circuit=dgs_circuit,
+    )
+    implicit_target_by_slot: Dict[str, str] = (
+        _build_implicit_meter_target_by_slot(
+            dgs_circuit=dgs_circuit,
+            root_element=root_element,
+            entries=direct_result.direct_entries,
+        )
+    )
+    specs: List[_DgsRmsMeasurementSpec] = list()
+    entry: ElmCompInstanceEntry
+
+    # Follow exact direct-slot identities so equal signal names in independent
+    # controller children never become an accidental shared measurement.
+    for entry in direct_result.direct_entries:
+        if entry.slot_id is None:
+            pass
+        else:
+            is_pll_slot: bool = (
+                entry.slot_filter is not None
+                and (
+                    "ElmPhi" in entry.slot_filter
+                    or "ElmPll" in entry.slot_filter
+                )
+            )
+            meter_element: DGSElement | None
+            if entry.element_id is None:
+                if is_pll_slot:
+                    meter_element = _resolve_native_pll_element(
+                        root_element=root_element,
+                        dgs_circuit=dgs_circuit,
+                    )
+                else:
+                    meter_element = None
+            else:
+                meter_element = element_by_id.get(entry.element_id, None)
+
+            meter_kind: RmsPhysicalMeterKind | None
+            if isinstance(meter_element, StaVmea):
+                meter_kind = RmsPhysicalMeterKind.VOLTAGE
+            else:
+                if isinstance(meter_element, StaImea):
+                    meter_kind = RmsPhysicalMeterKind.CURRENT
+                else:
+                    if isinstance(meter_element, StaPqmea):
+                        meter_kind = RmsPhysicalMeterKind.POWER
+                    else:
+                        if isinstance(meter_element, ElmPhi) or is_pll_slot:
+                            meter_kind = RmsPhysicalMeterKind.PHASE_LOCKED_LOOP
+                        else:
+                            meter_kind = None
+
+            if meter_kind is None:
+                pass
+            else:
+                # Early materialization owns the native meter equations, so it
+                # must retain every exact BlkSig consumer. The late-binding
+                # helper deliberately excludes equipment-owned signals, which
+                # would incorrectly discard complete meters before the runtime
+                # adapter has removed their provisional fallback ownership.
+                targets_by_alias: Dict[str, List[Var]] = (
+                    _build_exact_meter_targets(
+                        dgs_circuit=dgs_circuit,
+                        source_slot_id=entry.slot_id,
+                        child_block_by_slot_id=(
+                            direct_result.child_block_by_slot_id
+                        ),
+                    )
+                )
+                target_names: List[str] = (
+                    _get_native_source_target_signal_names(
+                        dgs_circuit=dgs_circuit,
+                        source_slot_id=entry.slot_id,
+                    )
+                )
+                if len(target_names) == 0:
+                    implicit_target_name: str | None = (
+                        implicit_target_by_slot.get(entry.slot_id, None)
+                    )
+                    if implicit_target_name is None:
+                        target_names = list(targets_by_alias.keys())
+                    else:
+                        target_names = list((implicit_target_name,))
+                else:
+                    pass
+
+                connections: List[_DgsRmsMeasurementConnection] = list()
+                target_name: str
+                target_var: Var
+                for target_name in target_names:
+                    target_vars: List[Var] | None = targets_by_alias.get(
+                        target_name,
+                        None,
+                    )
+                    if target_vars is None:
+                        pass
+                    else:
+                        for target_var in target_vars:
+                            connections.append(_DgsRmsMeasurementConnection(
+                                alias_name=target_name,
+                                target_var=target_var,
+                            ))
+
+                if len(connections) == 0:
+                    pass
+                else:
+                    use_stationary_reference: bool = False
+                    if isinstance(meter_element, ElmPhi):
+                        use_stationary_reference = (
+                            meter_element.pbusbar is None
+                            or str(meter_element.pbusbar).strip() == ""
+                        )
+                    else:
+                        if is_pll_slot and isinstance(host_device, VSC):
+                            use_stationary_reference = (
+                                host_device.control1 is ConverterControlType.Pac
+                            )
+                        else:
+                            pass
+                    source_fid: str
+                    if meter_element is None:
+                        source_fid = entry.slot_id
+                    else:
+                        source_fid = str(meter_element.ID)
+                    source_name: str = _get_veragrid_meter_name(
+                        meter_kind=meter_kind,
+                        source_fid=source_fid,
+                    )
+                    specs.append(_DgsRmsMeasurementSpec(
+                        source_fid=source_fid,
+                        source_name=source_name,
+                        meter_kind=meter_kind,
+                        meter_element=meter_element,
+                        connections=connections,
+                        use_stationary_reference=use_stationary_reference,
+                    ))
+    return specs
+
+
+def _get_native_dgs_measurement_physical_references(
+        spec: _DgsRmsMeasurementSpec,
+) -> List[VarPowerFlowReferenceType]:
+    """Return physical inputs required by one early native measurement.
+
+    :param spec: Resolved native measurement specification.
+    :return: Ordered physical power-flow references.
+    """
+    terminal_side: RmsTerminalSide | None = None
+    connection: _DgsRmsMeasurementConnection
+
+    # Native meters may export non-terminal signals first, such as ``fe``
+    # before ``u``. Inspect every exact endpoint until one identifies the
+    # physical side instead of making the result depend on DGS row order.
+    for connection in spec.connections:
+        candidate_reference: object = connection.target_var.ref
+        if isinstance(candidate_reference, VarPowerFlowReferenceType):
+            candidate_terminal_side: RmsTerminalSide | None = (
+                _classify_rms_measurement_terminal(
+                reference=candidate_reference,
+                )
+            )
+            if terminal_side is None and candidate_terminal_side is not None:
+                terminal_side = candidate_terminal_side
+            else:
+                pass
+        else:
+            pass
+
+    if terminal_side is None:
+        references: List[VarPowerFlowReferenceType] = list()
+    else:
+        if spec.meter_kind is RmsPhysicalMeterKind.POWER:
+            references = _get_rms_terminal_physical_references(
+                block_type=BlockType.MEASUREMENTS_P_Q,
+                terminal_side=terminal_side,
+                is_dc_terminal=False,
+            )
+        else:
+            if spec.meter_kind is RmsPhysicalMeterKind.VOLTAGE:
+                references = _get_rms_terminal_physical_references(
+                    block_type=BlockType.MEASUREMENTS_VOLTAGE_FROM_POLAR,
+                    terminal_side=terminal_side,
+                    is_dc_terminal=False,
+                )
+            else:
+                if spec.meter_kind is RmsPhysicalMeterKind.PHASE_LOCKED_LOOP:
+                    references = _get_rms_terminal_physical_references(
+                        block_type=BlockType.MEASUREMENTS_PLL,
+                        terminal_side=terminal_side,
+                        is_dc_terminal=False,
+                    )
+                else:
+                    references = list()
+
+    # Some controller aliases use COSPHI/SINPHI references, whose terminal
+    # classification identifies the side but not the voltage-angle prerequisite.
+    if (
+            spec.meter_kind is RmsPhysicalMeterKind.PHASE_LOCKED_LOOP
+            and not spec.use_stationary_reference
+            and terminal_side is not None
+    ):
+        if terminal_side is RmsTerminalSide.FROM:
+            references = list((VarPowerFlowReferenceType.Vaf,))
+        else:
+            if terminal_side is RmsTerminalSide.TO:
+                references = list((VarPowerFlowReferenceType.Vat,))
+            else:
+                references = list((VarPowerFlowReferenceType.Va,))
+    else:
+        pass
+    return references
+
+
+def _build_native_dgs_measurement_expression(
+        spec: _DgsRmsMeasurementSpec,
+        alias_name: str,
+        physical_inputs_by_reference: Dict[VarPowerFlowReferenceType, Var],
+        circuit: MultiCircuit,
+) -> Expr | None:
+    """Build one native meter output expression from physical placeholders.
+
+    :param spec: Resolved native measurement specification.
+    :param alias_name: Exact producer alias connected to a controller input.
+    :param physical_inputs_by_reference: Canonical early physical inputs.
+    :param circuit: Circuit supplying system power and frequency bases.
+    :return: Native output expression, or ``None`` when unsupported.
+    """
+    normalized_name: str = alias_name.strip().lower()
+    expression: Expr | None = None
+    references: List[VarPowerFlowReferenceType] = (
+        _get_native_dgs_measurement_physical_references(spec=spec)
+    )
+
+    if spec.meter_kind is RmsPhysicalMeterKind.POWER:
+        power_meter: StaPqmea | None
+        if isinstance(spec.meter_element, StaPqmea):
+            power_meter = spec.meter_element
+        else:
+            power_meter = None
+        if power_meter is None or power_meter.outserv != 0:
+            pass
+        else:
+            orientation: float = 1.0 if power_meter.i_orient == 0 else -1.0
+            if power_meter.Snom > 0.0 and circuit.Sbase > 0.0:
+                power_scale: float = float(circuit.Sbase) / float(power_meter.Snom)
+            else:
+                power_scale = 1.0
+            if normalized_name.startswith("q") and len(references) > 1:
+                physical_power: Var | None = physical_inputs_by_reference.get(
+                    references[1],
+                    None,
+                )
+            else:
+                if len(references) > 0:
+                    physical_power = physical_inputs_by_reference.get(
+                        references[0],
+                        None,
+                    )
+                else:
+                    physical_power = None
+            if physical_power is None:
+                pass
+            else:
+                expression = Const(orientation * power_scale) * physical_power
+    else:
+        if spec.meter_kind is RmsPhysicalMeterKind.VOLTAGE:
+            if len(references) < 2:
+                pass
+            else:
+                voltage_magnitude: Var | None = physical_inputs_by_reference.get(
+                    references[0],
+                    None,
+                )
+                voltage_angle: Var | None = physical_inputs_by_reference.get(
+                    references[1],
+                    None,
+                )
+                if voltage_magnitude is None or voltage_angle is None:
+                    pass
+                else:
+                    if "u1r" in normalized_name or normalized_name == "ur":
+                        expression = voltage_magnitude * sym.cos(voltage_angle)
+                    else:
+                        if "u1i" in normalized_name or normalized_name == "ui":
+                            expression = voltage_magnitude * sym.sin(voltage_angle)
+                        else:
+                            if normalized_name.startswith("cosphi"):
+                                expression = sym.cos(voltage_angle)
+                            else:
+                                if normalized_name.startswith("sinphi"):
+                                    expression = sym.sin(voltage_angle)
+                                else:
+                                    if "phi" in normalized_name:
+                                        expression = voltage_angle
+                                    else:
+                                        if normalized_name in ("fe", "fref"):
+                                            expression = Const(1.0)
+                                        else:
+                                            if (
+                                                    normalized_name.startswith("f")
+                                                    or "_hz" in normalized_name
+                                            ):
+                                                expression = Const(float(circuit.fBase))
+                                            else:
+                                                expression = voltage_magnitude
+        else:
+            if spec.meter_kind is RmsPhysicalMeterKind.PHASE_LOCKED_LOOP:
+                if spec.use_stationary_reference:
+                    if normalized_name.startswith("cosphi"):
+                        expression = Const(1.0)
+                    else:
+                        if normalized_name.startswith("sinphi"):
+                            expression = Const(0.0)
+                        else:
+                            if normalized_name == "fmeas":
+                                expression = Const(1.0)
+                            else:
+                                if "hz" in normalized_name:
+                                    expression = Const(float(circuit.fBase))
+                                else:
+                                    pass
+                else:
+                    if len(references) == 0:
+                        voltage_angle = None
+                    else:
+                        voltage_angle = physical_inputs_by_reference.get(
+                            references[0],
+                            None,
+                        )
+                    if voltage_angle is None:
+                        pass
+                    else:
+                        if normalized_name.startswith("cosphi"):
+                            expression = sym.cos(voltage_angle)
+                        else:
+                            if normalized_name.startswith("sinphi"):
+                                expression = sym.sin(voltage_angle)
+                            else:
+                                pass
+            else:
+                pass
+    return expression
+
+
+def _materialize_native_dgs_rms_measurements(
+        block: Block,
+        circuit: MultiCircuit,
+        native_specs: List[_DgsRmsMeasurementSpec],
+        physical_inputs_by_reference: Dict[VarPowerFlowReferenceType, Var],
+        var_factory: VarFactory,
+) -> Set[int]:
+    """Create native early measurements and connect exact controller inputs.
+
+    :param block: Imported controller root receiving measurement children.
+    :param circuit: Circuit supplying native measurement bases.
+    :param native_specs: Exact native meter construction specifications.
+    :param physical_inputs_by_reference: Shared physical placeholder lookup.
+    :param var_factory: Factory owning early measurement variables.
+    :return: Object identities of controller inputs replaced successfully.
+    """
+    replaced_input_object_ids: Set[int] = set()
+    spec: _DgsRmsMeasurementSpec
+    for spec in native_specs:
+        required_references: List[VarPowerFlowReferenceType] = (
+            _get_native_dgs_measurement_physical_references(spec=spec)
+        )
+        required_reference: VarPowerFlowReferenceType
+        for required_reference in required_references:
+            _get_or_create_dgs_physical_input(
+                block=block,
+                reference=required_reference,
+                physical_inputs_by_reference=physical_inputs_by_reference,
+                var_factory=var_factory,
+            )
+
+        measurement_block: Block = Block(name=spec.source_name)
+        measurement_block.in_vars = list(
+            physical_inputs_by_reference[reference]
+            for reference in required_references
+        )
+        connected_count: int = 0
+        output_by_alias: Dict[str, Var] = dict()
+        connection: _DgsRmsMeasurementConnection
+        for connection in spec.connections:
+            output_var: Var | None = output_by_alias.get(
+                connection.alias_name,
+                None,
+            )
+            if output_var is None:
+                source_expression: Expr | None = (
+                    _build_native_dgs_measurement_expression(
+                        spec=spec,
+                        alias_name=connection.alias_name,
+                        physical_inputs_by_reference=physical_inputs_by_reference,
+                        circuit=circuit,
+                    )
+                )
+                if source_expression is None:
+                    pass
+                else:
+                    # The exact DGS consumer variable becomes the measurement
+                    # output. Reusing it prevents a same-name second UID from
+                    # appearing when the template is wrapped or duplicated.
+                    output_var = connection.target_var
+                    _remove_meter_target_fallback_ownership(
+                        host_model=block,
+                        target_var=output_var,
+                    )
+                    measurement_block.algebraic_vars.append(output_var)
+                    measurement_block.out_vars.append(output_var)
+                    measurement_block.algebraic_eqs.append(
+                        output_var - source_expression
+                    )
+                    output_by_alias[connection.alias_name] = output_var
+                    replaced_input_object_ids.add(id(connection.target_var))
+                    connected_count += 1
+            else:
+                # One native output can feed several exact endpoints. Remove
+                # every additional receiver fallback before atomically joining
+                # its complete block interface to the canonical output UID.
+                _remove_meter_target_fallback_ownership(
+                    host_model=block,
+                    target_var=connection.target_var,
+                )
+                block.update_model(
+                    old=connection.target_var,
+                    new=output_var,
+                )
+                replaced_input_object_ids.add(id(connection.target_var))
+                connected_count += 1
+
+        if connected_count == 0:
+            pass
+        else:
+            block.children.append(measurement_block)
+    return replaced_input_object_ids
+
+
+def _add_required_dgs_rms_measurements(
+        block: Block,
+        host_device: DynamicDevice,
+        circuit: MultiCircuit,
+        native_specs: List[_DgsRmsMeasurementSpec],
+) -> None:
+    """Materialize and connect measurements required by one imported model.
+
+    :param block: Imported DGS composite root.
+    :param host_device: Exact static device that owns the final RMS template.
+    :param circuit: Circuit providing the system power and frequency bases.
+    :param native_specs: Exact native meters resolved from the DGS graph.
+    :return: None.
+    """
+    measurement_var_factory: VarFactory = VarFactory()
+    physical_inputs_by_reference: Dict[VarPowerFlowReferenceType, Var] = dict()
+    replaced_input_object_ids: Set[int] = (
+        _materialize_native_dgs_rms_measurements(
+            block=block,
+            circuit=circuit,
+            native_specs=native_specs,
+            physical_inputs_by_reference=physical_inputs_by_reference,
+            var_factory=measurement_var_factory,
+        )
+    )
+    unconnected_inputs: List[Tuple[Block, Var]] = (
+        _collect_unconnected_dgs_child_inputs(block=block)
+    )
+    physical_input_object_ids: Set[int] = set(
+        id(physical_input)
+        for physical_input in physical_inputs_by_reference.values()
+    )
+    unconnected_inputs = list(
+        input_entry
+        for input_entry in unconnected_inputs
+        if id(input_entry[1]) not in physical_input_object_ids
+    )
+    inputs_by_terminal: Dict[RmsTerminalSide, List[Tuple[Block, Var]]] = dict((
+        (RmsTerminalSide.FROM, list()),
+        (RmsTerminalSide.TO, list()),
+        (RmsTerminalSide.BUS, list()),
+    ))
+    owner_block: Block
+    input_var: Var
+    for owner_block, input_var in unconnected_inputs:
+        if isinstance(input_var.ref, VarPowerFlowReferenceType):
+            terminal_side: RmsTerminalSide | None = (
+                _classify_rms_measurement_terminal(reference=input_var.ref)
+            )
+            if terminal_side is None:
+                pass
+            else:
+                inputs_by_terminal[terminal_side].append((owner_block, input_var))
+        else:
+            pass
+
+    terminal_side: RmsTerminalSide
+    terminal_inputs: List[Tuple[Block, Var]]
+    for terminal_side, terminal_inputs in inputs_by_terminal.items():
+        if len(terminal_inputs) == 0:
+            pass
+        else:
+            if isinstance(host_device, BranchParent):
+                if terminal_side is RmsTerminalSide.FROM:
+                    terminal_bus = host_device.bus_from
+                else:
+                    if terminal_side is RmsTerminalSide.TO:
+                        terminal_bus = host_device.bus_to
+                    else:
+                        terminal_bus = None
+            else:
+                if isinstance(host_device, InjectionParent):
+                    if terminal_side is RmsTerminalSide.BUS:
+                        terminal_bus = host_device.bus
+                    else:
+                        terminal_bus = None
+                else:
+                    terminal_bus = None
+
+            if terminal_bus is None:
+                pass
+            else:
+                terminal_vars: List[Var] = list(
+                    input_entry[1] for input_entry in terminal_inputs
+                )
+                measurement_types: List[BlockType] = (
+                    find_measurements_for_inputs_group(
+                        bus=terminal_bus,
+                        inputs=terminal_vars,
+                    )
+                )
+                measurement_type: BlockType
+                for measurement_type in measurement_types:
+                    # Allocate every prerequisite before invoking the builder.
+                    # A single canonical input is reused across all measurements
+                    # that observe the same physical terminal quantity.
+                    required_references: List[VarPowerFlowReferenceType] = (
+                        _get_rms_terminal_physical_references(
+                            block_type=measurement_type,
+                            terminal_side=terminal_side,
+                            is_dc_terminal=terminal_bus.is_dc,
+                        )
+                    )
+                    required_reference: VarPowerFlowReferenceType
+                    for required_reference in required_references:
+                        _get_or_create_dgs_physical_input(
+                            block=block,
+                            reference=required_reference,
+                            physical_inputs_by_reference=physical_inputs_by_reference,
+                            var_factory=measurement_var_factory,
+                        )
+                    measurement_block: Block | None = _build_dgs_rms_measurement_block(
+                        block_type=measurement_type,
+                        terminal_side=terminal_side,
+                        is_dc_terminal=terminal_bus.is_dc,
+                        physical_inputs_by_reference=physical_inputs_by_reference,
+                        var_factory=measurement_var_factory,
+                    )
+                    if measurement_block is None:
+                        pass
+                    else:
+                        measurement_output: Var
+                        for measurement_output in measurement_block.out_vars:
+                            for owner_block, input_var in terminal_inputs:
+                                if (
+                                        input_var.ref == measurement_output.ref
+                                        and input_var is not measurement_output
+                                ):
+                                    owner_block.update_model(
+                                        old=input_var,
+                                        new=measurement_output,
+                                    )
+                                    replaced_input_object_ids.add(id(input_var))
+                                else:
+                                    pass
+                        block.children.append(measurement_block)
+
+    if len(replaced_input_object_ids) == 0:
+        pass
+    else:
+        block.in_vars = list(
+            root_input
+            for root_input in block.in_vars
+            if id(root_input) not in replaced_input_object_ids
+        )
 
 
 def _clone_import_block(block: Block) -> Block:
@@ -1745,12 +2972,15 @@ def _build_selected_template_from_import_entry(
 
 def _build_dgs_direct_runtime_template(
         source_block: Block,
+        circuit: MultiCircuit,
         template_name: str,
         target_domain: DynamicSimulationMode,
         device_tpe: DeviceType,
         adapter_kind: _DgsRuntimeAdapterKind | None,
         direct_result: DgsDirectRootBuildResult | None,
         source_svs: ElmSvs | None,
+        host_device: DynamicDevice | None,
+        native_measurement_specs: List[_DgsRmsMeasurementSpec],
 ) -> RmsModelTemplate | EmtModelTemplate:
     """Wrap one directly materialized DGS block in its final template.
 
@@ -1759,14 +2989,40 @@ def _build_dgs_direct_runtime_template(
     parser and the final ``MultiCircuit`` template.
 
     :param source_block: Direct root block owned by this conversion.
+    :param circuit: Destination circuit supplying system measurement bases.
     :param template_name: Final reusable-template display name.
     :param target_domain: Explicit RMS or EMT destination.
     :param device_tpe: Exact physical host family or generic dynamic host.
     :param adapter_kind: Import-local runtime adapter classification.
     :param direct_result: Transient direct-root conversion context, if present.
     :param source_svs: Exact transient ElmSvs source, when adapting an SVC.
+    :param host_device: Exact static host used to resolve measurement terminals.
+    :param native_measurement_specs: Native meters resolved from the DGS graph.
     :return: Final RMS or EMT template ready for circuit registration.
     """
+    # Type only child inputs whose DGS signal has no internal producer. The
+    # synthesized root interface then exposes the same typed Var objects.
+    _assign_dgs_external_input_references(
+        block=source_block,
+        device_tpe=device_tpe,
+    )
+
+    # Native PowerFactory meters are not executable ElmDsl children. Replace
+    # their missing signals with explicit VeraGrid measurements before the root
+    # interface is finalized for the editor and runtime adapter.
+    if (
+            target_domain == DynamicSimulationMode.RMS
+            and host_device is not None
+    ):
+        _add_required_dgs_rms_measurements(
+            block=source_block,
+            host_device=host_device,
+            circuit=circuit,
+            native_specs=native_measurement_specs,
+        )
+    else:
+        pass
+
     # Complete only the public composite ports already owned by the child graph.
     _apply_composite_child_interface_if_missing(block=source_block)
     source_block.name = template_name
@@ -2942,6 +4198,7 @@ def convert_and_add_dgs_dynamic_templates_to_circuit(
             pass
         else:
             source_svs: ElmSvs | None = None
+            host_device_for_measurements: DynamicDevice | None = None
             if host_identity is None:
                 resolved_device_tpe: DeviceType = (
                     DeviceType.DynamicModelHostDevice
@@ -3006,15 +4263,41 @@ def convert_and_add_dgs_dynamic_templates_to_circuit(
                 else:
                     pass
 
+                exact_host_devices_for_measurements: List[DynamicDevice] = (
+                    _find_exact_dgs_dynamic_host_devices(
+                        circuit=circuit,
+                        source_element_dgs_id=host_identity[0],
+                        device_tpe=host_identity[1],
+                        source_element_class=host_identity[2],
+                    )
+                )
+                if len(exact_host_devices_for_measurements) == 1:
+                    host_device_for_measurements = (
+                        exact_host_devices_for_measurements[0]
+                    )
+                else:
+                    pass
+
+            native_measurement_specs: List[_DgsRmsMeasurementSpec] = (
+                _collect_native_dgs_rms_measurement_specs(
+                    dgs_circuit=dgs_circuit,
+                    root_element=root_element,
+                    direct_result=direct_result,
+                    host_device=host_device_for_measurements,
+                )
+            )
             template_obj: RmsModelTemplate | EmtModelTemplate = (
                 _build_dgs_direct_runtime_template(
                     source_block=source_block,
+                    circuit=circuit,
                     template_name=root_element.loc_name,
                     target_domain=target_domain,
                     device_tpe=resolved_device_tpe,
                     adapter_kind=adapter_kind,
                     direct_result=direct_result,
                     source_svs=source_svs,
+                    host_device=host_device_for_measurements,
+                    native_measurement_specs=native_measurement_specs,
                 )
             )
             if (
@@ -3138,12 +4421,15 @@ def convert_and_add_dgs_dynamic_templates_to_circuit(
                     standalone_template: RmsModelTemplate | EmtModelTemplate = (
                         _build_dgs_direct_runtime_template(
                             source_block=standalone_block,
+                            circuit=circuit,
                             template_name=parsed_standalone.blkdef.loc_name,
                             target_domain=target_domain,
                             device_tpe=DeviceType.DynamicModelHostDevice,
                             adapter_kind=None,
                             direct_result=None,
                             source_svs=None,
+                            host_device=None,
+                            native_measurement_specs=list(),
                         )
                     )
                     standalone_registered: bool = _register_dgs_direct_template(

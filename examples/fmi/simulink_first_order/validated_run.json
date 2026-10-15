@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "record_kind": "historical_lineage_not_current_replay_proof",
+  "campaign": "veragrid-first-order-simulink-fmi-matrix-revision-1",
+  "historical_summary_sha256": "9fad545a39672859a62502dfe8f4052ac0b1693ccdbb4e9571ab0aa6721d6e2c",
+  "sealed_dossier_sha256": "f2c1401a73468c57c81a3a421c22449c796e6afe5413d90acd39036b5d0e1e1f",
+  "source_commit": "8429261246e638ae8de1cde298cc55c569fb2748",
+  "fixture": {
+    "classification": "normalized first-order verification fixture; not a device-specific physical model",
+    "equation": "tau*dx/dt=u-x",
+    "tau_s": 0.1,
+    "initial_state": 0.0,
+    "events": [
+      {"time_s": 0.2, "u": 1.0},
+      {"time_s": 0.5, "u": -0.5},
+      {"time_s": 0.8, "u": 0.25}
+    ],
+    "step_s": 0.001,
+    "stop_s": 1.2,
+    "sample_count": 1201
+  },
+  "matrix": {
+    "fmi_versions": ["1.0", "2.0", "3.0"],
+    "interfaces": ["CS", "ME"],
+    "cells": 6,
+    "commercial_runtime": "MATLAB/Simulink R2025b Update 1",
+    "licensed": true,
+    "pass_count": 6,
+    "fail_count": 0
+  },
+  "numerical_results": {
+    "cs_reference": "indexed backward Euler oracle",
+    "cs_tolerance": 2e-10,
+    "cs_max_abs_error": 5.314415574275699e-12,
+    "me_reference": "piecewise continuous analytic oracle",
+    "me_tolerance": 1e-7,
+    "me_max_abs_error": 4.044326679109034e-11,
+    "cs_analytic_method_bound": 0.004,
+    "cs_analytic_max_abs_error": 0.002394559920504479,
+    "cross_version_tolerance": 1e-12,
+    "cross_version_max_abs_delta": 0.0,
+    "event_adjacency_checks": "PASS",
+    "finite_and_grid_checks": "PASS"
+  },
+  "evidence_sha256": {
+    "fmu_manifest": "d3a186af30aefc301040cece4c95b0210f888337d45ffcfafae09ce236661569",
+    "local_preflight_receipt": "ced77927a72e5de82d89d1d56af0b8f454be86aabde908cc2da230658dc7b02f",
+    "simulink_receipt": "ad629f409d367b82318cbb30d099b575c6ca8d708b755b6a3f8e643ab49ce7d0",
+    "numerical_receipt": "0a30dbaee66984a130b3ee52a7077e40977b0ca57884916bee10e70aea9fc11d",
+    "figure_manifest": "63957cbe9ae65d7dbac0768143a4e0e3f07c4ab01ed547a0f2eddcd7e10a900d",
+    "figure_qa_receipt": "31d90129c3ad98ecde76e4be83bd10804c889d4cfb833f3eaa6d3189b577c4ff",
+    "remote_cleanup_receipt": "085a7e9cdadee307bcdb16eaef3b828f8dff967fce1e43015fbd07106b15138e",
+    "repository_post_snapshot": "c5bdbfe5bef2bc77473e6ca1a5bb05646e3d5e185b95c452b39c4df540d33c4b",
+    "change_control_receipt": "3fe8e8602d921e78fbf2d543d6e135b3ae53e9a76f6487de270a01796d739627"
+  },
+  "repository_unchanged": true,
+  "git_action": "NONE",
+  "status": "PASS"
+}

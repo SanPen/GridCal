@@ -103,7 +103,7 @@ def _worker_sources() -> tuple[Path, ...]:
 
     :return: Absolute source and header paths.
     """
-    source_root: Path = Path(__file__).resolve().parent / "native_worker" / "source"
+    source_root: Path = Path(__file__).resolve().parents[2] / "data" / "native_worker" / "source"
     source_names: tuple[str, ...] = (
         "worker.c",
         "platform.h",
@@ -448,7 +448,7 @@ def resolve_packaged_windows_x86_worker() -> ManufacturerNativeWorkerArtifact:
     else:
         sources: tuple[Path, ...] = _worker_sources()
     cache_key: str = _packaged_windows_x86_cache_key(sources)
-    package_directory: Path = Path(__file__).resolve().parent / "native_worker" / "windows_x86"
+    package_directory: Path = Path(__file__).resolve().parents[2] / "data" / "native_worker" / "windows_x86"
     return verify_manufacturer_native_worker(
         executable_path=package_directory / "veragrid-manufacturer-worker-x86.exe",
         manifest_path=package_directory / "manifest.json",

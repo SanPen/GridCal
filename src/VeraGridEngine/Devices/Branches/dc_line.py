@@ -352,7 +352,7 @@ class DcLine(BranchParent):
 
     def get_dynamic_values_pu_seconds(self,
                                       Sbase: float,
-                                      logger: Logger) -> Tuple[float, float]:
+                                      logger: Logger | None) -> Tuple[float, float]:
         """
         Get the physical cable coefficients required by a dynamic simulation.
 
@@ -361,7 +361,7 @@ class DcLine(BranchParent):
         of stopping the simulation.
 
         :param Sbase: System power base in MVA.
-        :param logger: Simulation logger receiving the resistive-fallback warning.
+        :param logger: Optional driver logger receiving the resistive-fallback warning.
         :return: Total series inductance and shunt capacitance in p.u. seconds.
         """
         physical_values: Tuple[float, float] | None = self.get_applied_dynamic_values_pu_seconds(
@@ -373,11 +373,16 @@ class DcLine(BranchParent):
             # No physical L/C default exists for a DC cable. Returning zero
             # selects the existing resistive simulation reduction without
             # creating a fictitious physical UndergroundLineType.
-            logger.add_warning(
-                msg='DC line has no cable template; using the resistive fallback',
-                device=self.name,
-                value='L=0, C=0',
-            )
+            if logger is None:
+                # Direct low-level calls may intentionally run without a
+                # driver; the numerical resistive fallback remains identical.
+                pass
+            else:
+                logger.add_warning(
+                    msg='DC line has no cable template; using the resistive fallback',
+                    device=self.name,
+                    value='L=0, C=0',
+                )
             return 0.0, 0.0
 
     def copy(self,

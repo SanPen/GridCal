@@ -127,11 +127,11 @@ def get_transformer_emt_template(
     Build a linear two-winding transformer EMT template using coupled winding currents
     as state variables.
 
-    This simplified version keeps only the series coupled-winding model and omits the
-    primary shunt branch from the EMT equations. The total voltage ratio is exposed
-    through api_obj_mapping and is used to initialize the primary winding current from
-    the secondary-side port current in a way that is consistent with the external port
-    convention.
+    The winding model retains its mutual inductance. Core-loss conductance is
+    split equally on a common primary-referred basis between the two terminals;
+    the secondary conductance is scaled by the square of the voltage ratio.
+    Winding-current initialization subtracts the respective loss currents from
+    the PF terminal currents.
 
     Assumptions:
     - `l1`, `l2`, and `m12` already represent the physical transformer model in the
@@ -174,7 +174,7 @@ def get_transformer_emt_template(
     l1: Var = vf.add_var(name=f"trafo_l1")
     l2: Var = vf.add_var(name=f"trafo_l2")
     m12: Var = vf.add_var(name=f"trafo_m")
-    gm: Var = vf.add_var(name=f"trafo_gm")  # kept for compatibility, unused here
+    gm: Var = vf.add_var(name=f"trafo_gm")
     total_voltage_ratio: Var = vf.add_var(name=f"trafo_tap_ratio")
 
     block = Block()
@@ -389,13 +389,15 @@ def get_transformer_emt_template(
     # ------------------------------------------------------------------
     # Port-current algebraic equations
     #
-    # In this simplified EMT model, the port currents are exactly the series
-    # winding currents. The primary-side shunt branch is intentionally omitted.
+    # Split the primary-referred core-loss conductance equally. Referring the
+    # secondary half through n=Vf/Vt multiplies its conductance by n**2.
     # ------------------------------------------------------------------
+    g_from: Expr = gm * vf.add_const(0.5)
+    g_to: Expr = g_from * total_voltage_ratio * total_voltage_ratio
     alg_eqs: list[Expr] = []
     for idx in range(3):
-        alg_eqs.append(if_act[idx] - (i_f[idx] + gm * v_f_term[idx]))
-        alg_eqs.append(it_act[idx] - i_t[idx])
+        alg_eqs.append(if_act[idx] - (i_f[idx] + g_from * v_f_term[idx]))
+        alg_eqs.append(it_act[idx] - (i_t[idx] + g_to * v_t_term[idx]))
 
     if if_n_act is not None:
         neutral_from_kcl: Expr = if_n_act + if_act[0] + if_act[1] + if_act[2]
@@ -463,18 +465,13 @@ def get_transformer_emt_template(
     # ------------------------------------------------------------------
     # State initialization
     #
-    # Since the EMT model omits the shunt branch, initialize the secondary
-    # winding current directly from the secondary port current and initialize
-    # the primary winding current from the secondary current referred through
-    # the total voltage ratio.
-    #
-    # With branch currents positive when leaving the bus:
-    #   primary series current ~= -(secondary port current) / total_voltage_ratio
+    # Remove each terminal's core-loss current before seeding the winding
+    # states. This keeps initialization consistent with the port equations.
     # ------------------------------------------------------------------
     init_eqs: Dict[Var, Expr] = dict()
     for idx in range(3):
-        init_eqs[i_f[idx]] = if_act[idx] - gm * v_f_term[idx]
-        init_eqs[i_t[idx]] = it_act[idx]
+        init_eqs[i_f[idx]] = if_act[idx] - g_from * v_f_term[idx]
+        init_eqs[i_t[idx]] = it_act[idx] - g_to * v_t_term[idx]
 
     block.init_eqs = init_eqs
 

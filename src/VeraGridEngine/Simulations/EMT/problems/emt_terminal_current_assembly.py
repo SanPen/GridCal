@@ -5,7 +5,7 @@
 
 """Assemble canonical EMT current mappings into topology-owned KCL balances."""
 
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from VeraGridEngine.enumerations import VarPowerFlowReferenceType
 from VeraGridEngine.Utils.Symbolic.block import Block
@@ -35,6 +35,7 @@ _TO_AC_CURRENT_REFERENCES = (
 def assemble_emt_mapped_current_references(
         model: Block,
         current_balance: Dict[int, List[Expr | Var | Const]],
+        effective_external_mapping: Dict[Any, Var] | None = None,
         bus_from_index: int | None = None,
         bus_to_index: int | None = None,
         bus_from_is_dc: bool | None = None,
@@ -42,13 +43,40 @@ def assemble_emt_mapped_current_references(
         bus_index: int | None = None,
         bus_is_dc: bool | None = None,
 ) -> bool:
-    """Assemble mapped currents using topology supplied by the static device."""
-    mapping = model.external_mapping
-    mapped = {
-        reference: model.E(reference)
-        for reference in mapping
-        if isinstance(model.E(reference), Var)
-    }
+    """Accumulate mapped terminal currents in topology-owned KCL balances.
+
+    One-terminal injection currents use the positive-into-bus convention and
+    are added to the bus balance. Two-terminal branch currents use the
+    positive-leaving-terminal convention and are subtracted at their respective
+    buses. Every resolved contribution is accumulated, so multiple devices on
+    one bus or phase cannot replace earlier terms.
+
+    :param model: Dynamic model exposing semantic current mappings.
+    :param current_balance: Mutable per-bus conductor KCL accumulators.
+    :param effective_external_mapping: Optional problem-local mapping. When
+        supplied, it is authoritative and the persistent block is not modified.
+    :param bus_from_index: From-bus index for a two-terminal branch.
+    :param bus_to_index: To-bus index for a two-terminal branch.
+    :param bus_from_is_dc: Whether the from bus has a DC conductor shell.
+    :param bus_to_is_dc: Whether the to bus has a DC conductor shell.
+    :param bus_index: Bus index for a one-terminal injection.
+    :param bus_is_dc: Whether the injection bus has a DC conductor shell.
+    :return: ``True`` when at least one mapped current was accumulated.
+    """
+    mapping: Dict[Any, Var]
+    if effective_external_mapping is None:
+        mapping = model.external_mapping
+    else:
+        mapping = effective_external_mapping
+
+    mapped: Dict[Any, Var] = dict()
+    reference: Any
+    mapped_var: Var
+    for reference, mapped_var in mapping.items():
+        if isinstance(mapped_var, Var):
+            mapped[reference] = mapped_var
+        else:
+            pass
 
     bus_references = (VarPowerFlowReferenceType.Idc,) + _BUS_AC_CURRENT_REFERENCES
     from_references = (VarPowerFlowReferenceType.If_dc,) + _FROM_AC_CURRENT_REFERENCES

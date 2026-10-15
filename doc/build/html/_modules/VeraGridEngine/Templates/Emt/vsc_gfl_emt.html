@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Emt.vsc_gfl_emt &mdash; VeraGrid 6.7.7 documentation</title>
+  <title>VeraGridEngine.Templates.Emt.vsc_gfl_emt &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=5747e02a"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -69,7 +69,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/nodal_hosting_capacity.html">🏭 Nodal hosting capacity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -123,21 +124,21 @@
 
 <div class="viewcode-block" id="inverse_park_transform_block">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Emt.html#VeraGridEngine.Templates.Emt.vsc_gfl_emt.inverse_park_transform_block">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">inverse_park_transform_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">v_dq</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">aux_vars</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">multilinear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span> <span class="o">=</span><span class="s1">''</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">inverse_park_transform_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">v_dq</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">aux_vars</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">multilinear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span> <span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a symbolic inverse Park transform (dq → abc) block for voltages.</span>
 
 <span class="sd">    v_dq = [v_d_c, v_q_c]</span>
 <span class="sd">    theta : grid angle (from PLL)</span>
 <span class="sd">    multilinear : if True, use u_cos/u_sin auxiliary variables (for multilinearization)</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">v_d_c</span><span class="p">,</span> <span class="n">v_q_c</span> <span class="o">=</span> <span class="n">v_dq</span>
 
     <span class="c1"># abc variables</span>
-    <span class="n">va_c</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">'a_'</span><span class="o">+</span><span class="n">name</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">vb_c</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">'b_'</span><span class="o">+</span><span class="n">name</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">vc_c</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">'c_'</span><span class="o">+</span><span class="n">name</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">va_c</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;a_&#39;</span><span class="o">+</span><span class="n">name</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">vb_c</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;b_&#39;</span><span class="o">+</span><span class="n">name</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">vc_c</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;c_&#39;</span><span class="o">+</span><span class="n">name</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
     <span class="n">sqrt3</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
     <span class="n">reformulated_vars</span> <span class="o">=</span> <span class="p">[]</span>
@@ -175,20 +176,20 @@
 
 <div class="viewcode-block" id="park_transform_block">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Emt.html#VeraGridEngine.Templates.Emt.vsc_gfl_emt.park_transform_block">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">park_transform_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">v_abc</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">multilinear</span><span class="p">:</span><span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">aux_vars</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">park_transform_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">v_abc</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Var</span><span class="p">],</span> <span class="n">theta</span><span class="p">:</span> <span class="n">Var</span><span class="p">,</span> <span class="n">multilinear</span><span class="p">:</span><span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">aux_vars</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create a symbolic Park transform (abc → dq) block for voltages and currents.</span>
 
 <span class="sd">    i_abc = [i_a, i_b, i_c]</span>
 <span class="sd">    v_abc = [v_a, v_b, v_c]</span>
 <span class="sd">    theta : grid angle (from PLL)</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">v_a</span><span class="p">,</span> <span class="n">v_b</span><span class="p">,</span> <span class="n">v_c</span> <span class="o">=</span> <span class="n">v_abc</span>
 
     <span class="c1"># dq variables</span>
-    <span class="n">x_d</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">'_d'</span><span class="p">)</span>
-    <span class="n">x_q</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">'_q'</span><span class="p">)</span>
+    <span class="n">x_d</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_d&#39;</span><span class="p">)</span>
+    <span class="n">x_q</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_q&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">multilinear</span><span class="p">:</span>
         <span class="n">x_d_expr</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span>
@@ -224,25 +225,25 @@
 
 <div class="viewcode-block" id="pll_transform">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Emt.html#VeraGridEngine.Templates.Emt.vsc_gfl_emt.pll_transform">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">pll_transform</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">v_abc</span><span class="p">,</span> <span class="n">multilinear</span><span class="p">:</span><span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span> <span class="o">=</span> <span class="s1">''</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pll_transform</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">v_abc</span><span class="p">,</span> <span class="n">multilinear</span><span class="p">:</span><span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    EMT PLL using instantaneous three-phase voltages.</span>
-<span class="sd">    """</span>
-    <span class="n">theta</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="s1">'theta'</span><span class="p">)</span>
-    <span class="n">omega</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="s1">'omega'</span><span class="p">)</span>
-    <span class="n">omega_base</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'omega_base'</span><span class="p">)</span>
-    <span class="n">Kp_pll</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Kp_pll'</span><span class="p">)</span>      <span class="c1"># proportional gain</span>
-    <span class="n">Ki_pll</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ki_pll'</span><span class="p">)</span>      <span class="c1"># integral gain</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="s1">&#39;theta&#39;</span><span class="p">)</span>
+    <span class="n">omega</span> <span class="o">=</span> <span class="n">Var</span><span class="p">(</span><span class="s1">&#39;omega&#39;</span><span class="p">)</span>
+    <span class="n">omega_base</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;omega_base&#39;</span><span class="p">)</span>
+    <span class="n">Kp_pll</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Kp_pll&#39;</span><span class="p">)</span>      <span class="c1"># proportional gain</span>
+    <span class="n">Ki_pll</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ki_pll&#39;</span><span class="p">)</span>      <span class="c1"># integral gain</span>
 
     <span class="n">park_block</span><span class="p">,</span> <span class="n">v_dq</span><span class="p">,</span> <span class="n">aux_vars</span> <span class="o">=</span> <span class="n">park_transform_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">,</span> <span class="n">v_abc</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">multilinear</span><span class="o">=</span><span class="n">multilinear</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">)</span>
     <span class="n">v_d_raw</span><span class="p">,</span> <span class="n">v_q</span> <span class="o">=</span> <span class="n">v_dq</span>
     <span class="n">v_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">v_d_raw</span>
     <span class="n">res_block</span> <span class="o">=</span> <span class="n">Block</span><span class="p">()</span>
-    <span class="n">pll_error</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'u_PLL_pi'</span><span class="p">)</span>
-    <span class="n">xi_pll</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'xi_PLL'</span><span class="p">)</span>
+    <span class="n">pll_error</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;u_PLL_pi&#39;</span><span class="p">)</span>
+    <span class="n">xi_pll</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;xi_PLL&#39;</span><span class="p">)</span>
     <span class="n">one</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
-    <span class="n">d_theta</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'dt_1_theta'</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
-    <span class="n">d_xi_pll</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'dt_1_xi_PLL'</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">xi_pll</span><span class="p">)</span>
+    <span class="n">d_theta</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;dt_1_theta&#39;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">theta</span><span class="p">)</span>
+    <span class="n">d_xi_pll</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;dt_1_xi_PLL&#39;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">xi_pll</span><span class="p">)</span>
     <span class="n">integrator</span> <span class="o">=</span> <span class="n">Block</span><span class="p">(</span>
         <span class="n">algebraic_eqs</span><span class="o">=</span><span class="p">[</span>
             <span class="n">pll_error</span> <span class="o">+</span> <span class="n">v_d</span><span class="p">,</span>
@@ -278,7 +279,7 @@
                                   <span class="n">control2</span><span class="p">:</span> <span class="n">ConverterControlType</span> <span class="o">=</span> <span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Qac</span><span class="p">,</span>
                                   <span class="n">multilinear</span><span class="p">:</span><span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                                   <span class="n">frozen_voltage_source</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Build power control loop model for Grid Following Converter for EMT simulation.</span>
 <span class="sd">    Supports multiple control modes via ConverterControlType.</span>
 
@@ -293,7 +294,7 @@
 <span class="sd">        gfl_block: The complete converter block</span>
 <span class="sd">        i_a_inj, i_b_inj, i_c_inj: Three-phase bus injection currents</span>
 <span class="sd">        P, Q: Active and reactive power measurements</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">vc_a</span>   <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">vc_b</span>   <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">vc_c</span>   <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
@@ -322,50 +323,50 @@
     <span class="n">vg_abc</span> <span class="o">=</span> <span class="p">[</span><span class="n">vg_a</span><span class="p">,</span> <span class="n">vg_b</span><span class="p">,</span> <span class="n">vg_c</span><span class="p">]</span>
     <span class="n">i_abc</span> <span class="o">=</span> <span class="p">[</span><span class="n">i_a_line</span><span class="p">,</span> <span class="n">i_b_line</span><span class="p">,</span> <span class="n">i_c_line</span><span class="p">]</span>
 
-    <span class="n">pll_block</span><span class="p">,</span> <span class="n">v_dq</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">aux_vars</span> <span class="o">=</span> <span class="n">pll_transform</span><span class="p">(</span><span class="n">vfactory</span><span class="p">,</span> <span class="n">vg_abc</span><span class="p">,</span> <span class="n">multilinear</span><span class="o">=</span><span class="n">multilinear</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s1">'vg'</span><span class="p">)</span>
+    <span class="n">pll_block</span><span class="p">,</span> <span class="n">v_dq</span><span class="p">,</span> <span class="n">omega</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">aux_vars</span> <span class="o">=</span> <span class="n">pll_transform</span><span class="p">(</span><span class="n">vfactory</span><span class="p">,</span> <span class="n">vg_abc</span><span class="p">,</span> <span class="n">multilinear</span><span class="o">=</span><span class="n">multilinear</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;vg&#39;</span><span class="p">)</span>
     <span class="n">v_d_g_raw</span> <span class="o">=</span> <span class="n">v_dq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">v_d_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">v_d_g_raw</span>
     <span class="n">v_q_g_raw</span> <span class="o">=</span> <span class="n">v_dq</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">v_q_g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">v_q_g_raw</span>
-    <span class="n">i_park_block</span><span class="p">,</span> <span class="n">i_dq</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">park_transform_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">,</span> <span class="n">i_abc</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">multilinear</span><span class="o">=</span><span class="n">multilinear</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'i_line'</span><span class="p">)</span>
+    <span class="n">i_park_block</span><span class="p">,</span> <span class="n">i_dq</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">park_transform_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">,</span> <span class="n">i_abc</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">multilinear</span><span class="o">=</span><span class="n">multilinear</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;i_line&#39;</span><span class="p">)</span>
     <span class="n">i_d_line_raw</span> <span class="o">=</span> <span class="n">i_dq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">i_d_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">i_d_line_raw</span>
     <span class="n">i_q_line_raw</span> <span class="o">=</span> <span class="n">i_dq</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">i_q_line</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">i_q_line_raw</span>
-    <span class="n">vc_park_block</span><span class="p">,</span> <span class="n">vc_dq</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">park_transform_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">,</span> <span class="n">vc_abc</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">multilinear</span><span class="o">=</span><span class="n">multilinear</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">'vc'</span><span class="p">)</span>
+    <span class="n">vc_park_block</span><span class="p">,</span> <span class="n">vc_dq</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">park_transform_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">,</span> <span class="n">vc_abc</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">multilinear</span><span class="o">=</span><span class="n">multilinear</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;vc&#39;</span><span class="p">)</span>
     <span class="n">vc_d_raw</span> <span class="o">=</span> <span class="n">vc_dq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">vc_d</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">vc_d_raw</span>
     <span class="n">vc_q_raw</span> <span class="o">=</span> <span class="n">vc_dq</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
     <span class="n">vc_q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">vc_q_raw</span>
 
     <span class="c1"># Parameters</span>
-    <span class="n">Kp_icl</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Kp_icl'</span><span class="p">)</span>     <span class="c1"># proportional gain for inner current loop</span>
-    <span class="n">Ki_icl</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ki_icl'</span><span class="p">)</span>     <span class="c1"># integral gain for inner current loop</span>
-    <span class="n">Kp_pol</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Kp_pol'</span><span class="p">)</span>     <span class="c1"># proportional gain for outer power loop</span>
-    <span class="n">Ki_pol</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ki_pol'</span><span class="p">)</span>     <span class="c1"># integral gain for outer power loop</span>
-    <span class="n">Kp_vac</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Kp_vac'</span><span class="p">)</span>     <span class="c1"># proportional gain for AC voltage control</span>
-    <span class="n">Ki_vac</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Ki_vac'</span><span class="p">)</span>     <span class="c1"># integral gain for AC voltage control</span>
-    <span class="n">L</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'L'</span><span class="p">)</span> 
+    <span class="n">Kp_icl</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Kp_icl&#39;</span><span class="p">)</span>     <span class="c1"># proportional gain for inner current loop</span>
+    <span class="n">Ki_icl</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ki_icl&#39;</span><span class="p">)</span>     <span class="c1"># integral gain for inner current loop</span>
+    <span class="n">Kp_pol</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Kp_pol&#39;</span><span class="p">)</span>     <span class="c1"># proportional gain for outer power loop</span>
+    <span class="n">Ki_pol</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ki_pol&#39;</span><span class="p">)</span>     <span class="c1"># integral gain for outer power loop</span>
+    <span class="n">Kp_vac</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Kp_vac&#39;</span><span class="p">)</span>     <span class="c1"># proportional gain for AC voltage control</span>
+    <span class="n">Ki_vac</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Ki_vac&#39;</span><span class="p">)</span>     <span class="c1"># integral gain for AC voltage control</span>
+    <span class="n">L</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;L&#39;</span><span class="p">)</span> 
 
     <span class="c1"># Current measurements come directly from the external line current inputs.</span>
     <span class="n">i_d</span> <span class="o">=</span> <span class="n">i_d_line</span>
     <span class="n">i_q</span> <span class="o">=</span> <span class="n">i_q_line</span>
-    <span class="n">i_d_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_d_ref'</span><span class="p">)</span>
-    <span class="n">i_q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_q_ref'</span><span class="p">)</span>
+    <span class="n">i_d_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_d_ref&#39;</span><span class="p">)</span>
+    <span class="n">i_q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_q_ref&#39;</span><span class="p">)</span>
     
     <span class="c1"># POWER LOOP </span>
-    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'P'</span><span class="p">)</span>
-    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Q'</span><span class="p">)</span> 
-    <span class="n">P_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'P_ref'</span><span class="p">)</span> 
-    <span class="n">Q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Q_ref'</span><span class="p">)</span> 
+    <span class="n">P</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="p">)</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Q&#39;</span><span class="p">)</span> 
+    <span class="n">P_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;P_ref&#39;</span><span class="p">)</span> 
+    <span class="n">Q_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Q_ref&#39;</span><span class="p">)</span> 
     
     <span class="c1"># Voltage references for control modes</span>
-    <span class="n">Vm_ac_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Vm_ac_ref'</span><span class="p">)</span>
+    <span class="n">Vm_ac_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Vm_ac_ref&#39;</span><span class="p">)</span>
     
-    <span class="n">v_d_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'v_d_c'</span><span class="p">)</span>
-    <span class="n">v_q_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'v_q_c'</span><span class="p">)</span>
-    <span class="n">v_d_c_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'v_d_c_ref'</span><span class="p">)</span>
-    <span class="n">v_q_c_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'v_q_c_ref'</span><span class="p">)</span>
+    <span class="n">v_d_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;v_d_c&#39;</span><span class="p">)</span>
+    <span class="n">v_q_c</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;v_q_c&#39;</span><span class="p">)</span>
+    <span class="n">v_d_c_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;v_d_c_ref&#39;</span><span class="p">)</span>
+    <span class="n">v_q_c_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;v_q_c_ref&#39;</span><span class="p">)</span>
 
     <span class="n">event_dict</span> <span class="o">=</span> <span class="p">{</span>
         <span class="n">Kp_icl</span><span class="p">:</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.05</span><span class="p">),</span>
@@ -401,7 +402,7 @@
             <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
             <span class="n">x</span><span class="o">=</span> <span class="n">P_ref</span> <span class="o">-</span> <span class="n">P</span><span class="p">,</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">i_q_ref</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">'Pac_ctrl'</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Pac_ctrl&#39;</span>
         <span class="p">)</span>
         <span class="n">control_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">control_block_1</span><span class="p">)</span>
         
@@ -413,13 +414,13 @@
             <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
             <span class="n">x</span><span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">P_ref</span> <span class="o">-</span> <span class="n">P</span><span class="p">),</span>  <span class="c1"># P_ref represents desired Pdc</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">i_q_ref</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">'Pdc_ctrl'</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Pdc_ctrl&#39;</span>
         <span class="p">)</span>
         <span class="n">control_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">control_block_1</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Control1 type </span><span class="si">{</span><span class="n">control1</span><span class="si">}</span><span class="s2"> not supported for GFL converter. "</span>
-                        <span class="sa">f</span><span class="s2">"Supported: Pac, Pdc"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Control1 type </span><span class="si">{</span><span class="n">control1</span><span class="si">}</span><span class="s2"> not supported for GFL converter. &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;Supported: Pac, Pdc&quot;</span><span class="p">)</span>
 
     <span class="c1"># ==============================</span>
     <span class="c1"># CONTROL 2: Reactive Power Axis (i_d_ref)</span>
@@ -433,15 +434,15 @@
             <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
             <span class="n">x</span><span class="o">=</span> <span class="n">Q_ref</span> <span class="o">-</span> <span class="n">Q</span><span class="p">,</span>
             <span class="n">y</span> <span class="o">=</span> <span class="n">i_d_ref</span><span class="p">,</span>
-            <span class="n">name</span><span class="o">=</span><span class="s1">'Qac_ctrl'</span>
+            <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Qac_ctrl&#39;</span>
         <span class="p">)</span>
         <span class="n">control_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">control_block_2</span><span class="p">)</span>
         
 
     <span class="c1"># Physical Current Limits, TODO add AntiWindup</span>
     <span class="n">I_max</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1.2</span><span class="p">)</span>
-    <span class="n">operation</span> <span class="o">=</span> <span class="s1">'normal'</span>
-    <span class="k">if</span> <span class="n">operation</span> <span class="o">==</span> <span class="s1">'normal'</span><span class="p">:</span>
+    <span class="n">operation</span> <span class="o">=</span> <span class="s1">&#39;normal&#39;</span>
+    <span class="k">if</span> <span class="n">operation</span> <span class="o">==</span> <span class="s1">&#39;normal&#39;</span><span class="p">:</span>
         <span class="n">id_max</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sym</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">I_max</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">sym</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">i_q</span><span class="p">,</span> <span class="n">i_q_ref</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">1e-5</span><span class="p">)))</span>     
         <span class="n">i_d_ref_sat</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">hard_sat</span><span class="p">(</span><span class="n">i_d_ref</span><span class="p">,</span> <span class="o">-</span><span class="n">id_max</span><span class="p">,</span> <span class="n">id_max</span><span class="p">)</span>
         <span class="n">i_q_ref_sat</span> <span class="o">=</span> <span class="n">sym</span><span class="o">.</span><span class="n">hard_sat</span><span class="p">(</span><span class="n">i_q_ref</span><span class="p">,</span> <span class="o">-</span><span class="n">I_max</span><span class="p">,</span> <span class="n">I_max</span><span class="p">)</span>
@@ -451,13 +452,13 @@
         <span class="n">num</span><span class="o">=</span><span class="p">[</span><span class="n">Ki_icl</span><span class="p">,</span> <span class="n">Kp_icl</span><span class="p">],</span>
         <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
         <span class="n">x</span><span class="o">=</span> <span class="n">i_q</span> <span class="o">-</span> <span class="n">i_q_ref_sat</span><span class="p">,</span>
-        <span class="n">name</span><span class="o">=</span><span class="s1">'vq_hat'</span>
+        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;vq_hat&#39;</span>
     <span class="p">)</span>
     <span class="n">control_block_id</span> <span class="p">,</span> <span class="n">vd_hat</span> <span class="o">=</span> <span class="n">tf_to_block</span><span class="p">(</span><span class="n">vfactory</span><span class="p">,</span>
         <span class="n">num</span><span class="o">=</span><span class="p">[</span><span class="n">Ki_icl</span><span class="p">,</span> <span class="n">Kp_icl</span><span class="p">],</span>
         <span class="n">den</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
         <span class="n">x</span><span class="o">=</span> <span class="n">i_d</span> <span class="o">-</span> <span class="n">i_d_ref_sat</span><span class="p">,</span>
-        <span class="n">name</span><span class="o">=</span><span class="s1">'vd_hat'</span>
+        <span class="n">name</span><span class="o">=</span><span class="s1">&#39;vd_hat&#39;</span>
     <span class="p">)</span>
 
     <span class="k">if</span> <span class="n">frozen_voltage_source</span><span class="p">:</span>
@@ -547,11 +548,11 @@
 
 <div class="viewcode-block" id="VscGflEmtBuild">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Templates.Emt.html#VeraGridEngine.Templates.Emt.vsc_gfl_emt.VscGflEmtBuild">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">VscGflEmtBuild</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">""</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">VscGflEmtBuild</span><span class="p">(</span><span class="n">vfactory</span><span class="p">:</span> <span class="n">VarFactory</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
                    <span class="n">control1</span><span class="p">:</span> <span class="n">ConverterControlType</span> <span class="o">=</span> <span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Pac</span><span class="p">,</span>
                    <span class="n">control2</span><span class="p">:</span> <span class="n">ConverterControlType</span> <span class="o">=</span> <span class="n">ConverterControlType</span><span class="o">.</span><span class="n">Qac</span><span class="p">,</span>
                    <span class="n">frozen_voltage_source</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    VSC GFL (Grid Following) EMT model</span>
 <span class="sd">    with from side the DC bus and to side the AC bus</span>
 <span class="sd">    </span>
@@ -565,44 +566,44 @@
 <span class="sd">        - Pac + Vm_ac: Active power and AC voltage control</span>
 <span class="sd">        - Pdc + Qac: DC power and reactive power control</span>
 <span class="sd">        - Pdc + Vm_ac: DC power and AC voltage control</span>
-<span class="sd">    """</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">templ</span> <span class="o">=</span> <span class="n">EmtModelTemplate</span><span class="p">()</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">tpe</span> <span class="o">=</span> <span class="n">DeviceType</span><span class="o">.</span><span class="n">VscDevice</span>
     <span class="c1"># Inputs: converter-side voltage, grid-side voltage, measured line current, and DC voltage.</span>
     <span class="n">inputs</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"vc_A"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_A</span><span class="p">),</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"vc_B"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_B</span><span class="p">),</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"vc_C"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_C</span><span class="p">),</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"vg_A"</span><span class="p">),</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"vg_B"</span><span class="p">),</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"vg_C"</span><span class="p">),</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"i_line_A"</span><span class="p">),</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"i_line_B"</span><span class="p">),</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"i_line_C"</span><span class="p">),</span>
-        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">"Vdc_"</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vdc</span><span class="p">),</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vc_A&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_A</span><span class="p">),</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vc_B&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_B</span><span class="p">),</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vc_C&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">v_C</span><span class="p">),</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vg_A&quot;</span><span class="p">),</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vg_B&quot;</span><span class="p">),</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vg_C&quot;</span><span class="p">),</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;i_line_A&quot;</span><span class="p">),</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;i_line_B&quot;</span><span class="p">),</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;i_line_C&quot;</span><span class="p">),</span>
+        <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;Vdc_&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">VarPowerFlowReferenceType</span><span class="o">.</span><span class="n">Vdc</span><span class="p">),</span>
     <span class="p">]</span>
 
     <span class="c1"># Vars:</span>
-    <span class="n">Pt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Pt_vsc'</span><span class="p">)</span>
-    <span class="n">Qt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Qt_vsc'</span><span class="p">)</span>
-    <span class="n">Vpk_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Vpk_ref'</span><span class="p">)</span>
-    <span class="n">phi_v_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'phi_v_ref'</span><span class="p">)</span>
-    <span class="n">i_a_t</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_a_f'</span><span class="p">)</span>
-    <span class="n">i_b_t</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_b_f'</span><span class="p">)</span>
-    <span class="n">i_c_t</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_c_f'</span><span class="p">)</span>
-    <span class="n">i_dc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'i_dc'</span><span class="p">)</span>
-    <span class="n">P_conv</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'P_conv'</span><span class="p">)</span>
-    <span class="n">v_dc_cap</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Vdc_cap'</span><span class="p">)</span>
-    <span class="n">d_v_dc_cap</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">'dt_1_Vdc_cap'</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">v_dc_cap</span><span class="p">)</span>
+    <span class="n">Pt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Pt_vsc&#39;</span><span class="p">)</span>
+    <span class="n">Qt_vsc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Qt_vsc&#39;</span><span class="p">)</span>
+    <span class="n">Vpk_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Vpk_ref&#39;</span><span class="p">)</span>
+    <span class="n">phi_v_ref</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;phi_v_ref&#39;</span><span class="p">)</span>
+    <span class="n">i_a_t</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_a_f&#39;</span><span class="p">)</span>
+    <span class="n">i_b_t</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_b_f&#39;</span><span class="p">)</span>
+    <span class="n">i_c_t</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_c_f&#39;</span><span class="p">)</span>
+    <span class="n">i_dc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;i_dc&#39;</span><span class="p">)</span>
+    <span class="n">P_conv</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;P_conv&#39;</span><span class="p">)</span>
+    <span class="n">v_dc_cap</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Vdc_cap&#39;</span><span class="p">)</span>
+    <span class="n">d_v_dc_cap</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;dt_1_Vdc_cap&#39;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">v_dc_cap</span><span class="p">)</span>
 
     <span class="c1"># Parameters:</span>
-    <span class="n">bt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'bt'</span><span class="p">)</span>
-    <span class="n">gt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'gt'</span><span class="p">)</span>
-    <span class="n">Qf</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Qf'</span><span class="p">)</span>
-    <span class="n">a0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'a0'</span><span class="p">)</span>
-    <span class="n">a1</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'a1'</span><span class="p">)</span>
-    <span class="n">a2</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'a2'</span><span class="p">)</span>
-    <span class="n">Cdc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">'Cdc'</span><span class="p">)</span>
+    <span class="n">bt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;bt&#39;</span><span class="p">)</span>
+    <span class="n">gt</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;gt&#39;</span><span class="p">)</span>
+    <span class="n">Qf</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Qf&#39;</span><span class="p">)</span>
+    <span class="n">a0</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;a0&#39;</span><span class="p">)</span>
+    <span class="n">a1</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;a1&#39;</span><span class="p">)</span>
+    <span class="n">a2</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;a2&#39;</span><span class="p">)</span>
+    <span class="n">Cdc</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s1">&#39;Cdc&#39;</span><span class="p">)</span>
     
     <span class="c1"># Build the converter model with specified control modes</span>
     <span class="n">gfl_block</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">build_gfl_converter_model_emt</span><span class="p">(</span>
@@ -681,7 +682,7 @@
     <span class="p">}</span>
 
     <span class="n">vsc_block</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">gfl_block</span><span class="p">)</span>
-    <span class="n">vsc_block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">'gfl_block_emt'</span>
+    <span class="n">vsc_block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;gfl_block_emt&#39;</span>
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span> <span class="o">=</span> <span class="n">vsc_block</span>
     <span class="k">return</span> <span class="n">templ</span></div>

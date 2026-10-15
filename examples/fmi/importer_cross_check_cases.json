@@ -1,0 +1,109 @@
+{
+  "schema": "veragrid.fmi-importer-cross-check-cases/1",
+  "source_repository": "https://github.com/modelica/fmi-cross-check",
+  "source_commit": "55c6704bbcaed3e0f4f788a02af0aba08b7faa4a",
+  "fmi_version": "2.0",
+  "interface": "cs",
+  "platform": "win64",
+  "cases": [
+    {
+      "exporter": "Dymola",
+      "exporter_version": "2019FD01",
+      "model": "MixtureGases",
+      "relative_directory": "Dymola/2019FD01/MixtureGases",
+      "fmu": {"name": "MixtureGases.fmu", "sha256": "9d14b4cc26edcf7e6a5a1299c0213b8fc0d37cd9239d2edca9339d378683ba56"},
+      "reference": {"name": "MixtureGases_ref.csv", "sha256": "12caf73da0c098c6bf26c75ded9481a63747bde8e0a92812f2cc588f17cc4aed"},
+      "options": {"name": "MixtureGases_ref.opt", "sha256": "32e428de6f6a8ee8efb9a56531e177c0076f292c0d7bf0240ad503b1b9f75fa9"},
+      "input": null,
+      "readme": {"name": "ReadMe.txt", "sha256": "1030ea25eb110973f430ea440ac62353c35366369f22baf394cf26a5ba2b8c00"}
+    },
+    {
+      "exporter": "Dymola",
+      "exporter_version": "2019FD01",
+      "model": "Rectifier",
+      "relative_directory": "Dymola/2019FD01/Rectifier",
+      "fmu": {"name": "Rectifier.fmu", "sha256": "a72256af9dba8ebff66eeee54fdd53a0985f1ea0bcd5e2ffa34bc47d66d1ace0"},
+      "reference": {"name": "Rectifier_ref.csv", "sha256": "a273ef805112ec1530eaf4b6e9c2e71cd2fc23c560e7dd57597e908c60950e34"},
+      "options": {"name": "Rectifier_ref.opt", "sha256": "f3e95b73c384bc9c778f44a3b74c05f1e65ca2fc517ff35ccbfaa19de6dbc163"},
+      "input": null,
+      "readme": {"name": "ReadMe.txt", "sha256": "b3d52e97df2db8d2f5bfde4cec03395558617f6444475723140bf677c2c50cc5"}
+    },
+    {
+      "exporter": "Dymola",
+      "exporter_version": "2019FD01",
+      "model": "fullRobot",
+      "relative_directory": "Dymola/2019FD01/fullRobot",
+      "fmu": {"name": "fullRobot.fmu", "sha256": "4b61457577caf06663b308ff9555a0e3a696096ae6cc0f7c389e0515ae1678d1"},
+      "reference": {"name": "fullRobot_ref.csv", "sha256": "43cb40ae8b1bde44fde8837a5bec8de6356d17c30fc35b2b9e2276723ea0f329"},
+      "options": {"name": "fullRobot_ref.opt", "sha256": "32e428de6f6a8ee8efb9a56531e177c0076f292c0d7bf0240ad503b1b9f75fa9"},
+      "input": null,
+      "readme": {"name": "ReadMe.txt", "sha256": "7804f0c5e3c8a2fdc3a7940bb4a0969bc542e68d369843379efb957aa1fff4a0"}
+    },
+    {
+      "exporter": "FMIToolbox_MATLAB",
+      "exporter_version": "2.3",
+      "model": "Continuous",
+      "relative_directory": "FMIToolbox_MATLAB/2.3/Continuous",
+      "fmu": {"name": "Continuous.fmu", "sha256": "8e9e4feac347ac01ee22f56a82978f1a42134afdbca9ee2a57005b069ecdba83"},
+      "reference": {"name": "Continuous_ref.csv", "sha256": "6ac2d84145aea2eeec25b9f7c66de25c0363530bc308e05d97fb0f51c6f78e8b"},
+      "options": {"name": "Continuous_ref.opt", "sha256": "533b0c1f2f787588302845d7038f553fb0796fdf6c039f3e707b5c5f7035210a"},
+      "input": null,
+      "readme": {"name": "ReadMe.txt", "sha256": "19583875fc23106e9574ef34b771291c278b60315600a4c2ea1d2be779ae94ab"}
+    },
+    {
+      "exporter": "FMIToolbox_MATLAB",
+      "exporter_version": "2.3",
+      "model": "EmbeddedCode",
+      "relative_directory": "FMIToolbox_MATLAB/2.3/EmbeddedCode",
+      "fmu": {"name": "EmbeddedCode.fmu", "sha256": "b861a2e4b264d745656b5b7c3277921ea5cc7f67e55a2b04d50fae1a414bff3c"},
+      "reference": {"name": "EmbeddedCode_ref.csv", "sha256": "f990d8eb4a2aa58017ca6935905887e507517bb56b0997a4b0538c0a9a79672e"},
+      "options": {"name": "EmbeddedCode_ref.opt", "sha256": "533b0c1f2f787588302845d7038f553fb0796fdf6c039f3e707b5c5f7035210a"},
+      "input": null,
+      "readme": {"name": "ReadMe.txt", "sha256": "79a7de75ca0c3974046e9d758aca1f68312bcf957f8359203d576d2146a1386f"}
+    },
+    {
+      "exporter": "FMIToolbox_MATLAB",
+      "exporter_version": "2.3",
+      "model": "IntegrateSignal",
+      "relative_directory": "FMIToolbox_MATLAB/2.3/IntegrateSignal",
+      "fmu": {"name": "IntegrateSignal.fmu", "sha256": "68acb2f66717df8d8abdf128b1fba0799fcebec6067264ddbec9590f0b9f9e24"},
+      "reference": {"name": "IntegrateSignal_ref.csv", "sha256": "10b8b3a11c491325963e3b64ad27896d04c9b69aad86d23b05a22c8ab05c6ed8"},
+      "options": {"name": "IntegrateSignal_ref.opt", "sha256": "533b0c1f2f787588302845d7038f553fb0796fdf6c039f3e707b5c5f7035210a"},
+      "input": {"name": "IntegrateSignal_in.csv", "sha256": "0e6a273e689228af993818cb24ba43095379ad0c59520c407bd2b62a37bad45d", "variable": "In1"},
+      "readme": {"name": "ReadMe.txt", "sha256": "d0e2a31600840b5729d985005147ed74c94e5a31d03643b2366414dc053e09a8"}
+    },
+    {
+      "exporter": "MWorks",
+      "exporter_version": "2021",
+      "model": "BouncingBall",
+      "relative_directory": "MWorks/2021/BouncingBall",
+      "fmu": {"name": "BouncingBall.fmu", "sha256": "700fceb18c5c4251709fed5d74dc6f4edfc6d2206ff49c5c57493827c01c9de9"},
+      "reference": {"name": "BouncingBall_ref.csv", "sha256": "14b1c8081eaa417e3e29cd67514d2ddd247d99723db3a1a5e664c444dcdc1792"},
+      "options": {"name": "BouncingBall_ref.opt", "sha256": "7457caa68e43b4aba9ec10b97e894406766efb55cbcc7696843e4a8570f1ba16"},
+      "input": null,
+      "readme": {"name": "ReadMe.txt", "sha256": "87e0d9748eb93ebcd1d4d43ada4fa74ad2b86528f13cb0fcdc7ec12bd0cf7850"}
+    },
+    {
+      "exporter": "MWorks",
+      "exporter_version": "2021",
+      "model": "MixtureGases",
+      "relative_directory": "MWorks/2021/MixtureGases",
+      "fmu": {"name": "MixtureGases.fmu", "sha256": "52d230c847d552c4c735848ea7e3a582116e58d86bbbf3d26b82b33502e155f3"},
+      "reference": {"name": "MixtureGases_ref.csv", "sha256": "29ca74fd33e44b82ced2e7c3ea7ae0360fef5fffe943052f395ee34b5da85fae"},
+      "options": {"name": "MixtureGases_ref.opt", "sha256": "aee945d3ff2d0d7e13e148185770a266a9e16f61cf92af99471ef605dd88b064"},
+      "input": null,
+      "readme": {"name": "ReadMe.txt", "sha256": "4592aa7aaae1bc9f3be4525a62b654c00933ad4aad95df78b9263e9aa9302288"}
+    },
+    {
+      "exporter": "MWorks",
+      "exporter_version": "2021",
+      "model": "Rectifier",
+      "relative_directory": "MWorks/2021/Rectifier",
+      "fmu": {"name": "Rectifier.fmu", "sha256": "0cb1846d66f1442fb8703f27d22d4b3d045d6ecef0311b13e995eea9c98af7ec"},
+      "reference": {"name": "Rectifier_ref.csv", "sha256": "17ffe657535c39457b0035d86006e817a987d4467268f6f68c699a51b5164d3c"},
+      "options": {"name": "Rectifier_ref.opt", "sha256": "e0b61f296d72a148e9756ee30b383fe32132d11bb92b4998ae295a8cd9e6037b"},
+      "input": null,
+      "readme": {"name": "ReadMe.txt", "sha256": "903da0d4a12ef5f63d5609f6871f928b23b1cfb2e27f84feefdc05fa01bcdffd"}
+    }
+  ]
+}

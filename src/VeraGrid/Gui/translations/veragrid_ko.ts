@@ -213,6 +213,201 @@ li.checked::마커 { content: &quot;\2612&quot;; }
     </message>
 </context>
 <context>
+    <name>AddSymbolDialog</name>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="12"/>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
+        <source>Add block property</source>
+        <translation>블록 속성 추가</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="31"/>
+        <source>Define a new property for the selected block.</source>
+        <translation>선택된 블록에 새 속성을 정의합니다.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="48"/>
+        <source>Owner block</source>
+        <translation>소유 블록</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="58"/>
+        <source>Name</source>
+        <translation>이름</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="64"/>
+        <source>Enter a valid symbol name</source>
+        <translation>유효한 심볼 이름을 입력하세요</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="70"/>
+        <source>Variable type</source>
+        <translation>변수 유형</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="80"/>
+        <source>Choose how this symbol participates in the dynamic model.</source>
+        <translation>이 심볼이 동적 모델에 참여하는 방식을 선택하세요.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="98"/>
+        <source>Options</source>
+        <translation>옵션</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="111"/>
+        <source>Expose as output</source>
+        <translation>출력으로 노출</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="116"/>
+        <source>Create derivative variable</source>
+        <translation>미분 변수 생성</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="130"/>
+        <source>Power-flow variable used to initialize this dynamic variable.</source>
+        <translation>이 동적 변수를 초기화하는 데 사용되는 전력 흐름 변수입니다.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="131"/>
+        <source>Power-flow initialization source</source>
+        <translation>전력 흐름 초기화 소스</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="154"/>
+        <source>Local initial value</source>
+        <translation>로컬 초기값</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="167"/>
+        <source>Device initial value</source>
+        <translation>장치 초기값</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="186"/>
+        <source>Retained modes preserve discrete state between simulation steps.</source>
+        <translation>유지된 모드는 시뮬레이션 단계 간 이산 상태를 보존합니다.</translation>
+    </message>
+    <message>
+        <source>Add parameter</source>
+        <translation>파라미터 추가</translation>
+    </message>
+    <message>
+        <source>Add retained mode</source>
+        <translation>유지된 모드 추가</translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation>변수 추가</translation>
+    </message>
+    <message>
+        <source>Algebraic</source>
+        <translation>대수적</translation>
+    </message>
+    <message>
+        <source>Declare a configurable value owned by the selected dynamic block.</source>
+        <translation>선택된 동적 블록이 소유한 설정 가능한 값을 선언합니다.</translation>
+    </message>
+    <message>
+        <source>Declare a variable owned by the selected dynamic block.</source>
+        <translation>선택된 동적 블록이 소유한 변수를 선언합니다.</translation>
+    </message>
+    <message>
+        <source>Declare discrete state that persists between simulation steps.</source>
+        <translation>시뮬레이션 단계 사이에 지속되는 이산 상태를 선언합니다.</translation>
+    </message>
+    <message>
+        <source>Dynamic parameter</source>
+        <translation>동적 파라미터</translation>
+    </message>
+    <message>
+        <source>Enter a valid Python symbol name.</source>
+        <translation>유효한 Python 심볼 이름을 입력하세요.</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>입력</translation>
+    </message>
+    <message>
+        <source>May change during the simulation and can optionally start from a grid-device value.</source>
+        <translation>시뮬레이션 중에 변경될 수 있으며, 선택적으로 그리드 장치 값에서 시작할 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>없음</translation>
+    </message>
+    <message>
+        <source>Nothing was added: {message}</source>
+        <translation>아무것도 추가되지 않았습니다: {message}</translation>
+    </message>
+    <message>
+        <source>Parameter type</source>
+        <translation>파라미터 유형</translation>
+    </message>
+    <message>
+        <source>Preserves discrete state between simulation steps.</source>
+        <translation>시뮬레이션 단계 간 이산 상태를 보존합니다.</translation>
+    </message>
+    <message>
+        <source>Receives its value from an incoming block connection.</source>
+        <translation>들어오는 블록 연결에서 값을 받습니다.</translation>
+    </message>
+    <message>
+        <source>Remains fixed during the simulation and can optionally start from a grid-device value.</source>
+        <translation>시뮬레이션 동안 고정되며, 선택적으로 그리드 장치 값에서 시작할 수 있습니다.</translation>
+    </message>
+    <message>
+        <source>Represents a differential state integrated during the simulation.</source>
+        <translation>시뮬레이션 중에 적분되는 미분 상태를 나타냅니다.</translation>
+    </message>
+    <message>
+        <source>Represents a value solved by the algebraic equations.</source>
+        <translation>대수 방정식에 의해 해결되는 값을 나타냅니다.</translation>
+    </message>
+    <message>
+        <source>Retained mode</source>
+        <translation>유지 모드</translation>
+    </message>
+    <message>
+        <source>Search device parameters</source>
+        <translation>장치 파라미터 검색</translation>
+    </message>
+    <message>
+        <source>Search power-flow variables</source>
+        <translation>전력 흐름 변수 검색</translation>
+    </message>
+    <message>
+        <source>Select a device initialization source from the list.</source>
+        <translation>목록에서 장치 초기화 소스를 선택하세요.</translation>
+    </message>
+    <message>
+        <source>Select a power-flow initialization source from the list.</source>
+        <translation>목록에서 전력 흐름 초기화 소스를 선택하세요.</translation>
+    </message>
+    <message>
+        <source>Select a valid owner block.</source>
+        <translation>유효한 소유 블록을 선택하세요.</translation>
+    </message>
+    <message>
+        <source>Select a valid symbol type.</source>
+        <translation>유효한 심볼 유형을 선택하세요.</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>상태</translation>
+    </message>
+    <message>
+        <source>Static parameter</source>
+        <translation>정적 파라미터</translation>
+    </message>
+    <message>
+        <source>Use local numeric value</source>
+        <translation>로컬 숫자 값 사용</translation>
+    </message>
+</context>
+<context>
     <name>AdmittanceMatrixEditorWidget</name>
     <message>
         <location filename="../DeviceEditors/AdmittanceMatrixEditor/admittance_matrix_editor_gui.ui" line="19"/>
@@ -804,7 +999,7 @@ li.checked::마커 { content: &quot;\2612&quot;; }
     <name>BlockPropertyTreeModel</name>
     <message>
         <source>Missing PF mapping</source>
-        <translation>PF 매핑 누락</translation>
+        <translation type="vanished">PF 매핑 누락</translation>
     </message>
     <message>
         <source>Name</source>
@@ -820,7 +1015,7 @@ li.checked::마커 { content: &quot;\2612&quot;; }
     </message>
     <message>
         <source>Template issue: static parameters require api_obj_mapping. An independently editable parameter should be in event_dict. This refactor does not migrate templates automatically.</source>
-        <translation>템플릿 문제: 정적 매개변수는 api_obj_mapping을 필요로 합니다. 독립적으로 편집 가능한 매개변수는 event_dict에 있어야 합니다. 이 리팩토링은 템플릿을 자동으로 마이그레이션하지 않습니다.</translation>
+        <translation type="vanished">템플릿 문제: 정적 매개변수는 api_obj_mapping을 필요로 합니다. 독립적으로 편집 가능한 매개변수는 event_dict에 있어야 합니다. 이 리팩토링은 템플릿을 자동으로 마이그레이션하지 않습니다.</translation>
     </message>
     <message>
         <source>Type</source>
@@ -829,6 +1024,14 @@ li.checked::마커 { content: &quot;\2612&quot;; }
     <message>
         <source>Value / PF reference</source>
         <translation>값 / PF 참조</translation>
+    </message>
+    <message>
+        <source>Fixed local value. Select a device initialization mapping only when this value must come from the associated grid device.</source>
+        <translation>고정된 로컬 값. 이 값이 연결된 그리드 장치에서 와야 하는 경우에만 장치 초기화 매핑을 선택하세요.</translation>
+    </message>
+    <message>
+        <source>Invalid device initialization mapping: the target is not declared in this block's parameters or event_dict.</source>
+        <translation>유효하지 않은 장치 초기화 매핑: 대상이 이 블록의 파라미터 또는 event_dict에 선언되어 있지 않습니다.</translation>
     </message>
 </context>
 <context>
@@ -3256,6 +3459,58 @@ Reference: {status}</source>
         <source>Valid</source>
         <translation>유효함</translation>
     </message>
+    <message>
+        <source>Equation counts</source>
+        <translation>방정식 개수</translation>
+    </message>
+    <message>
+        <source>Repeated variable names</source>
+        <translation>중복된 변수 이름</translation>
+    </message>
+    <message>
+        <source>Static parameter mappings</source>
+        <translation>정적 파라미터 매핑</translation>
+    </message>
+    <message>
+        <source>Unnamed block</source>
+        <translation>이름 없는 블록</translation>
+    </message>
+    <message>
+        <source>Variable initialization</source>
+        <translation>변수 초기화</translation>
+    </message>
+    <message>
+        <source>algebraic variables={variable_count}, algebraic equations={equation_count}</source>
+        <translation>대수 변수={variable_count}, 대수 방정식={equation_count}</translation>
+    </message>
+    <message>
+        <source>derivative variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>초기화 또는 전력 흐름 소스가 누락된 미분 변수: {variable_names}</translation>
+    </message>
+    <message>
+        <source>event parameters with no value: {parameter_names}</source>
+        <translation>값이 없는 이벤트 파라미터: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>mapping targets not declared as local parameters: {parameter_names}</source>
+        <translation>로컬 파라미터로 선언되지 않은 매핑 대상: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>parameters missing a static mapping: {parameter_names}</source>
+        <translation>정적 매핑이 누락된 파라미터: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>state variables={variable_count}, state equations={equation_count}</source>
+        <translation>상태 변수={variable_count}, 상태 방정식={equation_count}</translation>
+    </message>
+    <message>
+        <source>variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>초기화 또는 전력 흐름 소스가 누락된 변수: {variable_names}</translation>
+    </message>
+    <message>
+        <source>variables: {variable_names}</source>
+        <translation>변수: {variable_names}</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -3364,7 +3619,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Enter a valid Python symbol name.</source>
-        <translation>유효한 Python 심볼 이름을 입력하세요.</translation>
+        <translation type="vanished">유효한 Python 심볼 이름을 입력하세요.</translation>
     </message>
     <message>
         <source>Equation PDF created: {path}</source>
@@ -3467,7 +3722,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>None</source>
-        <translation>없음</translation>
+        <translation type="vanished">없음</translation>
     </message>
     <message>
         <source>Nothing was applied: {message}</source>
@@ -3499,7 +3754,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Parameter whose value may change during the simulation.</source>
-        <translation>시뮬레이션 중 값이 변경될 수 있는 매개변수입니다.</translation>
+        <translation type="vanished">시뮬레이션 중 값이 변경될 수 있는 매개변수입니다.</translation>
     </message>
     <message>
         <source>Parameters</source>
@@ -3548,11 +3803,11 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Select a valid owner block.</source>
-        <translation>유효한 소유 블록을 선택하십시오.</translation>
+        <translation type="vanished">유효한 소유 블록을 선택하십시오.</translation>
     </message>
     <message>
         <source>Select a valid symbol type.</source>
-        <translation>유효한 심볼 유형을 선택하십시오.</translation>
+        <translation type="vanished">유효한 심볼 유형을 선택하십시오.</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="319"/>
@@ -3653,7 +3908,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Retained mode</source>
-        <translation>유지 모드</translation>
+        <translation type="vanished">유지 모드</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="82"/>
@@ -3708,7 +3963,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Nothing was added: {message}</source>
-        <translation>추가된 항목 없음: {message}</translation>
+        <translation type="vanished">추가된 항목 없음: {message}</translation>
     </message>
     <message>
         <source>Add to plot...</source>
@@ -4965,74 +5220,60 @@ select the expected processing format</source>
 <context>
     <name>Form</name>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="14"/>
         <source>Add block property</source>
-        <translation>블록 속성 추가</translation>
+        <translation type="vanished">블록 속성 추가</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
         <source>Add symbol to selected block</source>
-        <translation>선택된 블록에 심볼 추가</translation>
+        <translation type="vanished">선택된 블록에 심볼 추가</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="71"/>
         <source>Output</source>
-        <translation>출력</translation>
+        <translation type="vanished">출력</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="78"/>
         <source>Create derivative variable</source>
-        <translation>미분 변수 생성</translation>
+        <translation type="vanished">미분 변수 생성</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="144"/>
         <source>New symbol name</source>
-        <translation>새 심볼 이름</translation>
+        <translation type="vanished">새 심볼 이름</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="151"/>
         <source>Symbol category</source>
-        <translation>심볼 카테고리</translation>
+        <translation type="vanished">심볼 카테고리</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="158"/>
         <source>Owner block</source>
-        <translation>소유 블록</translation>
+        <translation type="vanished">소유 블록</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="165"/>
         <source>Type</source>
-        <translation>유형</translation>
+        <translation type="vanished">유형</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="172"/>
         <source>Add symbol</source>
-        <translation>심볼 추가</translation>
+        <translation type="vanished">심볼 추가</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="195"/>
         <source>Static device mapping</source>
-        <translation>정적 장치 매핑</translation>
+        <translation type="vanished">정적 장치 매핑</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="202"/>
         <source>Power-flow variable used to initialize this dynamic variable.</source>
-        <translation>이 동적 변수를 초기화하는 데 사용되는 전력 흐름 변수입니다.</translation>
+        <translation type="vanished">이 동적 변수를 초기화하는 데 사용되는 전력 흐름 변수입니다.</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="205"/>
         <source>Power-flow variable</source>
-        <translation>전력 흐름 변수</translation>
+        <translation type="vanished">전력 흐름 변수</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="266"/>
         <source>Enter a name</source>
-        <translation>이름을 입력하세요</translation>
+        <translation type="vanished">이름을 입력하세요</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="273"/>
         <source>Initial numeric value</source>
-        <translation>초기 수치 값</translation>
+        <translation type="vanished">초기 수치 값</translation>
     </message>
 </context>
 <context>
@@ -7727,6 +7968,195 @@ Do you want to continue without a template?</source>
     <message>
         <source>Stability boundary</source>
         <translation>안정성 경계</translation>
+    </message>
+</context>
+<context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>두 선언 모두 제조사 납품 계약의 일부이며 자격 부여 전에 필요합니다.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>먹다...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>기존 제조사 바이너리를 선택하십시오.</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>선택된 인터페이스에서 요구하는 제조사 선언을 완료하십시오.</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>대상 제공자</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>각 쉼표로 구분된 값은 해당 위치의 소스 순서에 대한 대상 순서입니다. 예: 1,0은 소스 0을 대상 1로, 소스 1을 대상 0으로 매핑합니다.</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>예: 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>예: 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>예: 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>제조사 네이티브 모델 가져오기</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>입력 대상 순서</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>변형 검사 및 첨부</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>검사 및 가져오기</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>격리된 워커에서 바이너리 검사 중...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>Linux 라이브러리 (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>제조사 바이너리</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>제조사 인터페이스</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>제조사 네이티브 모델 준비 완료</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>제조사 네이티브 모델 변형</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>아직 제공자가 가져와지지 않았습니다.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>없음</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>출력 대상 순서</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>파라미터 대상 순서</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>플랫폼 변형</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>제공자: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>제공자: {provider}
+첨부된 플랫폼: {platform}
+생성된 템플릿: 없음 (기존 템플릿 유지).</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>제공자: {provider}
+플랫폼: {platform}
+RMS 템플릿 생성: {rms}
+EMT 템플릿 생성: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>자격 부여 및 첨부된 {platform}: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>자격 부여 및 가져온 {name}. {rms}개의 RMS 및 {emt}개의 EMT 템플릿이 생성되었습니다.</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>기존 템플릿 다시 연결</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>선택된 템플릿 다시 연결</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>{consumer}가 {provider}에 다시 연결되었습니다.</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>소스, 목적지 및 템플릿을 선택하십시오.</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>제조사 라이브러리 선택</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>제조사 계약 및 사전 컴파일된 플랫폼 라이브러리를 선택하십시오. VeraGrid는 바이너리를 격리된 워커에서 검증하고 실행합니다.</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>주형</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>제조사는 모든 변경 가능한 모델 상태가 각 인스턴스에 의해 소유됨을 선언합니다.</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>제조사는 라이브러리가 지연된 네이티브 로딩을 수행하지 않음을 선언합니다.</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>Windows 라이브러리 (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: 누락됨</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
+    </message>
+    <message>
+        <source>Choose the LLVM bin directory</source>
+        <translation>LLVM bin 디렉터리 선택</translation>
+    </message>
+    <message>
+        <source>Choose the MinGW/UCRT support directory</source>
+        <translation>MinGW/UCRT 지원 디렉터리 선택</translation>
+    </message>
+    <message>
+        <source>LLVM selection was cancelled; the manufacturer model was not imported.</source>
+        <translation>LLVM 선택이 취소되었습니다. 제조사 모델이 가져와지지 않았습니다.</translation>
     </message>
 </context>
 <context>
@@ -10591,6 +11021,10 @@ ML 설정에서 클러스터 수를 수정하십시오.</translation>
         <source>The short-circuit worker finished without results.</source>
         <translation>단락 회로 작업자가 결과 없이 종료되었습니다.</translation>
     </message>
+    <message>
+        <source>Power flow 3ph failed</source>
+        <translation>3상 전력 흐름 계산 실패</translation>
+    </message>
 </context>
 <context>
     <name>SolarPvWizard</name>
@@ -11522,12 +11956,91 @@ You need to load or create a grid!</source>
         <translation type="vanished">이 섹션에서 발견된 문제</translation>
     </message>
     <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="20"/>
         <source>Model Consistency Validation</source>
-        <translation type="vanished">모델 일관성 검증</translation>
+        <translation>모델 일관성 검증</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="31"/>
+        <source>Check the edited model&apos;s equation counts, variable names, parameter mappings, and variable initialization. This report is informational and does not block saving the model.</source>
+        <translation>수정된 모델의 방정식 개수, 변수 이름, 매개변수 매핑 및 변수 초기화를 확인하십시오. 이 보고서는 정보 제공용이며 모델 저장에 영향을 주지 않습니다.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="53"/>
+        <source>Show:</source>
+        <translation>표시:</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="60"/>
+        <source>Filter validation results by check</source>
+        <translation>검사별로 유효성 검사 결과 필터링</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="85"/>
+        <source>No validation results match this filter.</source>
+        <translation>이 필터와 일치하는 유효성 검사 결과가 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="95"/>
+        <source>Show issues in the model</source>
+        <translation>모델의 문제 표시</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="96"/>
+        <source>Show Issues</source>
+        <translation>문제 표시</translation>
     </message>
     <message>
         <source>Run an informational validation of the edited model structure, mappings, initialization, and port connectivity. This check reports issues but does not block saving the model.</source>
         <translation type="vanished">편집된 모델 구조, 매핑, 초기화 및 포트 연결에 대한 정보성 검증을 실행합니다. 이 검사는 문제를 보고하지만 모델 저장을 차단하지는 않습니다.</translation>
+    </message>
+    <message>
+        <source>All checks</source>
+        <translation>모든 검사</translation>
+    </message>
+    <message>
+        <source>Block</source>
+        <translation>차단</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>확인</translation>
+    </message>
+    <message>
+        <source>Details</source>
+        <translation>세부 정보</translation>
+    </message>
+    <message>
+        <source>Issue</source>
+        <translation>문제</translation>
+    </message>
+    <message>
+        <source>Issues only</source>
+        <translation>문제만</translation>
+    </message>
+    <message>
+        <source>No issues found</source>
+        <translation>문제가 발견되지 않았습니다</translation>
+    </message>
+    <message>
+        <source>No issues found.</source>
+        <translation>문제가 발견되지 않았습니다.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>좋아요</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>상태</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · No issues found</source>
+        <translation>{check_count} 개의 검사 · 문제가 발견되지 않았습니다</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · {issue_section_count} checks with issues · {finding_count} findings</source>
+        <translation>{check_count} 개의 검사 · 문제가 있는 {issue_section_count} 개의 검사 · {finding_count} 개의 발견 사항</translation>
     </message>
 </context>
 <context>
@@ -17480,183 +17993,6 @@ You need to load or create a grid!</source>
     <message>
         <source>Question</source>
         <translation>질문</translation>
-    </message>
-</context>
-<context>
-    <name>ManufacturerNativeImporterDialog</name>
-    <message>
-        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
-        <translation>두 선언 모두 제조사 납품 계약의 일부이며 자격 부여 전에 필요합니다.</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>먹다...</translation>
-    </message>
-    <message>
-        <source>Choose an existing manufacturer binary.</source>
-        <translation>기존 제조사 바이너리를 선택하십시오.</translation>
-    </message>
-    <message>
-        <source>Complete the manufacturer declarations required by the selected interface.</source>
-        <translation>선택된 인터페이스에서 요구하는 제조사 선언을 완료하십시오.</translation>
-    </message>
-    <message>
-        <source>Destination provider</source>
-        <translation>대상 제공자</translation>
-    </message>
-    <message>
-        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
-        <translation>각 쉼표로 구분된 값은 해당 위치의 소스 순서에 대한 대상 순서입니다. 예: 1,0은 소스 0을 대상 1로, 소스 1을 대상 0으로 매핑합니다.</translation>
-    </message>
-    <message>
-        <source>Example: 0,1</source>
-        <translation>예: 0,1</translation>
-    </message>
-    <message>
-        <source>Example: 1,0</source>
-        <translation>예: 1,0</translation>
-    </message>
-    <message>
-        <source>Example: 2,0,1</source>
-        <translation>예: 2,0,1</translation>
-    </message>
-    <message>
-        <source>Import manufacturer native model</source>
-        <translation>제조사 네이티브 모델 가져오기</translation>
-    </message>
-    <message>
-        <source>Input destination ordinals</source>
-        <translation>입력 대상 순서</translation>
-    </message>
-    <message>
-        <source>Inspect and attach variant</source>
-        <translation>변형 검사 및 첨부</translation>
-    </message>
-    <message>
-        <source>Inspect and import</source>
-        <translation>검사 및 가져오기</translation>
-    </message>
-    <message>
-        <source>Inspecting the binary in an isolated worker...</source>
-        <translation>격리된 워커에서 바이너리 검사 중...</translation>
-    </message>
-    <message>
-        <source>Linux libraries (*.so)</source>
-        <translation>Linux 라이브러리 (*.so)</translation>
-    </message>
-    <message>
-        <source>Manufacturer binary</source>
-        <translation>제조사 바이너리</translation>
-    </message>
-    <message>
-        <source>Manufacturer interface</source>
-        <translation>제조사 인터페이스</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model ready</source>
-        <translation>제조사 네이티브 모델 준비 완료</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model variants</source>
-        <translation>제조사 네이티브 모델 변형</translation>
-    </message>
-    <message>
-        <source>No provider has been imported yet.</source>
-        <translation>아직 제공자가 가져와지지 않았습니다.</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>없음</translation>
-    </message>
-    <message>
-        <source>Output destination ordinals</source>
-        <translation>출력 대상 순서</translation>
-    </message>
-    <message>
-        <source>Parameter destination ordinals</source>
-        <translation>파라미터 대상 순서</translation>
-    </message>
-    <message>
-        <source>Platform variant</source>
-        <translation>플랫폼 변형</translation>
-    </message>
-    <message>
-        <source>Provider: {name}</source>
-        <translation>제공자: {name}</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform attached: {platform}
-Templates created: None (existing templates retained).</source>
-        <translation>제공자: {provider}
-첨부된 플랫폼: {platform}
-생성된 템플릿: 없음 (기존 템플릿 유지).</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform: {platform}
-RMS templates created: {rms}
-EMT templates created: {emt}</source>
-        <translation>제공자: {provider}
-플랫폼: {platform}
-RMS 템플릿 생성: {rms}
-EMT 템플릿 생성: {emt}</translation>
-    </message>
-    <message>
-        <source>Qualified and attached {platform}: {digest}</source>
-        <translation>자격 부여 및 첨부된 {platform}: {digest}</translation>
-    </message>
-    <message>
-        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
-        <translation>자격 부여 및 가져온 {name}. {rms}개의 RMS 및 {emt}개의 EMT 템플릿이 생성되었습니다.</translation>
-    </message>
-    <message>
-        <source>Rebind an existing template</source>
-        <translation>기존 템플릿 다시 연결</translation>
-    </message>
-    <message>
-        <source>Rebind selected template</source>
-        <translation>선택된 템플릿 다시 연결</translation>
-    </message>
-    <message>
-        <source>Rebound {consumer} to {provider}.</source>
-        <translation>{consumer}가 {provider}에 다시 연결되었습니다.</translation>
-    </message>
-    <message>
-        <source>Select a source, destination and template.</source>
-        <translation>소스, 목적지 및 템플릿을 선택하십시오.</translation>
-    </message>
-    <message>
-        <source>Select manufacturer library</source>
-        <translation>제조사 라이브러리 선택</translation>
-    </message>
-    <message>
-        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
-        <translation>제조사 계약 및 사전 컴파일된 플랫폼 라이브러리를 선택하십시오. VeraGrid는 바이너리를 격리된 워커에서 검증하고 실행합니다.</translation>
-    </message>
-    <message>
-        <source>Template</source>
-        <translation>주형</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
-        <translation>제조사는 모든 변경 가능한 모델 상태가 각 인스턴스에 의해 소유됨을 선언합니다.</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that the library performs no late native loading.</source>
-        <translation>제조사는 라이브러리가 지연된 네이티브 로딩을 수행하지 않음을 선언합니다.</translation>
-    </message>
-    <message>
-        <source>Windows libraries (*.dll)</source>
-        <translation>Windows 라이브러리 (*.dll)</translation>
-    </message>
-    <message>
-        <source>{platform}: missing</source>
-        <translation>{platform}: 누락됨</translation>
-    </message>
-    <message>
-        <source>{platform}: {status}, SHA-256 {digest}</source>
-        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

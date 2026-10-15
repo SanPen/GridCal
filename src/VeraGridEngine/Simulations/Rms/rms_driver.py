@@ -40,7 +40,10 @@ def _collect_rms_group_parameter_values(problem: RmsProblemDae | RmsProblemDaeVe
     parameter_values: Dict[str, float] = collect_declared_dynamic_parameter_values(
         grid=grid,
         simulation_type=PlotSimulationType.RMS,
-        logger=problem.logger,
+        # Mapping diagnostics were already emitted while constructing the
+        # problem. Result export must remain read-only and must not duplicate
+        # the same information entry for every event-group snapshot.
+        logger=None,
     )
     event_parameter_count: int = len(problem._variable_parameters)
     parameter_index: int

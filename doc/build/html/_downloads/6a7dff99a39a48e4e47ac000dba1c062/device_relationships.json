@@ -6,7 +6,7 @@
       "kind": "exposed",
       "category": "Regions",
       "module_name": "src.VeraGridEngine.Devices.Aggregation.area",
-      "file_path": "src\\VeraGridEngine\\Devices\\Aggregation\\area.py",
+      "file_path": "src/VeraGridEngine/Devices/Aggregation/area.py",
       "bases": [
         "GenericAreaGroup"
       ],
@@ -18,7 +18,7 @@
       "kind": "exposed",
       "category": "Injections",
       "module_name": "src.VeraGridEngine.Devices.Injections.battery",
-      "file_path": "src\\VeraGridEngine\\Devices\\Injections\\battery.py",
+      "file_path": "src/VeraGridEngine/Devices/Injections/battery.py",
       "bases": [
         "Generator"
       ],
@@ -30,7 +30,7 @@
       "kind": "exposed",
       "category": "Groups",
       "module_name": "src.VeraGridEngine.Devices.Aggregation.branch_group",
-      "file_path": "src\\VeraGridEngine\\Devices\\Aggregation\\branch_group.py",
+      "file_path": "src/VeraGridEngine/Devices/Aggregation/branch_group.py",
       "bases": [
         "EditableDevice"
       ],
@@ -42,7 +42,7 @@
       "kind": "exposed",
       "category": "Substation",
       "module_name": "src.VeraGridEngine.Devices.Substation.bus",
-      "file_path": "src\\VeraGridEngine\\Devices\\Substation\\bus.py",
+      "file_path": "src/VeraGridEngine/Devices/Substation/bus.py",
       "bases": [
         "DynamicBusDevice"
       ],
@@ -54,7 +54,7 @@
       "kind": "exposed",
       "category": "Substation",
       "module_name": "src.VeraGridEngine.Devices.Substation.busbar",
-      "file_path": "src\\VeraGridEngine\\Devices\\Substation\\busbar.py",
+      "file_path": "src/VeraGridEngine/Devices/Substation/busbar.py",
       "bases": [
         "PhysicalDevice"
       ],
@@ -66,7 +66,7 @@
       "kind": "exposed",
       "category": "Regions",
       "module_name": "src.VeraGridEngine.Devices.Aggregation.community",
-      "file_path": "src\\VeraGridEngine\\Devices\\Aggregation\\community.py",
+      "file_path": "src/VeraGridEngine/Devices/Aggregation/community.py",
       "bases": [
         "GenericAreaGroup"
       ],
@@ -78,7 +78,7 @@
       "kind": "exposed",
       "category": "Contingencies",
       "module_name": "src.VeraGridEngine.Devices.Events.contingency",
-      "file_path": "src\\VeraGridEngine\\Devices\\Events\\contingency.py",
+      "file_path": "src/VeraGridEngine/Devices/Events/contingency.py",
       "bases": [
         "PointerDeviceParent"
       ],
@@ -90,7 +90,7 @@
       "kind": "exposed",
       "category": "Contingencies",
       "module_name": "src.VeraGridEngine.Devices.Events.contingency_group",
-      "file_path": "src\\VeraGridEngine\\Devices\\Events\\contingency_group.py",
+      "file_path": "src/VeraGridEngine/Devices/Events/contingency_group.py",
       "bases": [
         "EditableDevice"
       ],
@@ -102,7 +102,7 @@
       "kind": "exposed",
       "category": "Injections",
       "module_name": "src.VeraGridEngine.Devices.Injections.controllable_shunt",
-      "file_path": "src\\VeraGridEngine\\Devices\\Injections\\controllable_shunt.py",
+      "file_path": "src/VeraGridEngine/Devices/Injections/controllable_shunt.py",
       "bases": [
         "ShuntParent"
       ],
@@ -114,7 +114,7 @@
       "kind": "exposed",
       "category": "Regions",
       "module_name": "src.VeraGridEngine.Devices.Aggregation.country",
-      "file_path": "src\\VeraGridEngine\\Devices\\Aggregation\\country.py",
+      "file_path": "src/VeraGridEngine/Devices/Aggregation/country.py",
       "bases": [
         "GenericAreaGroup"
       ],
@@ -126,7 +126,7 @@
       "kind": "exposed",
       "category": "Injections",
       "module_name": "src.VeraGridEngine.Devices.Injections.current_injection",
-      "file_path": "src\\VeraGridEngine\\Devices\\Injections\\current_injection.py",
+      "file_path": "src/VeraGridEngine/Devices/Injections/current_injection.py",
       "bases": [
         "InjectionParent"
       ],
@@ -138,7 +138,7 @@
       "kind": "exposed",
       "category": "Branches",
       "module_name": "src.VeraGridEngine.Devices.Branches.dc_line",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\dc_line.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/dc_line.py",
       "bases": [
         "BranchParent"
       ],
@@ -150,7 +150,7 @@
       "kind": "exposed",
       "category": "Associations",
       "module_name": "src.VeraGridEngine.Devices.Associations.emission_gas",
-      "file_path": "src\\VeraGridEngine\\Devices\\Associations\\emission_gas.py",
+      "file_path": "src/VeraGridEngine/Devices/Associations/emission_gas.py",
       "bases": [
         "EditableDevice"
       ],
@@ -162,7 +162,7 @@
       "kind": "exposed",
       "category": "Dynamic",
       "module_name": "src.VeraGridEngine.Devices.Events.emt_event",
-      "file_path": "src\\VeraGridEngine\\Devices\\Events\\emt_event.py",
+      "file_path": "src/VeraGridEngine/Devices/Events/emt_event.py",
       "bases": [
         "PointerDeviceParent"
       ],
@@ -174,7 +174,7 @@
       "kind": "exposed",
       "category": "Dynamic",
       "module_name": "src.VeraGridEngine.Devices.Events.emt_events_group",
-      "file_path": "src\\VeraGridEngine\\Devices\\Events\\emt_events_group.py",
+      "file_path": "src/VeraGridEngine/Devices/Events/emt_events_group.py",
       "bases": [
         "EditableDevice"
       ],
@@ -186,7 +186,7 @@
       "kind": "exposed",
       "category": "Templates",
       "module_name": "src.VeraGridEngine.Devices.Dynamic.emt_template",
-      "file_path": "src\\VeraGridEngine\\Devices\\Dynamic\\emt_template.py",
+      "file_path": "src/VeraGridEngine/Devices/Dynamic/emt_template.py",
       "bases": [
         "PointerDeviceParent"
       ],
@@ -198,7 +198,7 @@
       "kind": "exposed",
       "category": "Injections",
       "module_name": "src.VeraGridEngine.Devices.Injections.external_grid",
-      "file_path": "src\\VeraGridEngine\\Devices\\Injections\\external_grid.py",
+      "file_path": "src/VeraGridEngine/Devices/Injections/external_grid.py",
       "bases": [
         "LoadParent"
       ],
@@ -210,7 +210,7 @@
       "kind": "exposed",
       "category": "Groups",
       "module_name": "src.VeraGridEngine.Devices.Aggregation.facility",
-      "file_path": "src\\VeraGridEngine\\Devices\\Aggregation\\facility.py",
+      "file_path": "src/VeraGridEngine/Devices/Aggregation/facility.py",
       "bases": [
         "GenericAreaGroup"
       ],
@@ -222,7 +222,7 @@
       "kind": "exposed",
       "category": "Fluid",
       "module_name": "src.VeraGridEngine.Devices.Fluid.fluid_node",
-      "file_path": "src\\VeraGridEngine\\Devices\\Fluid\\fluid_node.py",
+      "file_path": "src/VeraGridEngine/Devices/Fluid/fluid_node.py",
       "bases": [
         "PhysicalDevice"
       ],
@@ -234,7 +234,7 @@
       "kind": "exposed",
       "category": "Fluid",
       "module_name": "src.VeraGridEngine.Devices.Fluid.fluid_p2x",
-      "file_path": "src\\VeraGridEngine\\Devices\\Fluid\\fluid_p2x.py",
+      "file_path": "src/VeraGridEngine/Devices/Fluid/fluid_p2x.py",
       "bases": [
         "FluidInjectionTemplate"
       ],
@@ -246,7 +246,7 @@
       "kind": "exposed",
       "category": "Fluid",
       "module_name": "src.VeraGridEngine.Devices.Fluid.fluid_path",
-      "file_path": "src\\VeraGridEngine\\Devices\\Fluid\\fluid_path.py",
+      "file_path": "src/VeraGridEngine/Devices/Fluid/fluid_path.py",
       "bases": [
         "PhysicalDevice"
       ],
@@ -258,7 +258,7 @@
       "kind": "exposed",
       "category": "Fluid",
       "module_name": "src.VeraGridEngine.Devices.Fluid.fluid_pump",
-      "file_path": "src\\VeraGridEngine\\Devices\\Fluid\\fluid_pump.py",
+      "file_path": "src/VeraGridEngine/Devices/Fluid/fluid_pump.py",
       "bases": [
         "FluidInjectionTemplate"
       ],
@@ -270,7 +270,7 @@
       "kind": "exposed",
       "category": "Fluid",
       "module_name": "src.VeraGridEngine.Devices.Fluid.fluid_turbine",
-      "file_path": "src\\VeraGridEngine\\Devices\\Fluid\\fluid_turbine.py",
+      "file_path": "src/VeraGridEngine/Devices/Fluid/fluid_turbine.py",
       "bases": [
         "FluidInjectionTemplate"
       ],
@@ -282,7 +282,7 @@
       "kind": "exposed",
       "category": "Templates",
       "module_name": "src.VeraGridEngine.Devices.Dynamic.fmu_template",
-      "file_path": "src\\VeraGridEngine\\Devices\\Dynamic\\fmu_template.py",
+      "file_path": "src/VeraGridEngine/Devices/Dynamic/fmu_template.py",
       "bases": [
         "PointerDeviceParent"
       ],
@@ -294,7 +294,7 @@
       "kind": "exposed",
       "category": "Associations",
       "module_name": "src.VeraGridEngine.Devices.Associations.fuel",
-      "file_path": "src\\VeraGridEngine\\Devices\\Associations\\fuel.py",
+      "file_path": "src/VeraGridEngine/Devices/Associations/fuel.py",
       "bases": [
         "EditableDevice"
       ],
@@ -306,7 +306,7 @@
       "kind": "exposed",
       "category": "Injections",
       "module_name": "src.VeraGridEngine.Devices.Injections.generator",
-      "file_path": "src\\VeraGridEngine\\Devices\\Injections\\generator.py",
+      "file_path": "src/VeraGridEngine/Devices/Injections/generator.py",
       "bases": [
         "InjectionParent"
       ],
@@ -318,7 +318,7 @@
       "kind": "exposed",
       "category": "Branches",
       "module_name": "src.VeraGridEngine.Devices.Branches.hvdc_line",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\hvdc_line.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/hvdc_line.py",
       "bases": [
         "BranchParent"
       ],
@@ -330,7 +330,7 @@
       "kind": "exposed",
       "category": "Measurements",
       "module_name": "src.VeraGridEngine.Devices.measurement",
-      "file_path": "src\\VeraGridEngine\\Devices\\measurement.py",
+      "file_path": "src/VeraGridEngine/Devices/measurement.py",
       "bases": [
         "MeasurementTemplate"
       ],
@@ -342,7 +342,7 @@
       "kind": "exposed",
       "category": "Investments",
       "module_name": "src.VeraGridEngine.Devices.Aggregation.investment",
-      "file_path": "src\\VeraGridEngine\\Devices\\Aggregation\\investment.py",
+      "file_path": "src/VeraGridEngine/Devices/Aggregation/investment.py",
       "bases": [
         "PointerDeviceParent"
       ],
@@ -354,7 +354,7 @@
       "kind": "exposed",
       "category": "Investments",
       "module_name": "src.VeraGridEngine.Devices.Aggregation.investments_group",
-      "file_path": "src\\VeraGridEngine\\Devices\\Aggregation\\investments_group.py",
+      "file_path": "src/VeraGridEngine/Devices/Aggregation/investments_group.py",
       "bases": [
         "EditableDevice"
       ],
@@ -366,7 +366,7 @@
       "kind": "exposed",
       "category": "Measurements",
       "module_name": "src.VeraGridEngine.Devices.measurement",
-      "file_path": "src\\VeraGridEngine\\Devices\\measurement.py",
+      "file_path": "src/VeraGridEngine/Devices/measurement.py",
       "bases": [
         "MeasurementTemplate"
       ],
@@ -378,7 +378,7 @@
       "kind": "exposed",
       "category": "Branches",
       "module_name": "src.VeraGridEngine.Devices.Branches.line",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\line.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/line.py",
       "bases": [
         "BranchParent"
       ],
@@ -390,7 +390,7 @@
       "kind": "exposed",
       "category": "Injections",
       "module_name": "src.VeraGridEngine.Devices.Injections.load",
-      "file_path": "src\\VeraGridEngine\\Devices\\Injections\\load.py",
+      "file_path": "src/VeraGridEngine/Devices/Injections/load.py",
       "bases": [
         "LoadParent"
       ],
@@ -402,7 +402,7 @@
       "kind": "exposed",
       "category": "Groups",
       "module_name": "src.VeraGridEngine.Devices.Aggregation.modelling_authority",
-      "file_path": "src\\VeraGridEngine\\Devices\\Aggregation\\modelling_authority.py",
+      "file_path": "src/VeraGridEngine/Devices/Aggregation/modelling_authority.py",
       "bases": [
         "EditableDevice"
       ],
@@ -414,7 +414,7 @@
       "kind": "exposed",
       "category": "Regions",
       "module_name": "src.VeraGridEngine.Devices.Aggregation.municipality",
-      "file_path": "src\\VeraGridEngine\\Devices\\Aggregation\\municipality.py",
+      "file_path": "src/VeraGridEngine/Devices/Aggregation/municipality.py",
       "bases": [
         "GenericAreaGroup"
       ],
@@ -426,7 +426,7 @@
       "kind": "exposed",
       "category": "Catalogue",
       "module_name": "src.VeraGridEngine.Devices.Branches.overhead_line_type",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\overhead_line_type.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/overhead_line_type.py",
       "bases": [
         "DynamicDevice"
       ],
@@ -438,7 +438,7 @@
       "kind": "exposed",
       "category": "Associations",
       "module_name": "src.VeraGridEngine.Devices.Associations.owner",
-      "file_path": "src\\VeraGridEngine\\Devices\\Associations\\owner.py",
+      "file_path": "src/VeraGridEngine/Devices/Associations/owner.py",
       "bases": [
         "EditableDevice"
       ],
@@ -450,7 +450,7 @@
       "kind": "exposed",
       "category": "Measurements",
       "module_name": "src.VeraGridEngine.Devices.measurement",
-      "file_path": "src\\VeraGridEngine\\Devices\\measurement.py",
+      "file_path": "src/VeraGridEngine/Devices/measurement.py",
       "bases": [
         "MeasurementTemplate"
       ],
@@ -462,7 +462,7 @@
       "kind": "exposed",
       "category": "Measurements",
       "module_name": "src.VeraGridEngine.Devices.measurement",
-      "file_path": "src\\VeraGridEngine\\Devices\\measurement.py",
+      "file_path": "src/VeraGridEngine/Devices/measurement.py",
       "bases": [
         "MeasurementTemplate"
       ],
@@ -474,7 +474,7 @@
       "kind": "exposed",
       "category": "Measurements",
       "module_name": "src.VeraGridEngine.Devices.measurement",
-      "file_path": "src\\VeraGridEngine\\Devices\\measurement.py",
+      "file_path": "src/VeraGridEngine/Devices/measurement.py",
       "bases": [
         "MeasurementTemplate"
       ],
@@ -486,7 +486,7 @@
       "kind": "exposed",
       "category": "Measurements",
       "module_name": "src.VeraGridEngine.Devices.measurement",
-      "file_path": "src\\VeraGridEngine\\Devices\\measurement.py",
+      "file_path": "src/VeraGridEngine/Devices/measurement.py",
       "bases": [
         "MeasurementTemplate"
       ],
@@ -498,7 +498,7 @@
       "kind": "exposed",
       "category": "Measurements",
       "module_name": "src.VeraGridEngine.Devices.measurement",
-      "file_path": "src\\VeraGridEngine\\Devices\\measurement.py",
+      "file_path": "src/VeraGridEngine/Devices/measurement.py",
       "bases": [
         "MeasurementTemplate"
       ],
@@ -510,7 +510,7 @@
       "kind": "exposed",
       "category": "Measurements",
       "module_name": "src.VeraGridEngine.Devices.measurement",
-      "file_path": "src\\VeraGridEngine\\Devices\\measurement.py",
+      "file_path": "src/VeraGridEngine/Devices/measurement.py",
       "bases": [
         "MeasurementTemplate"
       ],
@@ -522,7 +522,7 @@
       "kind": "exposed",
       "category": "Measurements",
       "module_name": "src.VeraGridEngine.Devices.measurement",
-      "file_path": "src\\VeraGridEngine\\Devices\\measurement.py",
+      "file_path": "src/VeraGridEngine/Devices/measurement.py",
       "bases": [
         "MeasurementTemplate"
       ],
@@ -534,7 +534,7 @@
       "kind": "exposed",
       "category": "Measurements",
       "module_name": "src.VeraGridEngine.Devices.measurement",
-      "file_path": "src\\VeraGridEngine\\Devices\\measurement.py",
+      "file_path": "src/VeraGridEngine/Devices/measurement.py",
       "bases": [
         "MeasurementTemplate"
       ],
@@ -546,7 +546,7 @@
       "kind": "exposed",
       "category": "Regions",
       "module_name": "src.VeraGridEngine.Devices.Aggregation.region",
-      "file_path": "src\\VeraGridEngine\\Devices\\Aggregation\\region.py",
+      "file_path": "src/VeraGridEngine/Devices/Aggregation/region.py",
       "bases": [
         "GenericAreaGroup"
       ],
@@ -558,7 +558,7 @@
       "kind": "exposed",
       "category": "Contingencies",
       "module_name": "src.VeraGridEngine.Devices.Events.remedial_action",
-      "file_path": "src\\VeraGridEngine\\Devices\\Events\\remedial_action.py",
+      "file_path": "src/VeraGridEngine/Devices/Events/remedial_action.py",
       "bases": [
         "PointerDeviceParent"
       ],
@@ -570,7 +570,7 @@
       "kind": "exposed",
       "category": "Contingencies",
       "module_name": "src.VeraGridEngine.Devices.Events.remedial_action_group",
-      "file_path": "src\\VeraGridEngine\\Devices\\Events\\remedial_action_group.py",
+      "file_path": "src/VeraGridEngine/Devices/Events/remedial_action_group.py",
       "bases": [
         "EditableDevice"
       ],
@@ -582,7 +582,7 @@
       "kind": "exposed",
       "category": "Dynamic",
       "module_name": "src.VeraGridEngine.Devices.Events.rms_event",
-      "file_path": "src\\VeraGridEngine\\Devices\\Events\\rms_event.py",
+      "file_path": "src/VeraGridEngine/Devices/Events/rms_event.py",
       "bases": [
         "PointerDeviceParent"
       ],
@@ -594,7 +594,7 @@
       "kind": "exposed",
       "category": "Dynamic",
       "module_name": "src.VeraGridEngine.Devices.Events.rms_events_group",
-      "file_path": "src\\VeraGridEngine\\Devices\\Events\\rms_events_group.py",
+      "file_path": "src/VeraGridEngine/Devices/Events/rms_events_group.py",
       "bases": [
         "EditableDevice"
       ],
@@ -606,7 +606,7 @@
       "kind": "exposed",
       "category": "Templates",
       "module_name": "src.VeraGridEngine.Devices.Dynamic.rms_template",
-      "file_path": "src\\VeraGridEngine\\Devices\\Dynamic\\rms_template.py",
+      "file_path": "src/VeraGridEngine/Devices/Dynamic/rms_template.py",
       "bases": [
         "PointerDeviceParent"
       ],
@@ -618,7 +618,7 @@
       "kind": "exposed",
       "category": "Catalogue",
       "module_name": "src.VeraGridEngine.Devices.Branches.sequence_line_type",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\sequence_line_type.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/sequence_line_type.py",
       "bases": [
         "DynamicDevice"
       ],
@@ -630,7 +630,7 @@
       "kind": "exposed",
       "category": "Branches",
       "module_name": "src.VeraGridEngine.Devices.Branches.series_reactance",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\series_reactance.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/series_reactance.py",
       "bases": [
         "BranchParent"
       ],
@@ -642,7 +642,7 @@
       "kind": "exposed",
       "category": "Contingencies",
       "module_name": "src.VeraGridEngine.Devices.Events.short_cirtcuit_event",
-      "file_path": "src\\VeraGridEngine\\Devices\\Events\\short_cirtcuit_event.py",
+      "file_path": "src/VeraGridEngine/Devices/Events/short_cirtcuit_event.py",
       "bases": [
         "PointerDeviceParent"
       ],
@@ -654,7 +654,7 @@
       "kind": "exposed",
       "category": "Injections",
       "module_name": "src.VeraGridEngine.Devices.Injections.shunt",
-      "file_path": "src\\VeraGridEngine\\Devices\\Injections\\shunt.py",
+      "file_path": "src/VeraGridEngine/Devices/Injections/shunt.py",
       "bases": [
         "ShuntParent"
       ],
@@ -666,7 +666,7 @@
       "kind": "exposed",
       "category": "Injections",
       "module_name": "src.VeraGridEngine.Devices.Injections.static_generator",
-      "file_path": "src\\VeraGridEngine\\Devices\\Injections\\static_generator.py",
+      "file_path": "src/VeraGridEngine/Devices/Injections/static_generator.py",
       "bases": [
         "LoadParent"
       ],
@@ -678,7 +678,7 @@
       "kind": "exposed",
       "category": "Substation",
       "module_name": "src.VeraGridEngine.Devices.Substation.substation",
-      "file_path": "src\\VeraGridEngine\\Devices\\Substation\\substation.py",
+      "file_path": "src/VeraGridEngine/Devices/Substation/substation.py",
       "bases": [
         "PhysicalDevice"
       ],
@@ -690,7 +690,7 @@
       "kind": "exposed",
       "category": "Branches",
       "module_name": "src.VeraGridEngine.Devices.Branches.switch",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\switch.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/switch.py",
       "bases": [
         "BranchParent"
       ],
@@ -702,7 +702,7 @@
       "kind": "exposed",
       "category": "Associations",
       "module_name": "src.VeraGridEngine.Devices.Associations.technology",
-      "file_path": "src\\VeraGridEngine\\Devices\\Associations\\technology.py",
+      "file_path": "src/VeraGridEngine/Devices/Associations/technology.py",
       "bases": [
         "EditableDevice"
       ],
@@ -714,7 +714,7 @@
       "kind": "exposed",
       "category": "Branches",
       "module_name": "src.VeraGridEngine.Devices.Branches.transformer",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\transformer.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/transformer.py",
       "bases": [
         "ControllableBranchParent"
       ],
@@ -726,7 +726,7 @@
       "kind": "exposed",
       "category": "Branches",
       "module_name": "src.VeraGridEngine.Devices.Branches.transformer3w",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\transformer3w.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/transformer3w.py",
       "bases": [
         "DynamicDevice"
       ],
@@ -738,7 +738,7 @@
       "kind": "exposed",
       "category": "Branches",
       "module_name": "src.VeraGridEngine.Devices.Branches.transformerNw",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\transformerNw.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/transformerNw.py",
       "bases": [
         "PhysicalDevice"
       ],
@@ -750,7 +750,7 @@
       "kind": "exposed",
       "category": "Catalogue",
       "module_name": "src.VeraGridEngine.Devices.Branches.transformer_type",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\transformer_type.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/transformer_type.py",
       "bases": [
         "DynamicDevice"
       ],
@@ -762,7 +762,7 @@
       "kind": "exposed",
       "category": "Branches",
       "module_name": "src.VeraGridEngine.Devices.Branches.upfc",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\upfc.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/upfc.py",
       "bases": [
         "BranchParent"
       ],
@@ -774,7 +774,7 @@
       "kind": "exposed",
       "category": "Catalogue",
       "module_name": "src.VeraGridEngine.Devices.Branches.underground_cable_type",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\underground_cable_type.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/underground_cable_type.py",
       "bases": [
         "EditableDevice"
       ],
@@ -786,7 +786,7 @@
       "kind": "exposed",
       "category": "Catalogue",
       "module_name": "src.VeraGridEngine.Devices.Branches.underground_line_type",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\underground_line_type.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/underground_line_type.py",
       "bases": [
         "DynamicDevice"
       ],
@@ -798,7 +798,7 @@
       "kind": "exposed",
       "category": "Branches",
       "module_name": "src.VeraGridEngine.Devices.Branches.vsc",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\vsc.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/vsc.py",
       "bases": [
         "BranchParent"
       ],
@@ -810,7 +810,7 @@
       "kind": "exposed",
       "category": "Measurements",
       "module_name": "src.VeraGridEngine.Devices.measurement",
-      "file_path": "src\\VeraGridEngine\\Devices\\measurement.py",
+      "file_path": "src/VeraGridEngine/Devices/measurement.py",
       "bases": [
         "MeasurementTemplate"
       ],
@@ -822,7 +822,7 @@
       "kind": "exposed",
       "category": "Measurements",
       "module_name": "src.VeraGridEngine.Devices.measurement",
-      "file_path": "src\\VeraGridEngine\\Devices\\measurement.py",
+      "file_path": "src/VeraGridEngine/Devices/measurement.py",
       "bases": [
         "MeasurementTemplate"
       ],
@@ -834,7 +834,7 @@
       "kind": "exposed",
       "category": "Substation",
       "module_name": "src.VeraGridEngine.Devices.Substation.voltage_level",
-      "file_path": "src\\VeraGridEngine\\Devices\\Substation\\voltage_level.py",
+      "file_path": "src/VeraGridEngine/Devices/Substation/voltage_level.py",
       "bases": [
         "PhysicalDevice"
       ],
@@ -846,7 +846,7 @@
       "kind": "exposed",
       "category": "Branches",
       "module_name": "src.VeraGridEngine.Devices.Branches.winding",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\winding.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/winding.py",
       "bases": [
         "Transformer2W"
       ],
@@ -858,7 +858,7 @@
       "kind": "exposed",
       "category": "Catalogue",
       "module_name": "src.VeraGridEngine.Devices.Branches.wire",
-      "file_path": "src\\VeraGridEngine\\Devices\\Branches\\wire.py",
+      "file_path": "src/VeraGridEngine/Devices/Branches/wire.py",
       "bases": [
         "EditableDevice"
       ],
@@ -870,7 +870,7 @@
       "kind": "exposed",
       "category": "Regions",
       "module_name": "src.VeraGridEngine.Devices.Aggregation.zone",
-      "file_path": "src\\VeraGridEngine\\Devices\\Aggregation\\zone.py",
+      "file_path": "src/VeraGridEngine/Devices/Aggregation/zone.py",
       "bases": [
         "GenericAreaGroup"
       ],
@@ -1629,6 +1629,14 @@
       "kind": "references",
       "properties": [
         "conn_group"
+      ]
+    },
+    {
+      "source": "RemedialActionGroup",
+      "target": "RemedialActionGroup",
+      "kind": "references",
+      "properties": [
+        "prev_ra"
       ]
     },
     {

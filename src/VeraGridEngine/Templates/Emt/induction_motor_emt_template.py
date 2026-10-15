@@ -668,11 +668,7 @@ def get_induction_motor_single_cage_emt_template(
         d_omega_r: (torque_e - torque_m - params["d"] * (omega_r - c_one)) / (c_two * params["h"] + c_eps),
     })
 
-    
     templ.block.children.append(block)
-    templ.block.external_mapping = block.external_mapping
-    templ.block.in_vars = block.in_vars
-    templ.block.out_vars = block.out_vars
     _set_common_block_metadata(
         templ=templ,
         parameter_block=block,
@@ -893,22 +889,6 @@ def get_induction_motor_double_cage_emt_template(
         v_beta - v_beta_expr,
     ]
 
-    _set_common_block_metadata(
-        templ=templ,
-        parameter_block=block,
-        name=name,
-        v_a=v_a,
-        v_b=v_b,
-        v_c=v_c,
-        i_a=i_a,
-        i_b=i_b,
-        i_c=i_c,
-        d_v_a=d_v_a,
-        d_v_b=d_v_b,
-        d_v_c=d_v_c,
-        params=params,
-    )
-
     # The double-cage initializer follows the Level-2 approach: estimate slip from
     # the target point, then build one internally consistent equivalent circuit and
     # seed the EMT states from the resulting model currents and fluxes.
@@ -1051,11 +1031,26 @@ def get_induction_motor_double_cage_emt_template(
         # Initial rotor-speed derivative from the mechanical swing equation.
         d_omega_r: (torque_e - torque_m - params["d"] * (omega_r - c_one)) / (c_two * params["h"] + c_eps),
     })
-    
+
+    # Attach the equation-owning child before publishing the wrapper interface.
+    # Publishing last prevents an empty child mapping from replacing the root
+    # mapping used to seed terminal-voltage derivatives from the power flow.
     templ.block.children.append(block)
-    templ.block.external_mapping = block.external_mapping
-    templ.block.in_vars = block.in_vars
-    templ.block.out_vars = block.out_vars
+    _set_common_block_metadata(
+        templ=templ,
+        parameter_block=block,
+        name=name,
+        v_a=v_a,
+        v_b=v_b,
+        v_c=v_c,
+        i_a=i_a,
+        i_b=i_b,
+        i_c=i_c,
+        d_v_a=d_v_a,
+        d_v_b=d_v_b,
+        d_v_c=d_v_c,
+        params=params,
+    )
     return templ
 
 

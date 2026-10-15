@@ -211,6 +211,201 @@ li.checked::marker { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;&lt
     </message>
 </context>
 <context>
+    <name>AddSymbolDialog</name>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="12"/>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
+        <source>Add block property</source>
+        <translation>إضافة خاصية الكتلة</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="31"/>
+        <source>Define a new property for the selected block.</source>
+        <translation>تعريف خاصية جديدة للكتلة المحددة.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="48"/>
+        <source>Owner block</source>
+        <translation>الكتلة المالكة</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="58"/>
+        <source>Name</source>
+        <translation>اسم</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="64"/>
+        <source>Enter a valid symbol name</source>
+        <translation>أدخل اسم رمز صالح</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="70"/>
+        <source>Variable type</source>
+        <translation>نوع المتغير</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="80"/>
+        <source>Choose how this symbol participates in the dynamic model.</source>
+        <translation>اختر كيف يشارك هذا الرمز في النموذج الديناميكي.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="98"/>
+        <source>Options</source>
+        <translation>الخيارات</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="111"/>
+        <source>Expose as output</source>
+        <translation>تعريضه كمخرج</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="116"/>
+        <source>Create derivative variable</source>
+        <translation>إنشاء متغير مشتق</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="130"/>
+        <source>Power-flow variable used to initialize this dynamic variable.</source>
+        <translation>متغير تدفق الطاقة المستخدم لتهيئة هذا المتغير الديناميكي.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="131"/>
+        <source>Power-flow initialization source</source>
+        <translation>مصدر تهيئة تدفق الطاقة</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="154"/>
+        <source>Local initial value</source>
+        <translation>القيمة الأولية المحلية</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="167"/>
+        <source>Device initial value</source>
+        <translation>القيمة الأولية للجهاز</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="186"/>
+        <source>Retained modes preserve discrete state between simulation steps.</source>
+        <translation>تحافظ الأوضاع المحتفظ بها على الحالة المنفصلة بين خطوات المحاكاة.</translation>
+    </message>
+    <message>
+        <source>Add parameter</source>
+        <translation>إضافة معلمة</translation>
+    </message>
+    <message>
+        <source>Add retained mode</source>
+        <translation>إضافة وضع محتفظ به</translation>
+    </message>
+    <message>
+        <source>Add variable</source>
+        <translation>إضافة متغير</translation>
+    </message>
+    <message>
+        <source>Algebraic</source>
+        <translation>جبري</translation>
+    </message>
+    <message>
+        <source>Declare a configurable value owned by the selected dynamic block.</source>
+        <translation>تعريف قيمة قابلة للتكوين مملوكة للكتلة الديناميكية المحددة.</translation>
+    </message>
+    <message>
+        <source>Declare a variable owned by the selected dynamic block.</source>
+        <translation>تعريف متغير مملوك للكتلة الديناميكية المحددة.</translation>
+    </message>
+    <message>
+        <source>Declare discrete state that persists between simulation steps.</source>
+        <translation>تعريف حالة منفصلة تستمر بين خطوات المحاكاة.</translation>
+    </message>
+    <message>
+        <source>Dynamic parameter</source>
+        <translation>معلمة ديناميكية</translation>
+    </message>
+    <message>
+        <source>Enter a valid Python symbol name.</source>
+        <translation>أدخل اسم رمز بايثون صالح.</translation>
+    </message>
+    <message>
+        <source>Input</source>
+        <translation>مدخل</translation>
+    </message>
+    <message>
+        <source>May change during the simulation and can optionally start from a grid-device value.</source>
+        <translation>قد يتغير أثناء المحاكاة ويمكن أن يبدأ اختياريًا من قيمة جهاز الشبكة.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>لا شيء</translation>
+    </message>
+    <message>
+        <source>Nothing was added: {message}</source>
+        <translation>لم يتم إضافة أي شيء: {message}</translation>
+    </message>
+    <message>
+        <source>Parameter type</source>
+        <translation>نوع المعلمة</translation>
+    </message>
+    <message>
+        <source>Preserves discrete state between simulation steps.</source>
+        <translation>يحافظ على الحالة المنفصلة بين خطوات المحاكاة.</translation>
+    </message>
+    <message>
+        <source>Receives its value from an incoming block connection.</source>
+        <translation>يستقبل قيمته من اتصال كتلة وارد.</translation>
+    </message>
+    <message>
+        <source>Remains fixed during the simulation and can optionally start from a grid-device value.</source>
+        <translation>يظل ثابتًا أثناء المحاكاة ويمكن أن يبدأ اختياريًا من قيمة جهاز الشبكة.</translation>
+    </message>
+    <message>
+        <source>Represents a differential state integrated during the simulation.</source>
+        <translation>يمثل حالة تفاضلية يتم تكاملها أثناء المحاكاة.</translation>
+    </message>
+    <message>
+        <source>Represents a value solved by the algebraic equations.</source>
+        <translation>يمثل قيمة يتم حلها بواسطة المعادلات الجبرية.</translation>
+    </message>
+    <message>
+        <source>Retained mode</source>
+        <translation>الوضع المحتفظ به</translation>
+    </message>
+    <message>
+        <source>Search device parameters</source>
+        <translation>البحث عن معلمات الجهاز</translation>
+    </message>
+    <message>
+        <source>Search power-flow variables</source>
+        <translation>البحث عن متغيرات تدفق الطاقة</translation>
+    </message>
+    <message>
+        <source>Select a device initialization source from the list.</source>
+        <translation>تحديد مصدر تهيئة جهاز من القائمة.</translation>
+    </message>
+    <message>
+        <source>Select a power-flow initialization source from the list.</source>
+        <translation>تحديد مصدر تهيئة تدفق الطاقة من القائمة.</translation>
+    </message>
+    <message>
+        <source>Select a valid owner block.</source>
+        <translation>تحديد كتلة مالكة صالحة.</translation>
+    </message>
+    <message>
+        <source>Select a valid symbol type.</source>
+        <translation>تحديد نوع رمز صالح.</translation>
+    </message>
+    <message>
+        <source>State</source>
+        <translation>الحالة</translation>
+    </message>
+    <message>
+        <source>Static parameter</source>
+        <translation>معلمة ثابتة</translation>
+    </message>
+    <message>
+        <source>Use local numeric value</source>
+        <translation>استخدام قيمة رقمية محلية</translation>
+    </message>
+</context>
+<context>
     <name>AdmittanceMatrixEditorWidget</name>
     <message>
         <location filename="../DeviceEditors/AdmittanceMatrixEditor/admittance_matrix_editor_gui.ui" line="19"/>
@@ -802,7 +997,7 @@ li.checked::marker { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;&lt
     <name>BlockPropertyTreeModel</name>
     <message>
         <source>Missing PF mapping</source>
-        <translation>تعيين PF مفقود</translation>
+        <translation type="vanished">تعيين PF مفقود</translation>
     </message>
     <message>
         <source>Name</source>
@@ -818,7 +1013,7 @@ li.checked::marker { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;&lt
     </message>
     <message>
         <source>Template issue: static parameters require api_obj_mapping. An independently editable parameter should be in event_dict. This refactor does not migrate templates automatically.</source>
-        <translation>مشكلة القالب: تتطلب المعلمات الثابتة api_obj_mapping. يجب أن تكون المعلمة القابلة للتحرير بشكل مستقل في event_dict. لا يقوم هذا التعديل بإدارة القوالب تلقائيًا.</translation>
+        <translation type="vanished">مشكلة القالب: تتطلب المعلمات الثابتة api_obj_mapping. يجب أن تكون المعلمة القابلة للتحرير بشكل مستقل في event_dict. لا يقوم هذا التعديل بإدارة القوالب تلقائيًا.</translation>
     </message>
     <message>
         <source>Type</source>
@@ -827,6 +1022,14 @@ li.checked::marker { content: &quot;\2612&quot;; }&lt;/style&gt;&lt;/head&gt;&lt
     <message>
         <source>Value / PF reference</source>
         <translation>القيمة / مرجع PF</translation>
+    </message>
+    <message>
+        <source>Fixed local value. Select a device initialization mapping only when this value must come from the associated grid device.</source>
+        <translation>قيمة محلية ثابتة. حدد تعيين تهيئة جهاز فقط عندما يجب أن تأتي هذه القيمة من جهاز الشبكة المرتبط.</translation>
+    </message>
+    <message>
+        <source>Invalid device initialization mapping: the target is not declared in this block's parameters or event_dict.</source>
+        <translation>تعيين تهيئة جهاز غير صالح: الهدف غير مُعلن في معلمات هذه الكتلة أو event_dict.</translation>
     </message>
 </context>
 <context>
@@ -3246,6 +3449,58 @@ Reference: {status}</source>
         <source>Valid</source>
         <translation>صالح</translation>
     </message>
+    <message>
+        <source>Equation counts</source>
+        <translation>عدد المعادلات</translation>
+    </message>
+    <message>
+        <source>Repeated variable names</source>
+        <translation>أسماء متغيرات مكررة</translation>
+    </message>
+    <message>
+        <source>Static parameter mappings</source>
+        <translation>تعيينات المعلمات الثابتة</translation>
+    </message>
+    <message>
+        <source>Unnamed block</source>
+        <translation>كتلة بدون اسم</translation>
+    </message>
+    <message>
+        <source>Variable initialization</source>
+        <translation>تهيئة المتغير</translation>
+    </message>
+    <message>
+        <source>algebraic variables={variable_count}, algebraic equations={equation_count}</source>
+        <translation>المتغيرات الجبرية={variable_count}، المعادلات الجبرية={equation_count}</translation>
+    </message>
+    <message>
+        <source>derivative variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>المتغيرات التفاضلية تفتقر إلى التهيئة أو مصدر تدفق الطاقة: {variable_names}</translation>
+    </message>
+    <message>
+        <source>event parameters with no value: {parameter_names}</source>
+        <translation>معلمات الحدث بدون قيمة: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>mapping targets not declared as local parameters: {parameter_names}</source>
+        <translation>أهداف التعيين غير مُعلنة كمعلمات محلية: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>parameters missing a static mapping: {parameter_names}</source>
+        <translation>معلمات تفتقر إلى تعيين ثابت: {parameter_names}</translation>
+    </message>
+    <message>
+        <source>state variables={variable_count}, state equations={equation_count}</source>
+        <translation>متغيرات الحالة={variable_count}، معادلات الحالة={equation_count}</translation>
+    </message>
+    <message>
+        <source>variables missing initialization or a power-flow source: {variable_names}</source>
+        <translation>متغيرات تفتقر إلى التهيئة أو مصدر تدفق الطاقة: {variable_names}</translation>
+    </message>
+    <message>
+        <source>variables: {variable_names}</source>
+        <translation>المتغيرات: {variable_names}</translation>
+    </message>
 </context>
 <context>
     <name>DynamicBlockPropertiesDialog</name>
@@ -3354,7 +3609,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Enter a valid Python symbol name.</source>
-        <translation>أدخل اسم رمز بايثون صالحًا.</translation>
+        <translation type="vanished">أدخل اسم رمز بايثون صالحًا.</translation>
     </message>
     <message>
         <source>Equation PDF created: {path}</source>
@@ -3457,7 +3712,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>None</source>
-        <translation>لا شيء</translation>
+        <translation type="vanished">لا شيء</translation>
     </message>
     <message>
         <source>Nothing was applied: {message}</source>
@@ -3489,7 +3744,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Parameter whose value may change during the simulation.</source>
-        <translation>المعلمة التي قد تتغير قيمتها أثناء المحاكاة.</translation>
+        <translation type="vanished">المعلمة التي قد تتغير قيمتها أثناء المحاكاة.</translation>
     </message>
     <message>
         <source>Parameters</source>
@@ -3538,11 +3793,11 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Select a valid owner block.</source>
-        <translation>اختر كتلة مالكة صالحة.</translation>
+        <translation type="vanished">اختر كتلة مالكة صالحة.</translation>
     </message>
     <message>
         <source>Select a valid symbol type.</source>
-        <translation>اختر نوع رمز صالح.</translation>
+        <translation type="vanished">اختر نوع رمز صالح.</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="319"/>
@@ -3643,7 +3898,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Retained mode</source>
-        <translation>الوضع المحتفظ به</translation>
+        <translation type="vanished">الوضع المحتفظ به</translation>
     </message>
     <message>
         <location filename="../DynamicModelEditor/Editor/BlockProperties/dynamic_block_properties.ui" line="82"/>
@@ -3698,7 +3953,7 @@ Reference: {status}</source>
     </message>
     <message>
         <source>Nothing was added: {message}</source>
-        <translation>لم تتم إضافة أي شيء: {message}</translation>
+        <translation type="vanished">لم تتم إضافة أي شيء: {message}</translation>
     </message>
     <message>
         <source>Add to plot...</source>
@@ -4955,74 +5210,60 @@ select the expected processing format</source>
 <context>
     <name>Form</name>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="14"/>
         <source>Add block property</source>
-        <translation>إضافة خاصية الكتلة</translation>
+        <translation type="vanished">إضافة خاصية الكتلة</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="26"/>
         <source>Add symbol to selected block</source>
-        <translation>إضافة رمز إلى الكتلة المحددة</translation>
+        <translation type="vanished">إضافة رمز إلى الكتلة المحددة</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="71"/>
         <source>Output</source>
-        <translation>المخرجات</translation>
+        <translation type="vanished">المخرجات</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="78"/>
         <source>Create derivative variable</source>
-        <translation>إنشاء متغير مشتق</translation>
+        <translation type="vanished">إنشاء متغير مشتق</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="144"/>
         <source>New symbol name</source>
-        <translation>اسم الرمز الجديد</translation>
+        <translation type="vanished">اسم الرمز الجديد</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="151"/>
         <source>Symbol category</source>
-        <translation>فئة الرمز</translation>
+        <translation type="vanished">فئة الرمز</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="158"/>
         <source>Owner block</source>
-        <translation>الكتلة المالكة</translation>
+        <translation type="vanished">الكتلة المالكة</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="165"/>
         <source>Type</source>
-        <translation>النوع</translation>
+        <translation type="vanished">النوع</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="172"/>
         <source>Add symbol</source>
-        <translation>إضافة رمز</translation>
+        <translation type="vanished">إضافة رمز</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="195"/>
         <source>Static device mapping</source>
-        <translation>تخطيط الأجهزة الثابتة</translation>
+        <translation type="vanished">تخطيط الأجهزة الثابتة</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="202"/>
         <source>Power-flow variable used to initialize this dynamic variable.</source>
-        <translation>متغير تدفق الطاقة المستخدم لتهيئة هذا المتغير الديناميكي.</translation>
+        <translation type="vanished">متغير تدفق الطاقة المستخدم لتهيئة هذا المتغير الديناميكي.</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="205"/>
         <source>Power-flow variable</source>
-        <translation>متغير تدفق الطاقة</translation>
+        <translation type="vanished">متغير تدفق الطاقة</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="266"/>
         <source>Enter a name</source>
-        <translation>أدخل اسمًا</translation>
+        <translation type="vanished">أدخل اسمًا</translation>
     </message>
     <message>
-        <location filename="../DynamicModelEditor/Editor/BlockProperties/add_symbol_widget.ui" line="273"/>
         <source>Initial numeric value</source>
-        <translation>القيمة الرقمية الأولية</translation>
+        <translation type="vanished">القيمة الرقمية الأولية</translation>
     </message>
 </context>
 <context>
@@ -7717,6 +7958,195 @@ Please correct the data and try again.</source>
     <message>
         <source>Stability boundary</source>
         <translation>حدود الاستقرار</translation>
+    </message>
+</context>
+<context>
+    <name>ManufacturerNativeImporterDialog</name>
+    <message>
+        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
+        <translation>يعد كلا الإعلانين جزءًا من عقد تسليم المصنع ويتطلبان قبل التأهيل.</translation>
+    </message>
+    <message>
+        <source>Browse...</source>
+        <translation>تصفح...</translation>
+    </message>
+    <message>
+        <source>Choose an existing manufacturer binary.</source>
+        <translation>اختر ثنائي المصنع الحالي.</translation>
+    </message>
+    <message>
+        <source>Complete the manufacturer declarations required by the selected interface.</source>
+        <translation>أكمل إعلانات المصنع المطلوبة بواسطة الواجهة المحددة.</translation>
+    </message>
+    <message>
+        <source>Destination provider</source>
+        <translation>مزود الوجهة</translation>
+    </message>
+    <message>
+        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
+        <translation>تمثل كل قيمة مفصولة بفواصل الترتيب الوجهة للترتيب المصدر في هذا الموضع. مثال: 1,0 يربط المصدر 0 بالوجهة 1 والمصدر 1 بالوجهة 0.</translation>
+    </message>
+    <message>
+        <source>Example: 0,1</source>
+        <translation>مثال: 0,1</translation>
+    </message>
+    <message>
+        <source>Example: 1,0</source>
+        <translation>مثال: 1,0</translation>
+    </message>
+    <message>
+        <source>Example: 2,0,1</source>
+        <translation>مثال: 2,0,1</translation>
+    </message>
+    <message>
+        <source>Import manufacturer native model</source>
+        <translation>استيراد النموذج الأصلي للمصنع</translation>
+    </message>
+    <message>
+        <source>Input destination ordinals</source>
+        <translation>ترتيبات الوجهة للمدخلات</translation>
+    </message>
+    <message>
+        <source>Inspect and attach variant</source>
+        <translation>فحص وإرفاق المتغير</translation>
+    </message>
+    <message>
+        <source>Inspect and import</source>
+        <translation>فحص واستيراد</translation>
+    </message>
+    <message>
+        <source>Inspecting the binary in an isolated worker...</source>
+        <translation>جاري فحص الثنائي في عامل معزول...</translation>
+    </message>
+    <message>
+        <source>Linux libraries (*.so)</source>
+        <translation>مكتبات لينكس (*.so)</translation>
+    </message>
+    <message>
+        <source>Manufacturer binary</source>
+        <translation>ثنائي المصنع</translation>
+    </message>
+    <message>
+        <source>Manufacturer interface</source>
+        <translation>واجهة المصنع</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model ready</source>
+        <translation>النموذج الأصلي للمصنع جاهز</translation>
+    </message>
+    <message>
+        <source>Manufacturer native model variants</source>
+        <translation>متغيرات النموذج الأصلي للمصنع</translation>
+    </message>
+    <message>
+        <source>No provider has been imported yet.</source>
+        <translation>لم يتم استيراد أي مزود بعد.</translation>
+    </message>
+    <message>
+        <source>None</source>
+        <translation>لا شيء</translation>
+    </message>
+    <message>
+        <source>Output destination ordinals</source>
+        <translation>ترتيبات الوجهة للمخرجات</translation>
+    </message>
+    <message>
+        <source>Parameter destination ordinals</source>
+        <translation>ترتيبات الوجهة للمعلمات</translation>
+    </message>
+    <message>
+        <source>Platform variant</source>
+        <translation>متغير المنصة</translation>
+    </message>
+    <message>
+        <source>Provider: {name}</source>
+        <translation>المزود: {name}</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform attached: {platform}
+Templates created: None (existing templates retained).</source>
+        <translation>المزود: {provider}
+المنصة المرفقة: {platform}
+النماذج التي تم إنشاؤها: لا شيء (تم الاحتفاظ بالنماذج الموجودة).</translation>
+    </message>
+    <message>
+        <source>Provider: {provider}
+Platform: {platform}
+RMS templates created: {rms}
+EMT templates created: {emt}</source>
+        <translation>المزود: {provider}
+المنصة: {platform}
+تم إنشاء نماذج RMS: {rms}
+تم إنشاء نماذج EMT: {emt}</translation>
+    </message>
+    <message>
+        <source>Qualified and attached {platform}: {digest}</source>
+        <translation>تم التأهيل وإرفاق {platform}: {digest}</translation>
+    </message>
+    <message>
+        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
+        <translation>تم التأهيل واستيراد {name}. تم إنشاء {rms} نموذج RMS و {emt} نموذج (نماذج) EMT.</translation>
+    </message>
+    <message>
+        <source>Rebind an existing template</source>
+        <translation>إعادة ربط قالب موجود</translation>
+    </message>
+    <message>
+        <source>Rebind selected template</source>
+        <translation>إعادة ربط القالب المحدد</translation>
+    </message>
+    <message>
+        <source>Rebound {consumer} to {provider}.</source>
+        <translation>تم ربط {consumer} بـ {provider}.</translation>
+    </message>
+    <message>
+        <source>Select a source, destination and template.</source>
+        <translation>حدد مصدرًا ووجهة وقالبًا.</translation>
+    </message>
+    <message>
+        <source>Select manufacturer library</source>
+        <translation>تحديد مكتبة الشركة المصنعة</translation>
+    </message>
+    <message>
+        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
+        <translation>حدد عقدة الشركة المصنعة ومكتبتها المنصة المجمعة مسبقًا. يقوم VeraGrid بالتحقق من صحة وتشغيل الملف الثنائي في عامل معزول.</translation>
+    </message>
+    <message>
+        <source>Template</source>
+        <translation>نموذج</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
+        <translation>تعلن الشركة المصنعة أن جميع حالات النموذج القابلة للتغيير مملوكة لكل مثيل (Instance).</translation>
+    </message>
+    <message>
+        <source>The manufacturer declares that the library performs no late native loading.</source>
+        <translation>تعلن الشركة المصنعة أن المكتبة لا تقوم بأي تحميل أصلي متأخر.</translation>
+    </message>
+    <message>
+        <source>Windows libraries (*.dll)</source>
+        <translation>مكتبات ويندوز (*.dll)</translation>
+    </message>
+    <message>
+        <source>{platform}: missing</source>
+        <translation>{platform}: مفقود</translation>
+    </message>
+    <message>
+        <source>{platform}: {status}, SHA-256 {digest}</source>
+        <translation>{platform}: {status}, SHA-256 {digest}</translation>
+    </message>
+    <message>
+        <source>Choose the LLVM bin directory</source>
+        <translation>اختر دليل LLVM bin</translation>
+    </message>
+    <message>
+        <source>Choose the MinGW/UCRT support directory</source>
+        <translation>اختر دليل دعم MinGW/UCRT</translation>
+    </message>
+    <message>
+        <source>LLVM selection was cancelled; the manufacturer model was not imported.</source>
+        <translation>تم إلغاء تحديد LLVM؛ لم يتم استيراد نموذج الشركة المصنعة.</translation>
     </message>
 </context>
 <context>
@@ -10581,6 +11011,10 @@ Modify the number of clusters in the ML settings.</source>
         <source>The short-circuit worker finished without results.</source>
         <translation>انتهى عامل الدائرة القصيرة دون نتائج.</translation>
     </message>
+    <message>
+        <source>Power flow 3ph failed</source>
+        <translation>فشل تدفق الطاقة ثلاثي الأطوار</translation>
+    </message>
 </context>
 <context>
     <name>SolarPvWizard</name>
@@ -11512,12 +11946,91 @@ You need to load or create a grid!</source>
         <translation type="vanished">المشكلات الموجودة في هذا القسم</translation>
     </message>
     <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="20"/>
         <source>Model Consistency Validation</source>
-        <translation type="vanished">التحقق من اتساق النموذج</translation>
+        <translation>التحقق من اتساق النموذج</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="31"/>
+        <source>Check the edited model&apos;s equation counts, variable names, parameter mappings, and variable initialization. This report is informational and does not block saving the model.</source>
+        <translation>تحقق من عدد المعادلات وأسماء المتغيرات وتعيينات المعلمات وتهيئة المتغيرات للنموذج المحرر. هذا التقرير معلوماتي ولا يمنع حفظ النموذج.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="53"/>
+        <source>Show:</source>
+        <translation>إظهار:</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="60"/>
+        <source>Filter validation results by check</source>
+        <translation>تصفية نتائج التحقق حسب الفحص</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="85"/>
+        <source>No validation results match this filter.</source>
+        <translation>لا توجد نتائج تحقق تطابق هذا التصفية.</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="95"/>
+        <source>Show issues in the model</source>
+        <translation>إظهار المشكلات في النموذج</translation>
+    </message>
+    <message>
+        <location filename="../DynamicModelEditor/Editor/dynamic_editor_validation_dialog.ui" line="96"/>
+        <source>Show Issues</source>
+        <translation>عرض المشكلات</translation>
     </message>
     <message>
         <source>Run an informational validation of the edited model structure, mappings, initialization, and port connectivity. This check reports issues but does not block saving the model.</source>
         <translation type="vanished">تشغيل تحقق معلوماتي لهيكل النموذج المحرر، والتطابقات، والتهيئة، واتصال المنفذ. يبلغ هذا الفحص عن المشكلات ولكنه لا يمنع حفظ النموذج.</translation>
+    </message>
+    <message>
+        <source>All checks</source>
+        <translation>جميع الفحوصات</translation>
+    </message>
+    <message>
+        <source>Block</source>
+        <translation>حظر</translation>
+    </message>
+    <message>
+        <source>Check</source>
+        <translation>تحقق</translation>
+    </message>
+    <message>
+        <source>Details</source>
+        <translation>التفاصيل</translation>
+    </message>
+    <message>
+        <source>Issue</source>
+        <translation>مشكلة</translation>
+    </message>
+    <message>
+        <source>Issues only</source>
+        <translation>المشكلات فقط</translation>
+    </message>
+    <message>
+        <source>No issues found</source>
+        <translation>لم يتم العثور على مشكلات</translation>
+    </message>
+    <message>
+        <source>No issues found.</source>
+        <translation>لم يتم العثور على مشكلات.</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>نعم</translation>
+    </message>
+    <message>
+        <source>Status</source>
+        <translation>الحالة</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · No issues found</source>
+        <translation>{check_count} فحص · لم يتم العثور على مشكلات</translation>
+    </message>
+    <message>
+        <source>{check_count} checks · {issue_section_count} checks with issues · {finding_count} findings</source>
+        <translation>{check_count} فحص · {issue_section_count} فحص بها مشكلات · {finding_count} نتائج</translation>
     </message>
 </context>
 <context>
@@ -17470,183 +17983,6 @@ You need to load or create a grid!</source>
     <message>
         <source>Question</source>
         <translation>سؤال</translation>
-    </message>
-</context>
-<context>
-    <name>ManufacturerNativeImporterDialog</name>
-    <message>
-        <source>Both declarations are part of the manufacturer delivery contract and are required before qualification.</source>
-        <translation>يعد كلا الإعلانين جزءًا من عقد تسليم المصنع ويتطلبان قبل التأهيل.</translation>
-    </message>
-    <message>
-        <source>Browse...</source>
-        <translation>تصفح...</translation>
-    </message>
-    <message>
-        <source>Choose an existing manufacturer binary.</source>
-        <translation>اختر ثنائي المصنع الحالي.</translation>
-    </message>
-    <message>
-        <source>Complete the manufacturer declarations required by the selected interface.</source>
-        <translation>أكمل إعلانات المصنع المطلوبة بواسطة الواجهة المحددة.</translation>
-    </message>
-    <message>
-        <source>Destination provider</source>
-        <translation>مزود الوجهة</translation>
-    </message>
-    <message>
-        <source>Each comma-separated value is the destination ordinal for the source ordinal at that position. Example: 1,0 maps source 0 to destination 1 and source 1 to destination 0.</source>
-        <translation>تمثل كل قيمة مفصولة بفواصل الترتيب الوجهة للترتيب المصدر في هذا الموضع. مثال: 1,0 يربط المصدر 0 بالوجهة 1 والمصدر 1 بالوجهة 0.</translation>
-    </message>
-    <message>
-        <source>Example: 0,1</source>
-        <translation>مثال: 0,1</translation>
-    </message>
-    <message>
-        <source>Example: 1,0</source>
-        <translation>مثال: 1,0</translation>
-    </message>
-    <message>
-        <source>Example: 2,0,1</source>
-        <translation>مثال: 2,0,1</translation>
-    </message>
-    <message>
-        <source>Import manufacturer native model</source>
-        <translation>استيراد النموذج الأصلي للمصنع</translation>
-    </message>
-    <message>
-        <source>Input destination ordinals</source>
-        <translation>ترتيبات الوجهة للمدخلات</translation>
-    </message>
-    <message>
-        <source>Inspect and attach variant</source>
-        <translation>فحص وإرفاق المتغير</translation>
-    </message>
-    <message>
-        <source>Inspect and import</source>
-        <translation>فحص واستيراد</translation>
-    </message>
-    <message>
-        <source>Inspecting the binary in an isolated worker...</source>
-        <translation>جاري فحص الثنائي في عامل معزول...</translation>
-    </message>
-    <message>
-        <source>Linux libraries (*.so)</source>
-        <translation>مكتبات لينكس (*.so)</translation>
-    </message>
-    <message>
-        <source>Manufacturer binary</source>
-        <translation>ثنائي المصنع</translation>
-    </message>
-    <message>
-        <source>Manufacturer interface</source>
-        <translation>واجهة المصنع</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model ready</source>
-        <translation>النموذج الأصلي للمصنع جاهز</translation>
-    </message>
-    <message>
-        <source>Manufacturer native model variants</source>
-        <translation>متغيرات النموذج الأصلي للمصنع</translation>
-    </message>
-    <message>
-        <source>No provider has been imported yet.</source>
-        <translation>لم يتم استيراد أي مزود بعد.</translation>
-    </message>
-    <message>
-        <source>None</source>
-        <translation>لا شيء</translation>
-    </message>
-    <message>
-        <source>Output destination ordinals</source>
-        <translation>ترتيبات الوجهة للمخرجات</translation>
-    </message>
-    <message>
-        <source>Parameter destination ordinals</source>
-        <translation>ترتيبات الوجهة للمعلمات</translation>
-    </message>
-    <message>
-        <source>Platform variant</source>
-        <translation>متغير المنصة</translation>
-    </message>
-    <message>
-        <source>Provider: {name}</source>
-        <translation>المزود: {name}</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform attached: {platform}
-Templates created: None (existing templates retained).</source>
-        <translation>المزود: {provider}
-المنصة المرفقة: {platform}
-النماذج التي تم إنشاؤها: لا شيء (تم الاحتفاظ بالنماذج الموجودة).</translation>
-    </message>
-    <message>
-        <source>Provider: {provider}
-Platform: {platform}
-RMS templates created: {rms}
-EMT templates created: {emt}</source>
-        <translation>المزود: {provider}
-المنصة: {platform}
-تم إنشاء نماذج RMS: {rms}
-تم إنشاء نماذج EMT: {emt}</translation>
-    </message>
-    <message>
-        <source>Qualified and attached {platform}: {digest}</source>
-        <translation>تم التأهيل وإرفاق {platform}: {digest}</translation>
-    </message>
-    <message>
-        <source>Qualified and imported {name}. Created {rms} RMS and {emt} EMT template(s).</source>
-        <translation>تم التأهيل واستيراد {name}. تم إنشاء {rms} نموذج RMS و {emt} نموذج (نماذج) EMT.</translation>
-    </message>
-    <message>
-        <source>Rebind an existing template</source>
-        <translation>إعادة ربط قالب موجود</translation>
-    </message>
-    <message>
-        <source>Rebind selected template</source>
-        <translation>إعادة ربط القالب المحدد</translation>
-    </message>
-    <message>
-        <source>Rebound {consumer} to {provider}.</source>
-        <translation>تم ربط {consumer} بـ {provider}.</translation>
-    </message>
-    <message>
-        <source>Select a source, destination and template.</source>
-        <translation>حدد مصدرًا ووجهة وقالبًا.</translation>
-    </message>
-    <message>
-        <source>Select manufacturer library</source>
-        <translation>تحديد مكتبة الشركة المصنعة</translation>
-    </message>
-    <message>
-        <source>Select the manufacturer contract and its precompiled platform library. VeraGrid validates and runs the binary in an isolated worker.</source>
-        <translation>حدد عقدة الشركة المصنعة ومكتبتها المنصة المجمعة مسبقًا. يقوم VeraGrid بالتحقق من صحة وتشغيل الملف الثنائي في عامل معزول.</translation>
-    </message>
-    <message>
-        <source>Template</source>
-        <translation>نموذج</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that all mutable model state is owned by each Instance.</source>
-        <translation>تعلن الشركة المصنعة أن جميع حالات النموذج القابلة للتغيير مملوكة لكل مثيل (Instance).</translation>
-    </message>
-    <message>
-        <source>The manufacturer declares that the library performs no late native loading.</source>
-        <translation>تعلن الشركة المصنعة أن المكتبة لا تقوم بأي تحميل أصلي متأخر.</translation>
-    </message>
-    <message>
-        <source>Windows libraries (*.dll)</source>
-        <translation>مكتبات ويندوز (*.dll)</translation>
-    </message>
-    <message>
-        <source>{platform}: missing</source>
-        <translation>{platform}: مفقود</translation>
-    </message>
-    <message>
-        <source>{platform}: {status}, SHA-256 {digest}</source>
-        <translation>{platform}: {status}, SHA-256 {digest}</translation>
     </message>
 </context>
 </TS>

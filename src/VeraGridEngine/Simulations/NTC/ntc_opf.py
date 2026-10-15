@@ -526,6 +526,7 @@ class BranchNtcVars:
         "worst_contingency_flow",
         "worst_contingency_loading",
         "alpha_n1_worst",
+        "worst_contingency_ties",
     )
 
     def __init__(self, nt: int, n_elm: int):
@@ -560,6 +561,9 @@ class BranchNtcVars:
         self.worst_contingency_loading = np.zeros((nt, n_elm), dtype=float)
         self.alpha_n1_worst = np.zeros((nt, n_elm), dtype=float)
 
+        # branch, group, N-1 flow (MW), N-1 loading (p.u.), alpha N-1 of the groups tied with the worst
+        self.worst_contingency_ties: List[Tuple[int, int, float, float, float]] = list()
+
     def get_values(self, Sbase: float, model: LpModel) -> "BranchNtcVars":
         """
         Return an instance of this class where the arrays content are not LP vars but their value
@@ -579,6 +583,7 @@ class BranchNtcVars:
         data.worst_contingency_flow = self.worst_contingency_flow
         data.worst_contingency_loading = self.worst_contingency_loading
         data.alpha_n1_worst = self.alpha_n1_worst
+        data.worst_contingency_ties = self.worst_contingency_ties
 
         for t in range(nt):
             for i in range(n_elm):
@@ -2160,6 +2165,8 @@ def fill_worst_contingency_per_branch(grid: MultiCircuit,
                                       worst_flow: Vec,
                                       worst_loading: Vec,
                                       alpha_n1_worst: Vec,
+                                      tied_groups: List[Tuple[int, int, float, float, float]],
+                                      branch_data: PassiveBranchData,
                                       solved_flows: Mat | CompactContingencies | None = None,
                                       corrective_addons_mw: Dict[int, Vec] | None = None) -> None:
     """
@@ -2181,6 +2188,9 @@ def fill_worst_contingency_per_branch(grid: MultiCircuit,
     :param worst_flow: output, N-1 flow (MW) of the worst group, filled in place
     :param worst_loading: output, |N-1 flow| / contingency rate, filled in place
     :param alpha_n1_worst: output, exchange sensitivity under the worst group, filled in place
+    :param tied_groups: output, (branch, group index, N-1 flow MW, N-1 loading p.u., alpha N-1)
+                        of the twin outages tied with the branch worst, filled in place
+    :param branch_data: passive branch data, to recognise the twin outages
     :param solved_flows: solved physical contingency branch flows (groups x branches, MW), if available
     :param corrective_addons_mw: per formulated group position, the solved corrective
                                  converter redispatch flow change (MW)
@@ -2199,6 +2209,7 @@ def fill_worst_contingency_per_branch(grid: MultiCircuit,
     worst_flow[:] = f0
     worst_loading[:] = np.abs(f0) / (rates + 1e-20)
     alpha_n1_worst[:] = 0.0
+    tied_groups.clear()
 
     if multi_contingencies is None:
         return
@@ -2229,6 +2240,40 @@ def fill_worst_contingency_per_branch(grid: MultiCircuit,
             # the order they were selected in, and an N-limited line keeps index -1.
             tie_tolerance: float = 1e-4
             visit_order: IntVec = np.argsort(result_indices, kind="stable")
+
+            # Twin outages trip only parallel branches with the same terminals, impedance and
+            # ratings, so they are interchangeable.
+            twin_class: IntVec = np.arange(n_used, dtype=int)
+            has_twin: BoolVec = np.zeros(n_used, dtype=bool)
+            class_of_signature: Dict[Tuple[Tuple[int, int, float, float, float, float], ...], int] = dict()
+            for c in range(n_used):
+                outage: LinearMultiContingency = multi_contingencies.multi_contingencies[c]
+                if (len(outage.branch_indices) > 0 and len(outage.hvdc_indices) == 0
+                        and len(outage.vsc_indices) == 0 and len(outage.bus_indices) == 0):
+                    parts: List[Tuple[int, int, float, float, float, float]] = list()
+                    k_br: int
+                    for k_br in outage.branch_indices:
+                        f_bus: int = int(branch_data.F[k_br])
+                        t_bus: int = int(branch_data.T[k_br])
+                        parts.append((min(f_bus, t_bus), max(f_bus, t_bus), float(branch_data.R[k_br]),
+                                      float(branch_data.X[k_br]), float(branch_data.rates[k_br]),
+                                      float(branch_data.contingency_rates[k_br])))
+                    parts.sort()
+                    signature: Tuple[Tuple[int, int, float, float, float, float], ...] = tuple(parts)
+                    first_c: Union[int, None] = class_of_signature.get(signature, None)
+                    if first_c is None:
+                        class_of_signature[signature] = c
+                    else:
+                        twin_class[c] = first_c
+                        has_twin[c] = True
+                        has_twin[first_c] = True
+                else:
+                    pass  # converter or injection outages are never twins
+
+            # Only twin outages that raise the loading above the N-state can tie
+            n_loading: Vec = worst_loading.copy()
+            worst_position: IntVec = np.full(len(worst_idx), -1, dtype=int)
+            tie_candidates: List[Tuple[int, IntVec, Vec, Vec, Vec]] = list()
             position: int
             for position in range(n_used):
                 c = int(visit_order[position])
@@ -2283,7 +2328,18 @@ def fill_worst_contingency_per_branch(grid: MultiCircuit,
 
                 loading_c: Vec = np.abs(fc) / (rates + 1e-20)
                 better: BoolVec = loading_c > worst_loading + tie_tolerance
+                if has_twin[c] and result_idx_c >= 0:
+                    tie_now: IntVec = np.flatnonzero((~better)
+                                                     & (loading_c >= worst_loading - tie_tolerance)
+                                                     & (loading_c > n_loading + tie_tolerance))
+                    if len(tie_now) > 0:
+                        tie_candidates.append((c, tie_now, fc[tie_now], loading_c[tie_now], alpha_c[tie_now]))
+                    else:
+                        pass  # this group ties with no branch worst so far
+                else:
+                    pass  # without a twin there is no equivalent outage to list
                 worst_loading[better] = loading_c[better]
+                worst_position[better] = c
                 worst_flow[better] = fc[better]
                 if result_idx_c >= 0:
                     worst_idx[better] = result_idx_c
@@ -2291,6 +2347,22 @@ def fill_worst_contingency_per_branch(grid: MultiCircuit,
                     pass  # unmapped group so we keep the previous index
                 alpha_n1_worst[better] = alpha_c[better]
 
+            # keep the twins of each branch worst that are still within the tolerance of it
+            c_tie: int
+            m_tie: IntVec
+            flow_tie: Vec
+            loading_tie: Vec
+            alpha_tie: Vec
+            for c_tie, m_tie, flow_tie, loading_tie, alpha_tie in tie_candidates:
+                worst_pos_tie: IntVec = worst_position[m_tie]
+                still_tied: BoolVec = ((np.abs(loading_tie - worst_loading[m_tie]) <= tie_tolerance)
+                                       & (worst_pos_tie >= 0)
+                                       & (worst_pos_tie != c_tie)
+                                       & (twin_class[np.maximum(worst_pos_tie, 0)] == twin_class[c_tie]))
+                k: int
+                for k in np.flatnonzero(still_tied):
+                    tied_groups.append((int(m_tie[k]), int(result_indices[c_tie]), float(flow_tie[k]),
+                                        float(loading_tie[k]), float(alpha_tie[k])))
 
 def add_linear_branches_contingencies_formulation(t_idx: int,
                                                   Sbase: float,
@@ -2359,8 +2431,10 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
 
     # The corrective converter terms are read back for the monitorable and inter area branches
     corrective_rows: BoolVec = monitorable.copy()
+    boundary_rows: BoolVec = np.zeros(branch_data_t.nelm, dtype=bool)
     for branch_m, branch_sense in branch_vars.inter_space_branches:
         corrective_rows[branch_m] = True
+        boundary_rows[branch_m] = True
 
     # which multi-contingency indices to formulate: either all, or the caller's subset
     if group_indices is None:
@@ -2375,10 +2449,14 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
         if group_rows is None:
             row_filter_c: BoolVec = monitorable
             enforce_rows_c: Union[BoolVec, None] = None
+            corrective_rows_c: BoolVec = corrective_rows
         else:
             enforce_rows_c = np.zeros(branch_data_t.nelm, dtype=bool)
             enforce_rows_c[group_rows[c]] = True
             row_filter_c = monitorable & enforce_rows_c
+            # The corrective terms are only read back on the admitted rows and on the boundary
+            # (exchange preservation), thus saving time.
+            corrective_rows_c = corrective_rows & (enforce_rows_c | boundary_rows)
 
         contingency_flows, mask, changed_idx = contingency.get_lp_contingency_flows(
             base_flow=branch_vars.flows[t_idx, :],
@@ -2409,7 +2487,7 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                 contingency_flows=contingency_flows, changed_idx=changed_idx,
                 branch_data_t=branch_data_t, branch_vars=branch_vars,
                 vsc_vars=vsc_vars, hvdc_vars=hvdc_vars,
-                prob=prob, corrective_rows=corrective_rows,
+                prob=prob, corrective_rows=corrective_rows_c,
                 vsc_active=vsc_active, hvdc_active=hvdc_active,
                 vsc_delta_vars=vsc_deltas_c, hvdc_delta_vars=hvdc_deltas_c,
                 add_exchange_preservation=add_preservation_c,
@@ -2424,9 +2502,6 @@ def add_linear_branches_contingencies_formulation(t_idx: int,
                 monitor_only_sensitive_branches=monitor_only_sensitive_branches,
                 structural_ntc=structural_ntc, ntc_load_rule=ntc_load_rule,
                 alpha_threshold=alpha_threshold, alpha_n1=alpha_n1, prob=prob)
-
-    # copy the contingency rates
-    branch_vars.contingency_rates[t_idx, :] = branch_data_t.contingency_rates
 
     return f_obj
 
@@ -2942,6 +3017,9 @@ def run_linear_ntc_opf(grid: MultiCircuit,
                                                         areas_dict=areas_dict,
                                                         logger=logger)
 
+    # The N-1 report divides by these ratings even when no contingency row enters the LP
+    mip_vars.branch_vars.contingency_rates[t_idx, :] = nc.passive_branch_data.contingency_rates
+
     # branch index, branch object, flow sense w.r.t the area exchange
     bus_a1_idx_set = set(bus_a1_idx)
     bus_a2_idx_set = set(bus_a2_idx)
@@ -3429,6 +3507,8 @@ def run_linear_ntc_opf(grid: MultiCircuit,
         worst_flow=vars_v.branch_vars.worst_contingency_flow[t_idx, :],
         worst_loading=vars_v.branch_vars.worst_contingency_loading[t_idx, :],
         alpha_n1_worst=vars_v.branch_vars.alpha_n1_worst[t_idx, :],
+        tied_groups=vars_v.branch_vars.worst_contingency_ties,
+        branch_data=nc.passive_branch_data,
         solved_flows=solved_flows,
         corrective_addons_mw=corrective_addons_mw,
     )
@@ -3495,22 +3575,34 @@ def run_linear_ntc_opf(grid: MultiCircuit,
         if sl_down > 0.0:
             logger.add_warning("Overload (-)", device=f"({k}) - {nc.passive_branch_data.names[k]}", value=sl_down)
 
-    # report every post-contingency limit that had to be relaxed to keep the LP feasible:
+    # Report the post-contingency limits that had to be relaxed to keep the LP feasible:
     # these are structural N-1 overloads the dispatch cannot avoid, and the NTC result is
-    # only meaningful knowing they exist
+    # only meaningful knowing they exist.
+    n_relaxed: int = 0
+    largest_slack_mw: float = 0.0
+    largest_device: str = ""
     for (t_c, m_c, c_c, flow_c, neg_sl, pos_sl) in vars_v.branch_vars.contingency_flow_data:
         if isinstance(neg_sl, float) and isinstance(pos_sl, float):
             slack_mw: float = abs(neg_sl) + abs(pos_sl)
             if slack_mw > 1e-6:
-                logger.add_warning("Unavoidable post-contingency overload (limit relaxed)",
-                                   device=f"({m_c}) - {nc.passive_branch_data.names[m_c]} @ctg {c_c}",
-                                   value=slack_mw)
+                n_relaxed += 1
+                if slack_mw > largest_slack_mw:
+                    largest_slack_mw = slack_mw
+                    largest_device = f"({m_c}) - {nc.passive_branch_data.names[m_c]} @ctg {c_c}"
+                else:
+                    pass  # a smaller relaxation than the largest so far
             else:
                 # the limit held without relaxation
                 pass
         else:
             # the slack was not evaluated to a number (should not happen after get_values)
             pass
+    if n_relaxed > 0:
+        logger.add_warning("Unavoidable post-contingency overloads (limits relaxed)",
+                           device=f"largest: {largest_device}",
+                           value=f"{n_relaxed} rows, largest {largest_slack_mw:.3f} MW")
+    else:
+        pass  # every post-contingency limit held
 
     # The summation of flow increments in the inter-area branches must be ΔP in A1.
     vars_v.inter_area_flows[t_idx] = (

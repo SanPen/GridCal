@@ -13,8 +13,10 @@ from VeraGridEngine.Devices.Branches.vsc import VSC
 from VeraGridEngine.Devices.Events.rms_events_group import RmsEventsGroup
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Devices.Dynamic.static_parameter_mapping_unified import assign_static_api_object_mapping_for_device
+from VeraGridEngine.Devices.Injections.controllable_shunt import ControllableShunt
 from VeraGridEngine.Devices.Injections.generator import Generator
 from VeraGridEngine.Devices.Injections.load import Load
+from VeraGridEngine.Devices.Injections.shunt import Shunt
 from VeraGridEngine.Devices.multi_circuit import MultiCircuit
 from VeraGridEngine.Devices.Substation.bus import Bus
 from VeraGridEngine.Simulations.PowerFlow.power_flow_results import PowerFlowResults
@@ -27,6 +29,7 @@ from VeraGridEngine.Simulations.Rms.numerical.back_euler_fx_vectorized import (
 from VeraGridEngine.Simulations.Rms.problems.rms_problem_dae import RmsProblemDae
 from VeraGridEngine.Simulations.Rms.problems.rms_problem_dae_vectorized import RmsProblemDaeVec
 from VeraGridEngine.Simulations.Rms.problems.rms_problem_phasor import RmsProblemPhasor
+from VeraGridEngine.Simulations.Rms.problems.rms_problem_template import RmsProblemTemplate
 from VeraGridEngine.Simulations.Rms.problems.rms_problem_dae_full_vectorized import (
     RmsProblemDaeFullVec,
 )
@@ -49,6 +52,68 @@ from VeraGridEngine.Utils.Symbolic.symbolic import Const, Expr, Var, get_express
 from VeraGridEngine.Utils.Symbolic.bus_rms_template import initialize_bus_rms
 from VeraGridEngine.Utils.Symbolic.templates_common_functions import set_rms_model
 from VeraGridEngine.enumerations import ParamPowerFlowReferenceType, VarPowerFlowReferenceType
+
+
+def test_rms_shunts_use_network_injection_sign() -> None:
+    """Require fixed and controllable RMS shunts to seed injected power.
+
+    Conductance is active-power consumption and therefore has a negative
+    injection sign. Positive susceptance is capacitive and therefore has a
+    positive reactive-power injection sign.
+
+    :return: None.
+    """
+    grid: MultiCircuit = MultiCircuit(Sbase=100.0)
+    bus: Bus = Bus(name="Shunt bus")
+    fixed_shunt: Shunt = Shunt(name="Fixed", G=10.0, B=20.0)
+    controllable_shunt: ControllableShunt = ControllableShunt(
+        name="Controlled",
+        number_of_steps=0,
+        G=5.0,
+        B=-15.0,
+    )
+    grid.add_bus(bus)
+    grid.add_shunt(bus=bus, api_obj=fixed_shunt)
+    grid.add_controllable_shunt(bus=bus, api_obj=controllable_shunt)
+
+    # Only the bus voltage participates in the shunt operating-point formula.
+    power_flow_results: PowerFlowResults = PowerFlowResults(
+        n=1,
+        m=0,
+        n_hvdc=0,
+        n_vsc=0,
+        n_gen=0,
+        n_batt=0,
+        n_sh=2,
+        bus_names=np.array((bus.name,), dtype=object),
+        branch_names=np.empty(0, dtype=object),
+        hvdc_names=np.empty(0, dtype=object),
+        vsc_names=np.empty(0, dtype=object),
+        gen_names=np.empty(0, dtype=object),
+        batt_names=np.empty(0, dtype=object),
+        sh_names=np.array(
+            (fixed_shunt.name, controllable_shunt.name),
+            dtype=object,
+        ),
+        bus_types=np.zeros(1, dtype=int),
+    )
+    power_flow_results.voltage[0] = complex(1.0, 0.0)
+    problem: RmsProblemTemplate = RmsProblemTemplate()
+    problem.grid = grid
+    problem.power_flow_results = power_flow_results
+    bus_dict: dict[Bus, int] = dict(((bus, 0),))
+
+    fixed_power: complex = problem.get_shunt_injection_data(
+        elm=fixed_shunt,
+        bus_dict=bus_dict,
+    )
+    controllable_power: complex = problem.get_controllable_shunt_injection_data(
+        elm=controllable_shunt,
+        bus_dict=bus_dict,
+    )
+
+    assert fixed_power == pytest.approx(complex(-0.10, 0.20))
+    assert controllable_power == pytest.approx(complex(-0.05, -0.15))
 
 
 def test_mapped_power_assembly_uses_physical_topology() -> None:
@@ -872,6 +937,161 @@ def test_full_vectorized_rejects_isolated_bus_before_runtime_layout() -> None:
             options=RmsOptions(),
             pf_results=power_flow_results,
         )
+
+
+def _build_two_generator_dc_initialization_case() -> tuple[MultiCircuit, PowerFlowResults, Var, Var]:
+    """Build a DC bus whose aggregate power differs from each device dispatch.
+
+    The two generator results add up to the bus result, but neither generator
+    owns the complete bus injection. This distinguishes correct per-device RMS
+    initialization from the former duplicated ``Sbus`` initialization.
+
+    :return: Grid, power-flow results and the two mapped generator power variables.
+    """
+    grid: MultiCircuit = MultiCircuit(Sbase=100.0)
+    dc_bus: Bus = Bus(name="Shared generator DC bus", is_dc=True, is_slack=True)
+    grid.add_bus(obj=dc_bus)
+    initialize_bus_rms(bus=dc_bus, vf=grid.var_factory)
+
+    # Give each generator a distinct mapped P variable so the test can inspect
+    # both initial guesses independently after RMS problem construction.
+    first_active_power: Var = grid.var_factory.add_var(
+        name="P_dc_generator_1",
+        reference=VarPowerFlowReferenceType.P,
+    )
+    first_model: Block = Block(
+        algebraic_vars=list((first_active_power,)),
+        algebraic_eqs=list((first_active_power,)),
+        external_mapping=dict(((VarPowerFlowReferenceType.P, first_active_power),)),
+    )
+    first_generator: Generator = Generator(name="DC generator 1")
+    first_generator.rms_model = first_model
+    grid.add_generator(bus=dc_bus, api_obj=first_generator)
+
+    second_active_power: Var = grid.var_factory.add_var(
+        name="P_dc_generator_2",
+        reference=VarPowerFlowReferenceType.P,
+    )
+    second_model: Block = Block(
+        algebraic_vars=list((second_active_power,)),
+        algebraic_eqs=list((second_active_power,)),
+        external_mapping=dict(((VarPowerFlowReferenceType.P, second_active_power),)),
+    )
+    second_generator: Generator = Generator(name="DC generator 2")
+    second_generator.rms_model = second_model
+    grid.add_generator(bus=dc_bus, api_obj=second_generator)
+
+    power_flow_results: PowerFlowResults = PowerFlowResults(
+        n=1,
+        m=0,
+        n_hvdc=0,
+        n_vsc=0,
+        n_gen=2,
+        n_batt=0,
+        n_sh=0,
+        bus_names=np.array((dc_bus.name,)),
+        branch_names=np.array(tuple()),
+        hvdc_names=np.array(tuple()),
+        vsc_names=np.array(tuple()),
+        gen_names=np.array((first_generator.name, second_generator.name)),
+        batt_names=np.array(tuple()),
+        sh_names=np.array(tuple()),
+        bus_types=np.zeros(1, dtype=int),
+    )
+    power_flow_results.voltage[0] = 1.0 + 0.0j
+    power_flow_results.Sbus[0] = 90.0 + 0.0j
+    power_flow_results.gen_p[:] = np.array((30.0, 60.0), dtype=float)
+    power_flow_results.gen_q[:] = np.zeros(2, dtype=float)
+
+    return grid, power_flow_results, first_active_power, second_active_power
+
+
+def test_scalar_rms_dc_injections_use_individual_pf_dispatch() -> None:
+    """Verify scalar RMS initializes parallel DC generators from ``gen_p``.
+
+    :return: None.
+    """
+    grid: MultiCircuit
+    power_flow_results: PowerFlowResults
+    first_active_power: Var
+    second_active_power: Var
+    grid, power_flow_results, first_active_power, second_active_power = (
+        _build_two_generator_dc_initialization_case()
+    )
+    problem: RmsProblemDae = RmsProblemDae(
+        grid=grid,
+        options=RmsOptions(),
+        pf_results=power_flow_results,
+    )
+
+    assert np.isclose(problem.init_guess[first_active_power.uid], 0.3)
+    assert np.isclose(problem.init_guess[second_active_power.uid], 0.6)
+
+
+def test_vectorized_rms_dc_injections_use_individual_pf_dispatch() -> None:
+    """Verify vectorized RMS initializes parallel DC generators from ``gen_p``.
+
+    :return: None.
+    """
+    grid: MultiCircuit
+    power_flow_results: PowerFlowResults
+    first_active_power: Var
+    second_active_power: Var
+    grid, power_flow_results, first_active_power, second_active_power = (
+        _build_two_generator_dc_initialization_case()
+    )
+    problem: RmsProblemDaeVec = RmsProblemDaeVec(
+        grid=grid,
+        options=RmsOptions(),
+        pf_results=power_flow_results,
+    )
+
+    assert np.isclose(problem.init_guess[first_active_power.uid], 0.3)
+    assert np.isclose(problem.init_guess[second_active_power.uid], 0.6)
+
+
+def test_full_vectorized_rms_dc_injections_use_individual_pf_dispatch() -> None:
+    """Verify full-vectorized RMS initializes parallel DC generators from ``gen_p``.
+
+    :return: None.
+    """
+    grid: MultiCircuit
+    power_flow_results: PowerFlowResults
+    first_active_power: Var
+    second_active_power: Var
+    grid, power_flow_results, first_active_power, second_active_power = (
+        _build_two_generator_dc_initialization_case()
+    )
+    problem: RmsProblemDaeFullVec = RmsProblemDaeFullVec(
+        grid=grid,
+        options=RmsOptions(),
+        pf_results=power_flow_results,
+    )
+
+    assert np.isclose(problem.init_guess[first_active_power.uid], 0.3)
+    assert np.isclose(problem.init_guess[second_active_power.uid], 0.6)
+
+
+def test_phasor_rms_dc_injections_use_individual_pf_dispatch() -> None:
+    """Verify phasor RMS initializes parallel DC generators from ``gen_p``.
+
+    :return: None.
+    """
+    grid: MultiCircuit
+    power_flow_results: PowerFlowResults
+    first_active_power: Var
+    second_active_power: Var
+    grid, power_flow_results, first_active_power, second_active_power = (
+        _build_two_generator_dc_initialization_case()
+    )
+    problem: RmsProblemPhasor = RmsProblemPhasor(
+        grid=grid,
+        options=RmsOptions(),
+        pf_results=power_flow_results,
+    )
+
+    assert np.isclose(problem.init_guess[first_active_power.uid], 0.3)
+    assert np.isclose(problem.init_guess[second_active_power.uid], 0.6)
 
 
 def test_phasor_constructor_preserves_legacy_vsc_power_coupling() -> None:

@@ -38,8 +38,8 @@ if __name__ == "__main__":
         veragrid_engine_extra_files.extend(
             collect_extra_package_files(
                 pkg_name='VeraGridEngine',
-                relative_folder=os.path.join('IO', 'manufacturer_native', 'native_worker'),
-                suffixes=['.c', '.h', '.exe', '.json'],
+                relative_folder=os.path.join('data', 'native_worker'),
+                suffixes=['.c', '.h'],
             )
         )
         veragrid_translation_files: list[str] = collect_extra_package_files(

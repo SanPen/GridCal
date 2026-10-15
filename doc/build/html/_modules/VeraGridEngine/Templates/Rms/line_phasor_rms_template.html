@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Rms.line_phasor_rms_template &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Templates.Rms.line_phasor_rms_template &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -152,6 +153,7 @@
     <span class="n">g</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
     <span class="n">b</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>
     <span class="n">bsh</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;bsh&quot;</span><span class="p">)</span>
+    <span class="n">gsh</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;gsh&quot;</span><span class="p">)</span>
     <span class="n">vtap_f</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vtap_f&quot;</span><span class="p">)</span>
     <span class="n">vtap_t</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="s2">&quot;vtap_t&quot;</span><span class="p">)</span>
 
@@ -159,6 +161,7 @@
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">g</span><span class="p">]</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="o">-</span><span class="mi">12</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">bsh</span><span class="p">]</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.03</span><span class="p">)</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">gsh</span><span class="p">]</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">vtap_f</span><span class="p">]</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">vtap_t</span><span class="p">]</span> <span class="o">=</span> <span class="n">vfactory</span><span class="o">.</span><span class="n">add_const</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
 
@@ -170,9 +173,10 @@
     <span class="n">Vrt</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
     <span class="n">Vit</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
     
-    <span class="n">gff</span> <span class="o">=</span> <span class="n">g</span> <span class="o">/</span> <span class="p">(</span><span class="n">vtap_f</span> <span class="o">*</span> <span class="n">vtap_f</span><span class="p">)</span>
+    <span class="c1"># Apply existing virtual taps to both the series and physical half-shunt.</span>
+    <span class="n">gff</span> <span class="o">=</span> <span class="p">(</span><span class="n">g</span> <span class="o">+</span> <span class="n">gsh</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">vtap_f</span> <span class="o">*</span> <span class="n">vtap_f</span><span class="p">)</span>
     <span class="n">bff</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">+</span> <span class="n">bsh</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">vtap_f</span> <span class="o">*</span> <span class="n">vtap_f</span><span class="p">)</span>
-    <span class="n">gtt</span> <span class="o">=</span> <span class="n">g</span> <span class="o">/</span> <span class="p">(</span><span class="n">vtap_t</span> <span class="o">*</span> <span class="n">vtap_t</span><span class="p">)</span>
+    <span class="n">gtt</span> <span class="o">=</span> <span class="p">(</span><span class="n">g</span> <span class="o">+</span> <span class="n">gsh</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">vtap_t</span> <span class="o">*</span> <span class="n">vtap_t</span><span class="p">)</span>
     <span class="n">btt</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">+</span> <span class="n">bsh</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">vtap_t</span> <span class="o">*</span> <span class="n">vtap_t</span><span class="p">)</span>
     <span class="n">gft</span> <span class="o">=</span> <span class="o">-</span><span class="n">g</span> <span class="o">/</span> <span class="p">(</span><span class="n">vtap_f</span> <span class="o">*</span> <span class="n">vtap_t</span><span class="p">)</span>
     <span class="n">bft</span> <span class="o">=</span> <span class="o">-</span><span class="n">b</span> <span class="o">/</span> <span class="p">(</span><span class="n">vtap_f</span> <span class="o">*</span> <span class="n">vtap_t</span><span class="p">)</span>
@@ -200,6 +204,7 @@
         <span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">g</span><span class="p">:</span> <span class="n">g</span><span class="p">,</span>
         <span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">b</span><span class="p">:</span> <span class="n">b</span><span class="p">,</span>
         <span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">bsh</span><span class="p">:</span> <span class="n">bsh</span><span class="p">,</span>
+        <span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">shunt_g_pu</span><span class="p">:</span> <span class="n">gsh</span><span class="p">,</span>
         <span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">vtap_f</span><span class="p">:</span> <span class="n">vtap_f</span><span class="p">,</span>
         <span class="n">ParamPowerFlowReferenceType</span><span class="o">.</span><span class="n">vtap_t</span><span class="p">:</span> <span class="n">vtap_t</span><span class="p">,</span>
     <span class="p">}</span>

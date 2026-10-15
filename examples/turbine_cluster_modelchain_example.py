@@ -12,11 +12,6 @@ SPDX-License-Identifier: MIT
 """
 import pandas as pd
 
-try:
-    from matplotlib import pyplot as plt
-except ImportError:
-    plt = None
-
 from example import modelchain_example as mc_e
 from windpowerlib import WindFarm
 from windpowerlib import WindTurbineCluster
@@ -188,9 +183,9 @@ def calculate_power_output(weather, example_farm, example_cluster):
     return
 
 
-def plot_or_print(example_farm, example_cluster):
+def print_results(example_farm, example_cluster):
     r"""
-    Plots or prints power output and power (coefficient) curves.
+    Prints calculated power output values.
 
     Parameters
     ----------
@@ -201,16 +196,8 @@ def plot_or_print(example_farm, example_cluster):
 
     """
 
-    # plot or print power output
-    if plt:
-        example_cluster.power_output.plot(legend=True, label="example cluster")
-        example_farm.power_output.plot(legend=True, label="example farm")
-        plt.xlabel("Wind speed in m/s")
-        plt.ylabel("Power in W")
-        plt.show()
-    else:
-        print(example_cluster.power_output)
-        print(example_farm.power_output)
+    print(example_cluster.power_output)
+    print(example_farm.power_output)
 
 
 def run_example():
@@ -225,7 +212,7 @@ def run_example():
         example_farm, example_farm_2
     )
     calculate_power_output(weather, example_farm, example_cluster)
-    plot_or_print(example_farm, example_cluster)
+    print_results(example_farm, example_cluster)
 
 
 if __name__ == "__main__":

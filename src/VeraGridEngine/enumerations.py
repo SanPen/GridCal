@@ -16,10 +16,12 @@ class BusMode(Enum):
     PQV_tpe = 4  # voltage-controlled bus (P, Q, V set, theta computed)
     P_tpe = 5  # voltage-controlling bus (P set, Q, V, theta computed)
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -63,10 +65,12 @@ class BusGraphicType(Enum):
     Connectivity = "Connectivity"
     Internal = "Internal"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -89,10 +93,12 @@ class SwitchGraphicType(Enum):
     CircuitBreaker = "CircuitBreaker"
     Disconnector = "Disconnector"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -116,6 +122,22 @@ class CpfStopAt(Enum):
     ExtraOverloads = 'Extra overloads'
     Full = 'Full curve'
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return CpfStopAt[s]
+        except KeyError:
+            return s
+
 
 class CpfParametrization(Enum):
     """
@@ -124,6 +146,22 @@ class CpfParametrization(Enum):
     Natural = 'Natural'
     ArcLength = 'Arc Length'
     PseudoArcLength = 'Pseudo Arc Length'
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return CpfParametrization[s]
+        except KeyError:
+            return s
 
 
 class ExternalGridMode(Enum):
@@ -134,10 +172,12 @@ class ExternalGridMode(Enum):
     PV = "PV"
     VD = "VD"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -175,10 +215,12 @@ class ShuntControlMode(str, Enum):
         obj.code = code
         return obj
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     def idx(self) -> int:
@@ -199,11 +241,8 @@ class StaticGeneratorControlMode(str, Enum):
     QVDroop = "Q-V droop"
 
     def __str__(self) -> str:
-        """Return the GUI label.
-
-        :return: Control objective label.
-        """
-        return self.value
+        """Return the enum value as text."""
+        return str(self.value)
 
     @staticmethod
     def argparse(value: str) -> "StaticGeneratorControlMode | str":
@@ -216,6 +255,10 @@ class StaticGeneratorControlMode(str, Enum):
             return StaticGeneratorControlMode[value]
         except KeyError:
             return value
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
 
 
 class GeneratorControlMode(str, Enum):
@@ -239,10 +282,12 @@ class GeneratorControlMode(str, Enum):
         obj.code = code
         return obj
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     def idx(self) -> int:
@@ -286,6 +331,22 @@ class SynchronousMachineSpeedVariationMode(str, Enum):
         """
         return self.code
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return SynchronousMachineSpeedVariationMode[s]
+        except KeyError:
+            return s
+
 
 class StationControlMode(str, Enum):
     """Control objective used by a non-physical station controller."""
@@ -311,6 +372,22 @@ class StationControlMode(str, Enum):
         """Return the native PowerFactory control-mode code."""
         return self.code
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return StationControlMode[s]
+        except KeyError:
+            return s
+
 
 class StationControlBusSelection(str, Enum):
     """Describe how a station controller selects its regulated bus."""
@@ -333,6 +410,22 @@ class StationControlBusSelection(str, Enum):
     def idx(self) -> int:
         """Return the native PowerFactory controlled-bus selector code."""
         return self.code
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return StationControlBusSelection[s]
+        except KeyError:
+            return s
 
 
 class StationVoltageSetpointMode(str, Enum):
@@ -357,6 +450,22 @@ class StationVoltageSetpointMode(str, Enum):
         """Return the native PowerFactory voltage-setpoint selector code."""
         return self.code
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return StationVoltageSetpointMode[s]
+        except KeyError:
+            return s
+
 
 class StationTransformerControlSide(str, Enum):
     """Select whether a station controller coordinates step-up transformers."""
@@ -380,6 +489,22 @@ class StationTransformerControlSide(str, Enum):
     def idx(self) -> int:
         """Return the native PowerFactory transformer-side selector code."""
         return self.code
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return StationTransformerControlSide[s]
+        except KeyError:
+            return s
 
 
 class StationReactivePowerDistribution(str, Enum):
@@ -415,6 +540,22 @@ class StationReactivePowerDistribution(str, Enum):
         """Return the native PowerFactory distribution code."""
         return self.code
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return StationReactivePowerDistribution[s]
+        except KeyError:
+            return s
+
 
 class ReactivePowerLimitState(str, Enum):
     """Describe an optional initial generator reactive-limit active set."""
@@ -440,6 +581,22 @@ class ReactivePowerLimitState(str, Enum):
         """Return the stable numerical active-set code."""
         return self.code
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return ReactivePowerLimitState[s]
+        except KeyError:
+            return s
+
 
 class GeneratorType(str, Enum):
     """
@@ -454,10 +611,12 @@ class GeneratorType(str, Enum):
         obj.code = code
         return obj
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     def idx(self) -> int:
@@ -489,10 +648,12 @@ class InvestmentEvaluationMethod(Enum):
     MixedVariableGA = "Mixed Variable NSGA2"
     FromPlugin = "From plugin"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -518,10 +679,12 @@ class CandidateKind(Enum):
     StaticGenerator = "Static generator"
     Battery = "Battery"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -543,10 +706,12 @@ class CableResistanceInput(str, Enum):
     Resistivity = "Resistivity and filling factor"
     DcResistance = "DC resistance"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -565,10 +730,12 @@ class BranchImpedanceMode(Enum):
     Upper = 1
     Lower = 2
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -616,13 +783,11 @@ class SolverType(Enum):
     NoSolver = 'No Solver'
 
     def __str__(self) -> str:
-        """
-
-        :return:
-        """
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -646,10 +811,12 @@ class SyncIssueType(Enum):
     Deleted = 'Deleted'
     Conflict = 'Conflict'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -673,10 +840,12 @@ class EngineType(Enum):
     PGM = 'Power Grid Model'
     GSLV = "gslv"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -700,6 +869,22 @@ class FmuTemplateDomain(Enum):
     RMS = "rms"
     EMT = "emt"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmuTemplateDomain[s]
+        except KeyError:
+            return s
+
 
 class FmuTemplateMode(Enum):
     """
@@ -708,6 +893,22 @@ class FmuTemplateMode(Enum):
 
     CO_SIMULATION = "CoSimulation"
     MODEL_EXCHANGE = "ModelExchange"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmuTemplateMode[s]
+        except KeyError:
+            return s
 
 
 class NativeModelInterface(Enum):
@@ -718,12 +919,20 @@ class NativeModelInterface(Enum):
     IEC_ESE = "iec_ese"
 
     def __str__(self) -> str:
-        """Return the persistent interface identifier.
-
-        :return: Persistent interface identifier.
-        """
-
+        """Return the enum value as text."""
         return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return NativeModelInterface[s]
+        except KeyError:
+            return s
 
 
 class NativeCompilerFramework(Enum):
@@ -732,12 +941,20 @@ class NativeCompilerFramework(Enum):
     LOCAL_LLVM = "local_llvm"
 
     def __str__(self) -> str:
-        """Return the stable provider identifier.
-
-        :return: Stable provider identifier.
-        """
-
+        """Return the enum value as text."""
         return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return NativeCompilerFramework[s]
+        except KeyError:
+            return s
 
 
 class NativeSampleTimeSource(Enum):
@@ -746,12 +963,20 @@ class NativeSampleTimeSource(Enum):
     MANUFACTURER_DECLARED = "manufacturer_declared"
 
     def __str__(self) -> str:
-        """Return the persistent sample-time source identifier.
-
-        :return: Persistent sample-time source identifier.
-        """
-
+        """Return the enum value as text."""
         return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return NativeSampleTimeSource[s]
+        except KeyError:
+            return s
 
 
 class IeeeCigreDllPlatform(Enum):
@@ -762,12 +987,20 @@ class IeeeCigreDllPlatform(Enum):
     LINUX_X64 = "linux_x64"
 
     def __str__(self) -> str:
-        """Return the persistent platform identifier.
-
-        :return: Persistent platform identifier.
-        """
-
+        """Return the enum value as text."""
         return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return IeeeCigreDllPlatform[s]
+        except KeyError:
+            return s
 
 
 class IeeeCigreDllDataType(Enum):
@@ -784,6 +1017,22 @@ class IeeeCigreDllDataType(Enum):
     REAL64 = 9
     C_STRING = 10
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return IeeeCigreDllDataType[s]
+        except KeyError:
+            return s
+
 
 class IeeeCigreDllModelMode(Enum):
     """Simulation domains declared by an IEEE/CIGRE model."""
@@ -792,6 +1041,22 @@ class IeeeCigreDllModelMode(Enum):
     EMT = 1
     RMS = 2
     EMT_AND_RMS = 3
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return IeeeCigreDllModelMode[s]
+        except KeyError:
+            return s
 
 
 class IeeeCigreDllVerificationStatus(Enum):
@@ -802,12 +1067,20 @@ class IeeeCigreDllVerificationStatus(Enum):
     REJECTED = "rejected"
 
     def __str__(self) -> str:
-        """Return the persistent verification state.
-
-        :return: Persistent verification state.
-        """
-
+        """Return the enum value as text."""
         return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return IeeeCigreDllVerificationStatus[s]
+        except KeyError:
+            return s
 
 
 class FmiVersion(str, Enum):
@@ -824,12 +1097,44 @@ class FmiVersion(str, Enum):
     FMI_2_0 = "2.0"
     FMI_3_0 = "3.0"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmiVersion[s]
+        except KeyError:
+            return s
+
 
 class FmuInterfaceMode(str, Enum):
     """Execution interfaces currently represented by the FMU importer."""
 
     CO_SIMULATION = "CoSimulation"
     MODEL_EXCHANGE = "ModelExchange"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmuInterfaceMode[s]
+        except KeyError:
+            return s
 
 
 class FmuVariableType(str, Enum):
@@ -853,6 +1158,22 @@ class FmuVariableType(str, Enum):
     BINARY = "Binary"
     UNKNOWN = "Unknown"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmuVariableType[s]
+        except KeyError:
+            return s
+
 
 class FmiThreeVariableCausality(str, Enum):
     """Variable causalities defined by the FMI 3 model-description schema."""
@@ -865,12 +1186,44 @@ class FmiThreeVariableCausality(str, Enum):
     LOCAL = "local"
     INDEPENDENT = "independent"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmiThreeVariableCausality[s]
+        except KeyError:
+            return s
+
 
 class FmuSourceKind(str, Enum):
     """Kinds of FMU source accepted at the import boundary."""
 
     ZIP = "zip"
     DIRECTORY = "directory"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmuSourceKind[s]
+        except KeyError:
+            return s
 
 
 class FmuBinaryInterface(Enum):
@@ -883,12 +1236,44 @@ class FmuBinaryInterface(Enum):
     FMI_THREE_CO_SIMULATION = "fmi_three_co_simulation"
     FMI_THREE_MODEL_EXCHANGE = "fmi_three_model_exchange"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmuBinaryInterface[s]
+        except KeyError:
+            return s
+
 
 class InterfaceType(str, Enum):
     """FMI interface selected when exporting a VeraGrid model."""
 
     CO_SIMULATION = "co-simulation"
     MODEL_EXCHANGE = "model-exchange"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return InterfaceType[s]
+        except KeyError:
+            return s
 
 
 class IntegrationMethod(str, Enum):
@@ -898,6 +1283,22 @@ class IntegrationMethod(str, Enum):
     TRAPEZOIDAL = "trapezoidal"
     BDF2 = "bdf2"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return IntegrationMethod[s]
+        except KeyError:
+            return s
+
 
 class TargetPlatform(str, Enum):
     """Native platform directory supported by an FMU binary."""
@@ -906,6 +1307,22 @@ class TargetPlatform(str, Enum):
     LINUX64 = "linux64"
     DARWIN64 = "darwin64"
     DARWIN_ARM64 = "darwin64-arm64"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return TargetPlatform[s]
+        except KeyError:
+            return s
 
 
 class VariableCategory(str, Enum):
@@ -919,12 +1336,44 @@ class VariableCategory(str, Enum):
     CONST_PARAM = "const_param"
     RUNTIME_PARAM = "runtime_param"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return VariableCategory[s]
+        except KeyError:
+            return s
+
 
 class RuntimeGroup(str, Enum):
     """Runtime event or mode group assigned to an FMU parameter."""
 
     EVENT = "event"
     MODE = "mode"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return RuntimeGroup[s]
+        except KeyError:
+            return s
 
 
 class EquationGroup(str, Enum):
@@ -937,6 +1386,22 @@ class EquationGroup(str, Enum):
     INIT = "init"
     DIFF_INIT = "diff_init"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return EquationGroup[s]
+        except KeyError:
+            return s
+
 
 class StorageSegment(str, Enum):
     """Generated runtime storage segments addressed by exported variables."""
@@ -947,6 +1412,22 @@ class StorageSegment(str, Enum):
     INPUTS = "inputs"
     CONST_PARAMS = "const_params"
     RUNTIME_PARAMS = "runtime_params"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return StorageSegment[s]
+        except KeyError:
+            return s
 
 
 class Precedence(IntEnum):
@@ -959,6 +1440,22 @@ class Precedence(IntEnum):
     CALL = 5
     ATOM = 6
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return Precedence[s]
+        except KeyError:
+            return s
+
 
 class FmuBindingDirection(str, Enum):
     """Direction of a VeraGrid-to-FMU signal binding."""
@@ -967,12 +1464,44 @@ class FmuBindingDirection(str, Enum):
     OUTPUT = "output"
     PARAMETER = "parameter"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmuBindingDirection[s]
+        except KeyError:
+            return s
+
 
 class FmuDeviceDomain(str, Enum):
     """VeraGrid simulation domain hosting an FMU device."""
 
     RMS = "rms"
     EMT = "emt"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmuDeviceDomain[s]
+        except KeyError:
+            return s
 
 
 class FmiThreeWorkerFloat64Profile(Enum):
@@ -981,6 +1510,22 @@ class FmiThreeWorkerFloat64Profile(Enum):
     SCALAR = 1
     CONSTANT_ARRAY = 2
     CONFIGURABLE_ARRAY = 3
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmiThreeWorkerFloat64Profile[s]
+        except KeyError:
+            return s
 
 
 class FmiThreeWorkerProtocolVersion(IntEnum):
@@ -996,12 +1541,44 @@ class FmiThreeWorkerProtocolVersion(IntEnum):
     VERSION_TEN = 10
     VERSION_ELEVEN = 11
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmiThreeWorkerProtocolVersion[s]
+        except KeyError:
+            return s
+
 
 class FmiThreeWorkerFrameDirection(IntEnum):
     """Direction of one FMI 3 worker protocol frame."""
 
     REQUEST = 1
     RESPONSE = 2
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmiThreeWorkerFrameDirection[s]
+        except KeyError:
+            return s
 
 
 class FmiThreeWorkerRequestKind(IntEnum):
@@ -1032,6 +1609,22 @@ class FmiThreeWorkerRequestKind(IntEnum):
     SET_INT32 = 23
     GET_INT32 = 24
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmiThreeWorkerRequestKind[s]
+        except KeyError:
+            return s
+
 
 class FmiThreeWorkerResponseKind(IntEnum):
     """Successful and failed outcomes returned by the FMI 3 worker."""
@@ -1061,6 +1654,22 @@ class FmiThreeWorkerResponseKind(IntEnum):
     INT32_VALUES = 23
     ERROR = 255
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmiThreeWorkerResponseKind[s]
+        except KeyError:
+            return s
+
 
 class FmiThreeWorkerFailureKind(IntEnum):
     """Stable failure categories returned by the FMI 3 worker."""
@@ -1071,6 +1680,22 @@ class FmiThreeWorkerFailureKind(IntEnum):
     LIFECYCLE = 4
     NATIVE = 5
     VARIABLE_ACCESS = 6
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmiThreeWorkerFailureKind[s]
+        except KeyError:
+            return s
 
 
 class FmiThreeWorkerHostState(Enum):
@@ -1091,6 +1716,22 @@ class FmiThreeWorkerHostState(Enum):
     CLOSED = 13
     FAILED = 14
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return FmiThreeWorkerHostState[s]
+        except KeyError:
+            return s
+
 
 class MIPSolvers(Enum):
     """
@@ -1106,10 +1747,12 @@ class MIPSolvers(Enum):
     CUOPT = "CUOPT"
     COPT = "COPT"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1132,10 +1775,12 @@ class MIPFramework(Enum):
     OrTools = 'or-tools'
     PuLP = 'PuLP'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1160,10 +1805,12 @@ class SolutionState(Enum):
     Relaxed = 'Optimal with relaxed limits'
     NotOptimal = 'Not optimal'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1189,10 +1836,12 @@ class TimeGrouping(Enum):
     Daily = 'Daily'
     Hourly = 'Hourly'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1216,10 +1865,12 @@ class ZonalGrouping(Enum):
     Area = 'Area'
     All = 'All (copper plate)'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1245,10 +1896,12 @@ class ContingencyMethod(Enum):
     Linear = 'Linear'
     PTDF_scan = "PTDF Scan"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1271,10 +1924,12 @@ class DiagramType(Enum):
     Schematic = 'schematic'
     SubstationLineMap = 'substation-line-map'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1305,10 +1960,12 @@ class SchematicBranchEndpoint(Enum):
     FROM = "from"
     TO = "to"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1334,10 +1991,12 @@ class SchematicAttachmentSide(Enum):
     TOP = "top"
     BOTTOM = "bottom"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1360,10 +2019,12 @@ class SchematicAttachmentOwnerKind(Enum):
     BUS = "bus"
     FLUID = "fluid"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1390,10 +2051,12 @@ class SchematicRouteKind(Enum):
     MANUAL_ORTHOGONAL = "manual-orthogonal"
     MANUAL_POLYLINE = "manual-polyline"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1416,10 +2079,12 @@ class SchematicAutoRouteStyle(Enum):
     RETICULAR = "reticular"
     STRAIGHT = "straight"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1444,9 +2109,11 @@ class AcOpfMode(Enum):
     ACOPFMaxInjections = 'ACOPFMaxInjections'
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1485,10 +2152,12 @@ class TapModuleControl(str, Enum):
         obj.code = code
         return obj
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     def idx(self) -> int:
@@ -1526,10 +2195,12 @@ class TapPhaseControl(str, Enum):
         obj.code = code
         return obj
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     def idx(self) -> int:
@@ -1575,10 +2246,12 @@ class ConverterControlType(str, Enum):
         obj.code = code
         return obj
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     def idx(self) -> int:
@@ -1610,13 +2283,11 @@ class ValveEmtType(Enum):
     Thyristor = "Thyristor"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
     def __repr__(self) -> str:
-        """Return the stable display representation of the EMT valve type.
-
-        :return: Human-readable EMT valve-type value.
-        """
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1640,9 +2311,11 @@ class ValveEmtModelVariant(Enum):
     Complete = "Complete"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
     def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1668,9 +2341,11 @@ class ValveInitializationState(Enum):
     ReverseConducting = "Reverse conducting"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
     def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1698,10 +2373,12 @@ class HvdcControlType(str, Enum):
         obj.code = code
         return obj
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     def idx(self) -> int:
@@ -1730,12 +2407,44 @@ class GenerationNtcFormulation(Enum):
     Proportional = 'Proportional'
     Optimal = 'Optimal'
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return GenerationNtcFormulation[s]
+        except KeyError:
+            return s
+
 
 class TimeFrame(Enum):
     """
     Time frame
     """
     Continuous = 'Continuous'
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return TimeFrame[s]
+        except KeyError:
+            return s
 
 
 class ConverterFaultControlType(str, Enum):
@@ -1751,10 +2460,12 @@ class ConverterFaultControlType(str, Enum):
         obj.code = code
         return obj
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     def idx(self) -> int:
@@ -1786,10 +2497,12 @@ class FaultType(Enum):
     LLL = 'LLL'
     LLLG = 'LLLG'
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1820,10 +2533,12 @@ class EmtFaultPlacementSide(Enum):
     FromSide = 'FromSide'
     ToSide = 'ToSide'
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1855,10 +2570,12 @@ class MethodShortCircuit(Enum):
     sequences_vsc = 'sequences_vsc'
     phases = 'phases'
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1892,10 +2609,12 @@ class PhasesShortCircuit(Enum):
     b = 'b'
     c = 'c'
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -1938,9 +2657,11 @@ class WindingsConnection(str, Enum):
         return obj
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     def idx(self) -> int:
@@ -1981,9 +2702,11 @@ class TerminalType(Enum):
     OTHER = 'Other'
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2012,11 +2735,43 @@ class WaveformSequenceType(Enum):
         Squence points type
     """
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return WaveformSequenceType[s]
+        except KeyError:
+            return s
+
 
 class V_I_CurveSequenceType(Enum):
     """
         Squence points type
     """
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return V_I_CurveSequenceType[s]
+        except KeyError:
+            return s
 
 
 class X_Y_SequenceType(Enum):
@@ -2024,11 +2779,43 @@ class X_Y_SequenceType(Enum):
         Squence points type
     """
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return X_Y_SequenceType[s]
+        except KeyError:
+            return s
+
 
 class X_Y_Z_Matrix(Enum):
     """
         Squence points type
     """
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return X_Y_Z_Matrix[s]
+        except KeyError:
+            return s
 
 
 class WindingType(str, Enum):
@@ -2050,9 +2837,11 @@ class WindingType(str, Enum):
         return obj
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     def idx(self) -> int:
@@ -2095,9 +2884,11 @@ class ShuntConnectionType(str, Enum):
         return obj
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     def idx(self) -> int:
@@ -2134,9 +2925,11 @@ class ActionType(Enum):
     Delete = 'Delete'
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2179,9 +2972,11 @@ class PrpCat(Enum):
     EMT = 'EMT'
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2261,12 +3056,20 @@ class DgsDynamicAssociationRole(Enum):
     Unknown = "Unknown"
 
     def __str__(self) -> str:
-        """Return the persistent enum value."""
+        """Return the enum value as text."""
         return str(self.value)
 
     def __repr__(self) -> str:
-        """Return the persistent enum representation."""
+        """Return the enum value representation."""
         return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return DgsDynamicAssociationRole[s]
+        except KeyError:
+            return s
 
 
 class DeviceType(Enum):
@@ -2411,9 +3214,11 @@ class DeviceType(Enum):
     VarFactory = "Var Factory"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2459,9 +3264,11 @@ class SubObjectType(Enum):
     ManufacturerNativeModelInfo = "IEEE CIGRE DLL ModelInfo"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2495,9 +3302,11 @@ class TapChangerTypes(Enum):
     Symmetrical = 'Symmetrical'
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2532,9 +3341,11 @@ class BuildStatus(Enum):
     PlannedDecommission = 'PlannedDecommission'  # Already there, but it has been selected for decommissioning
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2587,10 +3398,12 @@ class StudyResultsType(Enum):
     EmtSimulation = "EmtSimulation"
     SmallSignalStability = "SmallSignalStability"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2624,10 +3437,12 @@ class AvailableTransferMode(Enum):
     Load = "Load"
     GenerationAndLoad = "GenerationAndLoad"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2663,10 +3478,12 @@ class InvestmentsEvaluationObjectives(Enum):
     SimpleDispatch = "Simple dispatch"
     FromPlugin = 'From Plugin'
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2699,10 +3516,12 @@ class LogSeverity(Enum):
     Information = 'Information'
     Divergence = 'Divergence'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2753,10 +3572,12 @@ class FileType(Enum):
     PGM = "Power grid models"
     generic_excel = "Generic Excel"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2779,20 +3600,12 @@ class PsseTopologyExportMode(Enum):
     BusBranch = "BusBranch"
     NodeBreaker = "NodeBreaker"
 
-    def __str__(self):
-        """
-        Return the display string of the enumeration.
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-        :return: Display string.
-        """
-        return self.value
-
-    def __repr__(self):
-        """
-        Return the representation string of the enumeration.
-
-        :return: Representation string.
-        """
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2816,20 +3629,12 @@ class PsseExportMode(Enum):
     SingleFile = "Single file"
     BatchZip = "Batch zip package"
 
-    def __str__(self):
-        """
-        Return the display string of the enumeration.
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-        :return: Display string.
-        """
-        return self.value
-
-    def __repr__(self):
-        """
-        Return the representation string of the enumeration.
-
-        :return: Representation string.
-        """
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2853,20 +3658,12 @@ class DgsExportMode(Enum):
     SingleFile = "Single file"
     BatchZip = "Batch zip package"
 
-    def __str__(self):
-        """
-        Return the display string of the enumeration.
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-        :return: Display string.
-        """
-        return self.value
-
-    def __repr__(self):
-        """
-        Return the representation string of the enumeration.
-
-        :return: Representation string.
-        """
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2890,20 +3687,12 @@ class MatpowerExportMode(Enum):
     SingleFile = "Single file"
     BatchZip = "Batch zip package"
 
-    def __str__(self):
-        """
-        Return the display string of the enumeration.
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-        :return: Display string.
-        """
-        return self.value
-
-    def __repr__(self):
-        """
-        Return the representation string of the enumeration.
-
-        :return: Representation string.
-        """
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2927,20 +3716,12 @@ class UcteExportMode(Enum):
     SingleFile = "Single file"
     BatchZip = "Batch zip package"
 
-    def __str__(self):
-        """
-        Return the display string of the enumeration.
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-        :return: Display string.
-        """
-        return self.value
-
-    def __repr__(self):
-        """
-        Return the representation string of the enumeration.
-
-        :return: Representation string.
-        """
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -2964,20 +3745,12 @@ class CgmesExportMode(Enum):
     SingleFile = "Single file"
     BatchZip = "Batch zip package"
 
-    def __str__(self):
-        """
-        Return the display string of the enumeration.
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-        :return: Display string.
-        """
-        return self.value
-
-    def __repr__(self):
-        """
-        Return the representation string of the enumeration.
-
-        :return: Representation string.
-        """
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3001,10 +3774,12 @@ class CGMESVersions(Enum):
     v2_4_15 = '2.4.15'
     v3_0_0 = '3.0.0'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3028,10 +3803,12 @@ class CgmesTopologyMode(Enum):
     ConnectivityNode = "ConnectivityNode"
     TopologicalNode = "TopologicalNode"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3055,10 +3832,12 @@ class CgmesBoundaryPlaceholderMode(Enum):
     KnownBoundaryOnly = "KnownBoundaryOnly"
     Never = "Never"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3086,10 +3865,12 @@ class SparseSolver(Enum):
     UMFPACK = 'UmfPack'
     UMFPACKTriangular = 'UmfPackTriangular'
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3113,10 +3894,12 @@ class NodalCapacityMethod(Enum):
     LinearOptimization = 'Linear Optimization'
     CPF = "Continuation power flow"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3654,8 +4437,9 @@ class ResultTypes(Enum):
     ReliabilitySAIFIResults = "SAIFI"
     ReliabilityCAIDIResults = "CAIDI"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
     def __repr__(self):
         return str(self.value)
@@ -3728,10 +4512,12 @@ class SimulationTypes(Enum):
 
     NoSim = "No simulation"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3757,10 +4543,12 @@ class JobStatus(Enum):
     Waiting = "Waiting"
     Cancelled = "Cancelled"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3789,10 +4577,12 @@ class ContingencyFilteringMethods(Enum):
     Area = "Area"
     SensitiveToMonitored = "Sensitive to monitored"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3823,10 +4613,12 @@ class Colormaps(Enum):
     Green2Red = 'Green to red'  # -1, 1
     Red2Blue = 'Red to blue'  # -1, 1
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3857,9 +4649,11 @@ class VoltageLevelTypes(Enum):
     BreakerAndAHalf = 'Breaker and a half'
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3891,9 +4685,11 @@ class ContingencyOperationTypes(Enum):
     PowerPercentage = '%'
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3920,6 +4716,56 @@ class ContingencyOperationTypes(Enum):
         return list(enum_item.value for enum_item in cls)
 
 
+class RemedialActionPropertyEnum(Enum):
+    """
+    Device limits that may trigger a remedial action group.
+    """
+    Vmin = 'Vmin'
+    Vmax = 'Vmax'
+    Loading = 'Loading'
+    ContingencyLoading = 'Contingency loading'
+
+    def __str__(self) -> str:
+        """
+        Return the persisted display value.
+
+        :return: Persisted display value.
+        """
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """
+        Return the persisted display value.
+
+        :return: Persisted display value.
+        """
+        return str(self)
+
+    @staticmethod
+    def argparse(value: str) -> 'RemedialActionPropertyEnum | str':
+        """
+        Parse an enumeration member name.
+
+        :param value: Enumeration member name.
+        :return: Parsed member, or the original value when it is unknown.
+        """
+        try:
+            result: RemedialActionPropertyEnum | str = RemedialActionPropertyEnum[value]
+        except KeyError:
+            result = value
+        return result
+
+    @classmethod
+    def list(cls) -> list[str]:
+        """
+        Return the persisted display values.
+
+        :return: Persisted display values.
+        """
+        values: list[str] = [enum_item.value for enum_item in cls]
+        return values
+
+
 class BranchGroupTypes(Enum):
     """
     Branch group types
@@ -3929,9 +4775,11 @@ class BranchGroupTypes(Enum):
     GenericGroup = "Generic group"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -3960,9 +4808,11 @@ class CascadeType(Enum):
     LatinHypercube = "LHS"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4001,9 +4851,11 @@ class DynamicIntegrationMethod(Enum):
     OdeEuler = "ODE_Euler"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4027,9 +4879,11 @@ class DynamicEventTransitionType(Enum):
     Ramp = "ramp"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4054,9 +4908,11 @@ class EmtSolverTypes(Enum):
     StructuralCompiled = "structuralCompiled"  # Eager structural kernels + reusable buffers
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4089,9 +4945,11 @@ class RmsProblemTypes(Enum):
     Multilinear = "RmsProblemMultilinear"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4120,9 +4978,11 @@ class EmtProblemTypes(Enum):
     Multilinear = "EmtProblemMultilinear"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4154,9 +5014,11 @@ class SmallSignalEmtBuildTypes(Enum):
     HybridArnoldi = "Hybrid Arnoldi"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4188,9 +5050,11 @@ class EraSvdSolverType(Enum):
     TruncatedRandomized = 1
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4223,9 +5087,11 @@ class RmsInitializationMethod(Enum):
     CustomValues = "CustomValues"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4260,9 +5126,11 @@ class EmtInitializationMethod(Enum):
     Auto = "Auto"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4296,10 +5164,12 @@ class GridReductionMethod(Enum):
     PTDF = "PTDF"
     PTDFProjected = "PTDF projected"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4322,10 +5192,12 @@ class BusReductionMethod(Enum):
     Reduce = "Reduce"
     Keep = "Keep"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4475,6 +5347,12 @@ class VarPowerFlowReferenceType(Enum):
     UR = "UR"
     UI = "UI"
     U = "U"
+    URf = "URf"  # From-terminal RMS voltage real component.
+    URt = "URt"  # To-terminal RMS voltage real component.
+    UIf = "UIf"  # From-terminal RMS voltage imaginary component.
+    UIt = "UIt"  # To-terminal RMS voltage imaginary component.
+    Uf = "Uf"  # From-terminal RMS voltage magnitude.
+    Ut = "Ut"  # To-terminal RMS voltage magnitude.
     U2R = "U2R"
     U2I = "U2I"
     U2 = "U2"
@@ -4498,12 +5376,31 @@ class VarPowerFlowReferenceType(Enum):
     UI_A = "UI_A"
     UI_B = "UI_B"
     UI_C = "UI_C"
+    URf_A = "URf_A"  # From-terminal phase-A voltage real component.
+    URf_B = "URf_B"  # From-terminal phase-B voltage real component.
+    URf_C = "URf_C"  # From-terminal phase-C voltage real component.
+    URt_A = "URt_A"  # To-terminal phase-A voltage real component.
+    URt_B = "URt_B"  # To-terminal phase-B voltage real component.
+    URt_C = "URt_C"  # To-terminal phase-C voltage real component.
+    UIf_A = "UIf_A"  # From-terminal phase-A voltage imaginary component.
+    UIf_B = "UIf_B"  # From-terminal phase-B voltage imaginary component.
+    UIf_C = "UIf_C"  # From-terminal phase-C voltage imaginary component.
+    UIt_A = "UIt_A"  # To-terminal phase-A voltage imaginary component.
+    UIt_B = "UIt_B"  # To-terminal phase-B voltage imaginary component.
+    UIt_C = "UIt_C"  # To-terminal phase-C voltage imaginary component.
     DUR_A = "DUR_A"
     DUR_B = "DUR_B"
     DUR_C = "DUR_C"
     DUI_A = "DUI_A"
     DUI_B = "DUI_B"
     DUI_C = "DUI_C"
+
+    COSPHI = "COSPHI"
+    SINPHI = "SINPHI"
+    COSPHIf = "COSPHIf"  # From-terminal cosine of the measured voltage angle.
+    SINPHIf = "SINPHIf"  # From-terminal sine of the measured voltage angle.
+    COSPHIt = "COSPHIt"  # To-terminal cosine of the measured voltage angle.
+    SINPHIt = "SINPHIt"  # To-terminal sine of the measured voltage angle.
 
     IR = "IR"
     II = "II"
@@ -4529,10 +5426,12 @@ class VarPowerFlowReferenceType(Enum):
     ID = "ID"
     IQ = "IQ"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4958,10 +5857,12 @@ class ParamPowerFlowReferenceType(Enum):
             result = False
         return result
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -4984,10 +5885,12 @@ class ReliabilityMode(Enum):
     GenerationAdequacy = "Generation Adequacy"
     GridMetrics = "Grid Metrics"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -5012,10 +5915,12 @@ class OpfDispatchMode(Enum):
     NodalCapacity = "Nodal capacity"
     GenerationExpansionPlanning = "Generation expansion planning"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -5037,10 +5942,12 @@ class TimeSeriesSearchPoint(Enum):
     HighestLoad = "Highest Load"
     LowestLoad = "Lowest load"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -5063,10 +5970,12 @@ class EmtLineTypes(Enum):
     J_Marti = "J_Marti"
     PI = "Pi"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -5090,13 +5999,11 @@ class DynamicSimulationMode(Enum):
     EMT = "EMT"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
     def __repr__(self) -> str:
-        """Return the stable dynamic-simulation domain representation.
-
-        :return: Human-readable dynamic-simulation domain value.
-        """
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -5127,12 +6034,20 @@ class PlotSimulationType(Enum):
     EMT = "EMT"
 
     def __str__(self) -> str:
-        """
-        Return the persistent label used by dynamic plot assets.
+        """Return the enum value as text."""
+        return str(self.value)
 
-        :return: Persistent simulation-family label.
-        """
-        return self.value
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return PlotSimulationType[s]
+        except KeyError:
+            return s
 
 
 class ResultTablePlotType(Enum):
@@ -5151,12 +6066,20 @@ class ResultTablePlotType(Enum):
     COMPLEX_VECTORS = "COMPLEX_VECTORS"
 
     def __str__(self) -> str:
-        """
-        Return the persistent plot-representation label.
+        """Return the enum value as text."""
+        return str(self.value)
 
-        :return: Persistent plot-representation label.
-        """
-        return self.value
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return ResultTablePlotType[s]
+        except KeyError:
+            return s
 
 
 class DynamicPlotMode(Enum):
@@ -5168,12 +6091,20 @@ class DynamicPlotMode(Enum):
     XY = "XY"
 
     def __str__(self) -> str:
-        """
-        Return the persistent label used by dynamic plot assets.
+        """Return the enum value as text."""
+        return str(self.value)
 
-        :return: Persistent plotting-mode label.
-        """
-        return self.value
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return DynamicPlotMode[s]
+        except KeyError:
+            return s
 
 
 class DynamicPlotEntryRole(Enum):
@@ -5186,12 +6117,20 @@ class DynamicPlotEntryRole(Enum):
     Y_AXIS = "Y_AXIS"
 
     def __str__(self) -> str:
-        """
-        Return the persistent label used by dynamic plot entries.
+        """Return the enum value as text."""
+        return str(self.value)
 
-        :return: Persistent entry-role label.
-        """
-        return self.value
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return DynamicPlotEntryRole[s]
+        except KeyError:
+            return s
 
 
 class BlockScopeMode(Enum):
@@ -5204,9 +6143,11 @@ class BlockScopeMode(Enum):
     FullDependency = "FullDependency"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -5235,6 +6176,22 @@ class DynamicTemplateCategory(Enum):
     COMPONENT = "component"
     MEASUREMENT = "measurement"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return DynamicTemplateCategory[s]
+        except KeyError:
+            return s
+
 
 class DynamicBlockVisualRole(Enum):
     """Identify the semantic palette of one dynamic-editor block."""
@@ -5242,6 +6199,22 @@ class DynamicBlockVisualRole(Enum):
     CONTROL = 0
     MEASUREMENT = 1
     DEVICE_TEMPLATE = 2
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return DynamicBlockVisualRole[s]
+        except KeyError:
+            return s
 
 
 class DynamicProjectionLayoutRole(Enum):
@@ -5255,12 +6228,44 @@ class DynamicProjectionLayoutRole(Enum):
     MEASUREMENT_STATION_FROM = 5
     MEASUREMENT_STATION_TO = 6
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return DynamicProjectionLayoutRole[s]
+        except KeyError:
+            return s
+
 
 class ProjectionTagConnectionSide(Enum):
     """Identify the real endpoint represented by a transient signal tag."""
 
     SOURCE = 0
     TARGET = 1
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return ProjectionTagConnectionSide[s]
+        except KeyError:
+            return s
 
 
 class RmsVectorizedNodalBalanceKind(Enum):
@@ -5270,6 +6275,22 @@ class RmsVectorizedNodalBalanceKind(Enum):
     REACTIVE_POWER = 2
     CAPACITIVE_DC_POWER = 3
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return RmsVectorizedNodalBalanceKind[s]
+        except KeyError:
+            return s
+
 
 class RmsTerminalSide(Enum):
     """Identify one physical RMS network terminal of a device."""
@@ -5277,6 +6298,22 @@ class RmsTerminalSide(Enum):
     BUS = "bus"
     FROM = "from"
     TO = "to"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return RmsTerminalSide[s]
+        except KeyError:
+            return s
 
 
 class RmsPhysicalMeterKind(Enum):
@@ -5287,6 +6324,22 @@ class RmsPhysicalMeterKind(Enum):
     POWER = "power"
     PHASE_LOCKED_LOOP = "phase_locked_loop"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return RmsPhysicalMeterKind[s]
+        except KeyError:
+            return s
+
 
 class EmtTerminalSide(Enum):
     """Identify one physical EMT network terminal of a device."""
@@ -5294,6 +6347,22 @@ class EmtTerminalSide(Enum):
     BUS = "bus"
     FROM = "from"
     TO = "to"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return EmtTerminalSide[s]
+        except KeyError:
+            return s
 
 
 class EmtTerminalConductor(Enum):
@@ -5304,6 +6373,22 @@ class EmtTerminalConductor(Enum):
     PHASE_A = "phase_a"
     PHASE_B = "phase_b"
     PHASE_C = "phase_c"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return EmtTerminalConductor[s]
+        except KeyError:
+            return s
 
 
 class DynamicDeviceTemplateType(Enum):
@@ -5349,6 +6434,60 @@ class DynamicDeviceTemplateType(Enum):
     EMT_BESS = "emt:get_bess_avm_grid_following_emt_template:abc"
     EMT_PV_GRID_FOLLOWING = "emt:get_pv_avm_grid_following_emt_template:abc"
     EMT_GFM = "emt:get_gfm_emt_template"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return DynamicDeviceTemplateType[s]
+        except KeyError:
+            return s
+
+
+class ExactMathematicalBlockOperation(Enum):
+    """Operation performed by a canonical exact mathematical block."""
+
+    CONSTANT = "Constant"
+    GAIN = "Gain"
+
+
+class ExactMathematicalValue(Enum):
+    """Named mathematical values shared by constant sources and fixed gains."""
+
+    E = ("e", 2.718281828459045)
+    PI = ("pi", 3.141592653589793)
+    PI_OVER_TWO = ("pi/2", 1.5707963267948966)
+    TWO_PI = ("2pi", 6.283185307179586)
+    SQRT_TWO = ("sqrt(2)", 1.4142135623730951)
+    SQRT_THREE = ("sqrt(3)", 1.7320508075688772)
+    SQRT_TWO_THIRDS = ("sqrt(2/3)", 0.816496580927726)
+    SQRT_THREE_HALVES = ("sqrt(3/2)", 1.224744871391589)
+    INVERSE_SQRT_TWO = ("1/sqrt(2)", 0.7071067811865476)
+    INVERSE_SQRT_THREE = ("1/sqrt(3)", 0.5773502691896258)
+
+    @property
+    def display_label(self) -> str:
+        """Return the mathematical expression displayed in the Library.
+
+        :return: Human-readable mathematical expression.
+        """
+        return str(self.value[0])
+
+    @property
+    def numerical_value(self) -> float:
+        """Return the floating-point value used by the symbolic equation.
+
+        :return: Numerical value of the named mathematical expression.
+        """
+        return float(self.value[1])
 
 
 class BlockType(Enum):
@@ -5415,7 +6554,7 @@ class BlockType(Enum):
     LOOKUP_ARRAY_LINEAR_VARIABLE = "LOOKUP_ARRAY_LINEAR_VARIABLE"
     LOOKUP_ARRAY_OBJECT_LINEAR_NOCLIPPING = "LOOKUP_ARRAY_OBJECT_LINEAR_NOCLIPPING"
     LOOKUP_ARRAY_OBJECT = "LOOKUP_ARRAY_OBJECT"
-    LOOKUP_ARRAY_OBJECT_SPLINE = "LOOKUP_MATRIX_LINEAR"
+    LOOKUP_ARRAY_OBJECT_SPLINE = "LOOKUP_ARRAY_OBJECT_SPLINE"
     LOOKUP_MATRIX_LINEAR = "LOOKUP_MATRIX_LINEAR"
     LOOKUP_MATRIX_SPLINE = "LOOKUP_MATRIX_SPLINE"
     LOOKUP_MATRIX_LINEAR_OBJECT = "LOOKUP_MATRIX_LINEAR_OBJECT"
@@ -5593,10 +6732,12 @@ class BlockType(Enum):
     MEASUREMENTS_CURRENT_PARK = "MEASUREMENTS_CURRENT_PARK"
     MEASUREMENTS_PLL = "MEASUREMENTS_PLL"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -5623,6 +6764,22 @@ class BlockSymbolKind(Enum):
     MODE_PARAMETER = "Mode parameter"
     OUTPUT_ONLY = "Output only (legacy)"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return BlockSymbolKind[s]
+        except KeyError:
+            return s
+
 
 class BlockSymbolCategory(Enum):
     """Visible symbol group used to filter dynamic-block symbol tables."""
@@ -5632,11 +6789,43 @@ class BlockSymbolCategory(Enum):
     PARAMETERS = "Parameters"
     RETAINED_MODES = "Retained modes"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return BlockSymbolCategory[s]
+        except KeyError:
+            return s
+
 
 class DynamicEditorMimeType(Enum):
     """MIME identifiers used by Dynamic Model Editor drag-and-drop workflows."""
 
     TAB = "application/x-veragrid-dynamic-editor-tab"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return DynamicEditorMimeType[s]
+        except KeyError:
+            return s
 
 
 class EquationExportSection(Enum):
@@ -5647,6 +6836,22 @@ class EquationExportSection(Enum):
     INITIALIZATION = "Initialization equations"
     DERIVATIVE_INITIALIZATION = "Derivative initialization equations"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return EquationExportSection[s]
+        except KeyError:
+            return s
+
 
 class ValidationFilterType(Enum):
     """Available scopes for a grouped validation result collection."""
@@ -5655,12 +6860,44 @@ class ValidationFilterType(Enum):
     ISSUES_ONLY = "Issues only"
     SECTION = "Section"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return ValidationFilterType[s]
+        except KeyError:
+            return s
+
 
 class JMartiDataSourceMode(Enum):
     """Available sources for the offline JMarti frequency-domain fit."""
 
     AUTOMATIC_TEMPLATE = "Auto from attached template"
     IMPORT_FREQUENCY_SAMPLES = "Import NPZ frequency samples"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return JMartiDataSourceMode[s]
+        except KeyError:
+            return s
 
 
 class ProceduralFieldType(Enum):
@@ -5678,6 +6915,22 @@ class ProceduralFieldType(Enum):
     INTEGER = "Integer"
     BOOLEAN = "Boolean"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return ProceduralFieldType[s]
+        except KeyError:
+            return s
+
 
 class RoutingNodeKind(Enum):
     """Topological roles supported by an orthogonal routing graph."""
@@ -5685,6 +6938,22 @@ class RoutingNodeKind(Enum):
     PORT = "port"
     STUB = "stub"
     ELBOW = "elbow"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return RoutingNodeKind[s]
+        except KeyError:
+            return s
 
 
 class ProceduralGridMethods(Enum):
@@ -5695,10 +6964,12 @@ class ProceduralGridMethods(Enum):
     SteinerAndOptimization = "Steiner tree + optimization"
     CatalogueOptimizationOnly = "Catalogue optimization only"
 
-    def __str__(self):
-        return self.value
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -5739,9 +7010,11 @@ class ProceduralLogicType(Enum):
     ManufacturerNativeController = "manufacturer_native_controller"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
     def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -5841,6 +7114,22 @@ class InternationalStandardModel(Enum):
     IEEL = 'ieel'
     TGOV1 = 'tgov1'
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return InternationalStandardModel[s]
+        except KeyError:
+            return s
+
 
 class EmtInitializationStatus(Enum):
     """Enumeration to track the progress of the initialization solver."""
@@ -5849,9 +7138,11 @@ class EmtInitializationStatus(Enum):
     FAILED = "FAILED"
 
     def __str__(self) -> str:
+        """Return the enum value as text."""
         return str(self.value)
 
     def __repr__(self) -> str:
+        """Return the enum value representation."""
         return str(self)
 
     @staticmethod
@@ -5866,6 +7157,59 @@ class EmtInitializationStatus(Enum):
             return s
 
 
+class SelfImplicitSolveStatus(Enum):
+    """Describe how one scalar self-implicit initialization solve ended."""
+
+    CONVERGED = "CONVERGED"
+    INVALID_INITIAL_GUESS = "INVALID_INITIAL_GUESS"
+    NON_FINITE_RESIDUAL = "NON_FINITE_RESIDUAL"
+    NON_FINITE_ITERATE = "NON_FINITE_ITERATE"
+    SINGULAR_SECANT = "SINGULAR_SECANT"
+    MAX_ITERATIONS = "MAX_ITERATIONS"
+
+    def __str__(self) -> str:
+        """Return the enum value as text.
+
+        :return: Status value.
+        """
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation.
+
+        :return: Status representation.
+        """
+        return str(self)
+
+
+class BatteryDispatchMode(Enum):
+    """
+    Enumeration to define the battery dispatch behaviour.
+    """
+    Grid = "Grid charge and discharge"  # normal operation with free exchange with the grid
+    PlantChargeGridDischarge = "Plant charge, grid discharge"  # Can only charge from the generatos at the same plant
+    PlantChargeAndDisCharge = "Plant charge and discharge"  # Can only charge / discharge to the devices of the same plant
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s):
+        """
+        :param s:
+        :return:
+        """
+        try:
+            return BatteryDispatchMode[s]
+        except KeyError:
+            return s
+
+
 class DynamicPlotEntryKind(Enum):
     """
     Semantic kind of one persistent dynamic plot entry.
@@ -5875,12 +7219,20 @@ class DynamicPlotEntryKind(Enum):
     PARAMETER = "PARAMETER"
 
     def __str__(self) -> str:
-        """
-        Return the persistent label used by dynamic plot entries.
+        """Return the enum value as text."""
+        return str(self.value)
 
-        :return: Persistent entry-kind label.
-        """
-        return self.value
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return DynamicPlotEntryKind[s]
+        except KeyError:
+            return s
 
 
 class DynamicEntrySection:
@@ -5909,6 +7261,22 @@ class TreeStateNodeKind(Enum):
     PLOT_GROUP = "plot_group"
     PLOT_ENTRY = "plot_entry"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return TreeStateNodeKind[s]
+        except KeyError:
+            return s
+
 
 class DynamicTableModelMode(Enum):
     """
@@ -5919,6 +7287,22 @@ class DynamicTableModelMode(Enum):
     PARAMETERS = "parameters"
     EQUATIONS = "equations"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return DynamicTableModelMode[s]
+        except KeyError:
+            return s
+
 
 class DynEditorGraphicsModes(Enum):
     """
@@ -5926,6 +7310,22 @@ class DynEditorGraphicsModes(Enum):
     """
     DARK = "Dark"
     LIGHT = "Light"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return DynEditorGraphicsModes[s]
+        except KeyError:
+            return s
 
 
 class RoutingAxis(Enum):
@@ -5937,6 +7337,22 @@ class RoutingAxis(Enum):
 
     HORIZONTAL = "horizontal"
     VERTICAL = "vertical"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return RoutingAxis[s]
+        except KeyError:
+            return s
 
 
 class RoutingPortSide(Enum):
@@ -5951,6 +7367,22 @@ class RoutingPortSide(Enum):
     TOP = "top"
     BOTTOM = "bottom"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return RoutingPortSide[s]
+        except KeyError:
+            return s
+
 
 class RoutingValidationMessageLevel(Enum):
     """
@@ -5962,12 +7394,44 @@ class RoutingValidationMessageLevel(Enum):
     ERROR = "error"
     WARNING = "warning"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return RoutingValidationMessageLevel[s]
+        except KeyError:
+            return s
+
 
 class SampledValueEvaluationMode(Enum):
     """Select the numerical boundary that owns a sampled-value update."""
 
     AcceptedBoundary = "accepted_boundary"
     ImplicitIterate = "implicit_iterate"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return SampledValueEvaluationMode[s]
+        except KeyError:
+            return s
 
 
 class VoltageDependentPowerModel(Enum):
@@ -5976,12 +7440,44 @@ class VoltageDependentPowerModel(Enum):
     ConstantCurrent = "ConstantCurrent"
     ConstantImpedance = "ConstantImpedance"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return VoltageDependentPowerModel[s]
+        except KeyError:
+            return s
+
 
 class InductionMachineRole(Enum):
     """Identify whether the shared induction equations inject or consume power."""
 
     GENERATOR = "generator"
     MOTOR = "motor"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return InductionMachineRole[s]
+        except KeyError:
+            return s
 
 
 class MeasurementVarType(Enum):
@@ -6045,12 +7541,44 @@ class MeasurementVarType(Enum):
     ID = "ID"
     IQ = "IQ"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return MeasurementVarType[s]
+        except KeyError:
+            return s
+
 
 class DynamicEditorContentType(Enum):
     """Identify the kind of content hosted by a dynamic workspace tab."""
 
     MODEL = "Model"
     EVENTS = "Events"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return DynamicEditorContentType[s]
+        except KeyError:
+            return s
 
 
 class OperatingSystem(Enum):
@@ -6060,6 +7588,22 @@ class OperatingSystem(Enum):
     MACOS = "darwin"
     WINDOWS = "windows"
 
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return OperatingSystem[s]
+        except KeyError:
+            return s
+
 
 class CompilerName(Enum):
     """Native compiler toolchains supported by the engine."""
@@ -6067,3 +7611,19 @@ class CompilerName(Enum):
     GCC = "gcc"
     CLANG = "clang"
     MSVC = "msvc"
+
+    def __str__(self) -> str:
+        """Return the enum value as text."""
+        return str(self.value)
+
+    def __repr__(self) -> str:
+        """Return the enum value representation."""
+        return str(self)
+
+    @staticmethod
+    def argparse(s: str) -> Enum | str:
+        """Parse an enum member by name, returning unknown input unchanged."""
+        try:
+            return CompilerName[s]
+        except KeyError:
+            return s

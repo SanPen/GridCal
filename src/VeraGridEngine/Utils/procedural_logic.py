@@ -608,6 +608,7 @@ class ProceduralLogicBase(ProceduralLogicEntryContract[Expr]):
         "_expr_plan_cache",
         "_comparison_expr_cache",
         "_expr_binding_cache",
+        "_output_parameter_indices",
     ]
     logic_tpe = ProceduralLogicType.Base
 
@@ -618,6 +619,7 @@ class ProceduralLogicBase(ProceduralLogicEntryContract[Expr]):
         self._expr_plan_cache: Dict[int, List[Tuple[int, int, int]]] = dict()
         self._comparison_expr_cache: Dict[int, Expr] = dict()
         self._expr_binding_cache: Dict[int, Dict[int, float]] = dict()
+        self._output_parameter_indices: List[int] = list()
 
     def bind(self, problem: ProceduralProblem) -> None:
         """
@@ -631,6 +633,31 @@ class ProceduralLogicBase(ProceduralLogicEntryContract[Expr]):
         self._expr_plan_cache = dict()
         self._comparison_expr_cache = dict()
         self._expr_binding_cache = dict()
+        self._output_parameter_indices = list()
+
+    def _register_output_parameter_index(self, parameter_index: int) -> None:
+        """Register one runtime-parameter slot written by this logic entry.
+
+        The declaration is populated during :meth:`bind` so the numerical
+        problem can distinguish a deliberately deferred procedural output from
+        an unresolved ``mode_dict`` parameter.
+
+        :param parameter_index: Flat runtime-parameter index written by the entry.
+        :return: None.
+        """
+        if parameter_index < 0:
+            pass
+        elif parameter_index in self._output_parameter_indices:
+            pass
+        else:
+            self._output_parameter_indices.append(parameter_index)
+
+    def get_output_parameter_indices(self) -> Tuple[int, ...]:
+        """Return the bound runtime-parameter slots written by this entry.
+
+        :return: Immutable tuple of flat runtime-parameter indices.
+        """
+        return tuple(self._output_parameter_indices)
 
     def _get_normalized_expr(self, expr: Expr | Comparison) -> Expr:
         if isinstance(expr, Comparison):
@@ -1045,6 +1072,7 @@ class DelayedSwitchEventLogic(ProceduralLogicBase):
         super().bind(problem)
         output_var: Var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
+        self._register_output_parameter_index(self.output_idx)
         self.state = 1.0 if self.initial_closed else 0.0
         self.initialized = False
         self.trigger_was_high = False
@@ -1148,6 +1176,7 @@ class FixedSampleLogic(ProceduralLogicBase):
         super().bind(problem)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
+        self._register_output_parameter_index(self.output_idx)
         self.initialized = False
 
     def update(self, t: float, x: Vec, params: Vec) -> None:
@@ -1241,6 +1270,7 @@ class SampledValueLogic(ProceduralLogicBase):
             else:
                 output_var = output_var_optional
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
+        self._register_output_parameter_index(self.output_idx)
         self._source_eval = self._build_numeric_evaluator(self.source_expr)
 
     def update(self, t: float, x: Vec, params: Vec) -> None:
@@ -1311,6 +1341,7 @@ class HardSaturationLogic(ProceduralLogicBase):
         super().bind(problem)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
+        self._register_output_parameter_index(self.output_idx)
         self._u_eval = self._build_numeric_evaluator(self.u_expr)
         self._u_min_eval = self._build_numeric_evaluator(self.u_min_expr)
         self._u_max_eval = self._build_numeric_evaluator(self.u_max_expr)
@@ -1377,6 +1408,7 @@ class TimeDelayLogic(ProceduralLogicBase):
         super().bind(problem)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
+        self._register_output_parameter_index(self.output_idx)
         self.history = list()
 
     def update(self, t: float, x: Vec, params: Vec) -> None:
@@ -1440,6 +1472,7 @@ class MovingAverageLogic(ProceduralLogicBase):
         super().bind(problem)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
+        self._register_output_parameter_index(self.output_idx)
         self.history = list()
 
     def update(self, t: float, x: Vec, params: Vec) -> None:
@@ -1516,6 +1549,7 @@ class GradientLimiterLogic(ProceduralLogicBase):
         super().bind(problem)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
+        self._register_output_parameter_index(self.output_idx)
         self.last_time = None
         self.held_value = 0.0
         self.initialized = False
@@ -1587,6 +1621,7 @@ class FlipFlopLogic(ProceduralLogicBase):
         super().bind(problem)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
+        self._register_output_parameter_index(self.output_idx)
         self.state = 0.0
         self.initialized = False
 
@@ -1680,6 +1715,7 @@ class AnalogFlipFlopLogic(ProceduralLogicBase):
         super().bind(problem)
         output_var = _find_var_by_name(problem.sys_block, self.output_var_name)
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
+        self._register_output_parameter_index(self.output_idx)
         self.state = 0.0
         self.initialized = False
         self.held_value = 0.0
@@ -1812,6 +1848,7 @@ class PickupDropoffLogic(ProceduralLogicBase):
             else:
                 output_var = output_var_optional
         self.output_idx = int(problem.uid2idx_event_params[output_var.uid])
+        self._register_output_parameter_index(self.output_idx)
         self.state = 0.0
         self.initialized = False
         self.pickup_started_at = None
@@ -2533,6 +2570,7 @@ class DelayedThresholdLatchLogic(ProceduralLogicBase):
         mode_var = _find_var_by_name(problem.sys_block, self.mode_var_name)
         monitored_var = _find_var_by_name(problem.sys_block, self.monitored_var_name)
         self.mode_idx = int(problem.uid2idx_event_params[mode_var.uid])
+        self._register_output_parameter_index(self.mode_idx)
         self.monitored_idx = int(problem.get_var_idx(monitored_var))
 
     def _append_trace_point(
@@ -2742,6 +2780,7 @@ class StartupHandoverLogic(ProceduralLogicBase):
         mode_var = _find_var_by_name(problem.sys_block, self.mode_var_name)
         enable_time_var = _find_var_by_name(problem.sys_block, self.enable_time_var_name)
         self.mode_idx = int(problem.uid2idx_event_params[mode_var.uid])
+        self._register_output_parameter_index(self.mode_idx)
         self.enable_time_idx = int(problem.uid2idx_event_params[enable_time_var.uid])
         if self.on_value_var_name is not None:
             on_value_var = _find_var_by_name(problem.sys_block, self.on_value_var_name)
@@ -2906,6 +2945,7 @@ class ValveStateLogic(ProceduralLogicBase):
         valve_current_var = _find_var_by_name(problem.sys_block, self.valve_current_var_name)
 
         self.mode_idx = int(problem.uid2idx_event_params[mode_var.uid])
+        self._register_output_parameter_index(self.mode_idx)
         self.valve_type_idx = int(problem.uid2idx_event_params[valve_type_var.uid])
         self.gate_idx = int(problem.uid2idx_event_params[gate_var.uid])
         self.antiparallel_idx = int(problem.uid2idx_event_params[antiparallel_var.uid])
@@ -3331,6 +3371,9 @@ class ThreePhaseCarrierPwmLogic(ProceduralLogicBase):
         self.gate_a_idx = int(problem.uid2idx_event_params[gate_a_var.uid])
         self.gate_b_idx = int(problem.uid2idx_event_params[gate_b_var.uid])
         self.gate_c_idx = int(problem.uid2idx_event_params[gate_c_var.uid])
+        self._register_output_parameter_index(self.gate_a_idx)
+        self._register_output_parameter_index(self.gate_b_idx)
+        self._register_output_parameter_index(self.gate_c_idx)
         self.omega_sw_idx = int(problem.uid2idx_event_params[omega_sw_var.uid])
 
         if carrier_phase_var is None:
@@ -3732,6 +3775,9 @@ class ThreePhaseCarrierSampledModulationLogic(ProceduralLogicBase):
         self.sample_a_idx = int(problem.uid2idx_event_params[sample_a_var.uid])
         self.sample_b_idx = int(problem.uid2idx_event_params[sample_b_var.uid])
         self.sample_c_idx = int(problem.uid2idx_event_params[sample_c_var.uid])
+        self._register_output_parameter_index(self.sample_a_idx)
+        self._register_output_parameter_index(self.sample_b_idx)
+        self._register_output_parameter_index(self.sample_c_idx)
         self.omega_sw_idx = int(problem.uid2idx_event_params[omega_sw_var.uid])
         if carrier_phase_var is None:
             self.carrier_phase_idx = -1
@@ -4154,7 +4200,14 @@ class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
     Boundary updater that delegates runtime decisions to block-attached procedural logic entries.
     """
 
-    __slots__ = ["problem", "logic_entries", "runtime_session", "model_mode", "runtime_initialized"]
+    __slots__ = [
+        "problem",
+        "logic_entries",
+        "runtime_session",
+        "model_mode",
+        "runtime_initialized",
+        "_output_parameter_indices",
+    ]
 
     def __init__(self,
                  problem: ProceduralProblem,
@@ -4175,6 +4228,7 @@ class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
         self.runtime_session: ManufacturerNativeRuntimeSessionProtocol | None = runtime_session
         self.model_mode: int | None = model_mode
         self.runtime_initialized: bool = False
+        self._output_parameter_indices: set[int] = set()
         if self.runtime_session is not None:
             if self.model_mode is None:
                 raise ValueError("Native runtime session requires an exact model mode")
@@ -4185,6 +4239,82 @@ class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
         for logic in self.logic_entries:
             logic.bind(problem)
 
+        self._refresh_output_parameter_indices()
+
+    def _refresh_output_parameter_indices(self) -> None:
+        """Collect and validate every runtime slot owned by procedural logic.
+
+        A retained mode has one runtime owner. Detecting duplicate procedural
+        owners here prevents update order from silently deciding its value.
+        Edge-triggered reset entries deliberately do not claim ownership of
+        their target; they only mutate another declaration after startup.
+        Native controller outputs participate in the ownership check.
+
+        :return: None.
+        """
+        output_indices: set[int] = set()
+        logic: ProceduralLogicBase
+
+        for logic in self.logic_entries:
+            logic_output_index: int
+            for logic_output_index in logic.get_output_parameter_indices():
+                if logic_output_index in output_indices:
+                    raise ValueError(
+                        "Multiple procedural logic entries write runtime parameter "
+                        + f"index {logic_output_index}."
+                    )
+                else:
+                    output_indices.add(logic_output_index)
+
+            if isinstance(logic, ManufacturerNativeControllerLogic):
+                signal_binding: IeeeCigreDllSignalBinding
+                for signal_binding in logic.signal_bindings:
+                    if signal_binding.is_input:
+                        pass
+                    else:
+                        output_var: Var = signal_binding.get_variable()
+                        native_output_index: int | None = self.problem.uid2idx_event_params.get(
+                            output_var.uid,
+                            None,
+                        )
+                        if native_output_index is None:
+                            pass
+                        elif native_output_index in output_indices:
+                            raise ValueError(
+                                "Multiple procedural logic entries write runtime parameter "
+                                + f"'{output_var.name}' (index {native_output_index})."
+                            )
+                        else:
+                            output_indices.add(native_output_index)
+            else:
+                pass
+
+        self._output_parameter_indices = output_indices
+
+    def get_output_parameter_indices(self) -> Tuple[int, ...]:
+        """Return the runtime slots owned by the bound procedural entries.
+
+        :return: Sorted immutable runtime-parameter indices.
+        """
+        return tuple(sorted(self._output_parameter_indices))
+
+    def reset(self) -> None:
+        """Reset all solver-owned procedural state for a new event group.
+
+        Canonical block entries remain untouched. The cloned runtime entries are
+        rebound to clear latches, timers, histories and expression caches while
+        retaining the problem-local parameter storage.
+
+        :return: None.
+        """
+        self.runtime_initialized = False
+
+        logic: ProceduralLogicBase
+        for logic in self.logic_entries:
+            logic.bind(self.problem)
+
+        self._refresh_output_parameter_indices()
+
     def update(self, t: float, x: Vec, params: Vec) -> None:
         """
         Forward one runtime update to all procedural logic entries.
@@ -4194,14 +4324,20 @@ class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
         :param params: Runtime parameter vector.
         :return: None
         """
+        update_time: float = float(t)
+        logic: ProceduralLogicBase
         for logic in self.logic_entries:
             if isinstance(logic, ManufacturerNativeControllerLogic):
                 pass
             else:
-                logic.update(t, x, params)
+                # Repeated calls at one timestamp can contain a newer nonlinear
+                # iterate or accepted state. Each procedural entry owns its own
+                # retention semantics, so the dispatcher must not discard that
+                # updated snapshot globally.
+                logic.update(update_time, x, params)
         if self.runtime_session is not None and not self.runtime_initialized:
-            if abs(float(t)) <= 1e-12:
-                self.runtime_session.initialize(float(t), x, params)
+            if abs(update_time) <= 1e-12:
+                self.runtime_session.initialize(update_time, x, params)
                 self.runtime_initialized = True
             else:
                 raise RuntimeError("Native runtime must initialize from the t=0 operating-point guess")
@@ -4224,14 +4360,13 @@ class BlockProceduralLogicUpdater(BoundaryUpdateWrapper):
         :param t: Startup simulation time.
         :param x: Initialized state/algebraic vector.
         :param params: Runtime parameter vector updated in place.
-        :return: None
+        :return: None.
         """
-        logic: ProceduralLogicBase
-
-        # Reuse each logic object's update rule so startup mode seeding matches
-        # the runtime semantics of that procedural block exactly.
-        for logic in self.logic_entries:
-            logic.update(t, x, params)
+        # Reuse the ordinary runtime rule so startup follows the semantics owned
+        # by each entry. Memoryless entries may be reevaluated later at the same
+        # timestamp with a corrected state, while retained entries protect their
+        # own latch, timer or sample history.
+        self.update(t=float(t), x=x, params=params)
 
     def get_next_forced_event_time(self, t_prev: float, t_target: float) -> Optional[float]:
         """

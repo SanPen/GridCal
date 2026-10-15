@@ -1,0 +1,35 @@
+{
+  "name": "VeraGrid",
+  "license": "osi",
+  "url": "https://github.com/SanPen/VeraGrid",
+  "logo": "eroots-analytics.svg",
+  "vendor": "eRoots Analytics",
+  "vendorURL": "https://eroots.tech/",
+  "description": "Power-system modelling, analysis and simulation software",
+  "features": [],
+  "platforms": [
+    "macOS",
+    "Linux",
+    "Windows"
+  ],
+  "interfaces": [
+    "GUI",
+    "CLI",
+    "library"
+  ],
+  "fmiVersions": [
+    "1.0",
+    "2.0",
+    "3.0"
+  ],
+  "fmuExport": [
+    "CS",
+    "ME"
+  ],
+  "fmuImport": [
+    "CS",
+    "ME"
+  ],
+  "layeredStandards": [],
+  "examplesURL": "https://github.com/SanPen/VeraGrid/tree/master/examples/fmi"
+}

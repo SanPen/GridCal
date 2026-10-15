@@ -4,8 +4,22 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from typing import Union, Tuple
+import math
 from VeraGridEngine.Devices.Parents.editable_device import EditableDevice, DeviceType, GCProp
 from VeraGridEngine.enumerations import PrpCat
+
+
+def calc_GMR(is_tube: bool, r: float, q: float) -> float:
+    """Geometric mean radius in metres, assuming uniform current density.
+
+    :param is_tube: Whether the conductor is tubular.
+    :param r: Outer radius in metres.
+    :param q: Inner radius in metres (used only for tubes).
+    """
+    if is_tube:
+        return r * math.exp((3 * q ** 2 - r ** 2) / (4 * (r ** 2 - q ** 2))
+                            - q ** 4 / (r ** 2 - q ** 2) ** 2 * math.log(r / q))
+    return r * math.exp(-0.25)
 
 
 class Wire(EditableDevice):
@@ -17,6 +31,7 @@ class Wire(EditableDevice):
         '_stranding',
         '_material',
         '_diameter',
+        '_gmr',
         '_diameter_internal',
         '_is_tube',
         '_R',
@@ -37,7 +52,16 @@ class Wire(EditableDevice):
             units='mm',
             tpe=float,
             definition='Diameter of wire',
-            old_names=['GMR', 'gmr'],
+            cat=[PrpCat.TP],
+        ),
+        GCProp(
+            prop_name='gmr',
+            units='mm',
+            tpe=float,
+            definition='Geometric mean radius in mm for series impedance. '
+                       '0 = automatic from conductor geometry; positive = specified GMR. '
+                       'The physical diameter still determines capacitance.',
+            old_names=['gmr_mm'],
             cat=[PrpCat.TP],
         ),
         GCProp(
@@ -84,7 +108,8 @@ class Wire(EditableDevice):
                  diameter: float = 1.0,
                  diameter_internal: float = 0.01,
                  is_tube: bool = False,
-                 code: str = ""):
+                 code: str = "",
+                 gmr: float = 0.0):
         """
         Wire definition
         :param name: Name of the wire type
@@ -96,6 +121,7 @@ class Wire(EditableDevice):
         :param diameter_internal: Internal diameter (in case of tubular conductor) (mm)
         :param is_tube: Whether the wire is a tubular conductor
         :param code: Code of the wire type
+        :param gmr: Specified GMR in mm; zero calculates it from conductor geometry.
         """
 
         EditableDevice.__init__(self,
@@ -108,6 +134,7 @@ class Wire(EditableDevice):
         self._stranding = str(stranding)
         self._material = str(material)
         self._diameter = float(diameter)
+        self.gmr = gmr
         self._diameter_internal = float(diameter_internal)
         self._is_tube = bool(is_tube)
         self._R = float(r)
@@ -144,6 +171,24 @@ class Wire(EditableDevice):
     @diameter.setter
     def diameter(self, value: float) -> None:
         self._diameter = float(value)
+
+    @property
+    def gmr(self) -> float:
+        """Specified GMR in mm, or zero for automatic calculation."""
+        return self._gmr
+
+    @gmr.setter
+    def gmr(self, value: float) -> None:
+        value = float(value)
+        if not math.isfinite(value) or value < 0.0:
+            raise ValueError('GMR must be finite and non-negative (0 = automatic).')
+        self._gmr = value
+
+    def get_gmr(self) -> float:
+        """Return the effective GMR in metres, without changing the physical diameter."""
+        if self.gmr > 0.0:
+            return self.gmr / 1000.0
+        return calc_GMR(self.is_tube, self.diameter / 2000.0, self.diameter_internal / 2000.0)
 
     @property
     def diameter_internal(self) -> float:

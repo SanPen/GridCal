@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.Emt.switch_emt_template &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Templates.Emt.switch_emt_template &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -115,7 +116,8 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Dynamic.var_factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">VarFactory</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceType</span><span class="p">,</span> <span class="n">ParamPowerFlowReferenceType</span><span class="p">,</span> <span class="n">VarPowerFlowReferenceType</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.template_definition</span><span class="w"> </span><span class="kn">import</span> <span class="n">TemplateDefinition</span><span class="p">,</span> <span class="n">TemplateProp</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.procedural_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">sampled_value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.procedural_logic</span><span class="w"> </span><span class="kn">import</span> <span class="n">bool_and</span><span class="p">,</span> <span class="n">bool_or</span><span class="p">,</span> <span class="n">flipflop</span><span class="p">,</span> <span class="n">sampled_value</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="nb">abs</span> <span class="k">as</span> <span class="n">symbolic_abs</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">CmpOp</span><span class="p">,</span> <span class="n">Comparison</span><span class="p">,</span> <span class="n">Const</span><span class="p">,</span> <span class="n">Expr</span><span class="p">,</span> <span class="n">Var</span>
 
 
@@ -223,6 +225,10 @@
                 <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;open_conductance&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Open-state leakage conductance.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">1.0e-8</span><span class="p">),</span>
                 <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;switch_time_constant&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;First-order current time constant.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">1.0e-4</span><span class="p">),</span>
                 <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;command_threshold&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Control threshold for the external command.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;algebraic_branch&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Use an instantaneous resistive branch without artificial current dynamics.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;closed_parallel_conductance&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Parallel snubber conductance present while the switch is closed.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;zero_current_opening&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Open each phase at its first sampled current zero after an open command.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;zero_current_threshold&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;p.u.&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Current magnitude accepted as a sampled zero for phase opening.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mf">1.0e-3</span><span class="p">),</span>
                 <span class="n">TemplateProp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">descr</span><span class="o">=</span><span class="s2">&quot;Symbolic model name.&quot;</span><span class="p">,</span> <span class="n">tpe</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;switch_emt_template&quot;</span><span class="p">),</span>
             <span class="p">]</span>
         <span class="p">)</span>
@@ -241,12 +247,30 @@
         <span class="n">open_conductance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;open_conductance&quot;</span><span class="p">)</span>
         <span class="n">switch_time_constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;switch_time_constant&quot;</span><span class="p">)</span>
         <span class="n">command_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;command_threshold&quot;</span><span class="p">)</span>
+        <span class="n">algebraic_branch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;algebraic_branch&quot;</span><span class="p">)</span>
+        <span class="n">closed_parallel_conductance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;closed_parallel_conductance&quot;</span><span class="p">)</span>
+        <span class="n">zero_current_opening</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;zero_current_opening&quot;</span><span class="p">)</span>
+        <span class="n">zero_current_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;zero_current_threshold&quot;</span><span class="p">)</span>
         <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_value</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">get_switch_emt_template</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">vf</span><span class="p">,</span> <span class="n">phA</span><span class="p">,</span> <span class="n">phB</span><span class="p">,</span> <span class="n">phC</span><span class="p">,</span> <span class="n">signal_controlled</span><span class="p">,</span> <span class="n">seed_from_pf_active</span><span class="p">,</span>
-            <span class="n">initial_closed</span><span class="p">,</span> <span class="n">use_device_conductance</span><span class="p">,</span> <span class="n">manual_closed_conductance</span><span class="p">,</span>
-            <span class="n">open_conductance</span><span class="p">,</span> <span class="n">switch_time_constant</span><span class="p">,</span> <span class="n">command_threshold</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+            <span class="n">vf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">vf</span><span class="p">,</span>
+            <span class="n">phA</span><span class="o">=</span><span class="n">phA</span><span class="p">,</span>
+            <span class="n">phB</span><span class="o">=</span><span class="n">phB</span><span class="p">,</span>
+            <span class="n">phC</span><span class="o">=</span><span class="n">phC</span><span class="p">,</span>
+            <span class="n">signal_controlled</span><span class="o">=</span><span class="n">signal_controlled</span><span class="p">,</span>
+            <span class="n">seed_from_pf_active</span><span class="o">=</span><span class="n">seed_from_pf_active</span><span class="p">,</span>
+            <span class="n">initial_closed</span><span class="o">=</span><span class="n">initial_closed</span><span class="p">,</span>
+            <span class="n">use_device_conductance</span><span class="o">=</span><span class="n">use_device_conductance</span><span class="p">,</span>
+            <span class="n">manual_closed_conductance</span><span class="o">=</span><span class="n">manual_closed_conductance</span><span class="p">,</span>
+            <span class="n">open_conductance</span><span class="o">=</span><span class="n">open_conductance</span><span class="p">,</span>
+            <span class="n">switch_time_constant</span><span class="o">=</span><span class="n">switch_time_constant</span><span class="p">,</span>
+            <span class="n">command_threshold</span><span class="o">=</span><span class="n">command_threshold</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">algebraic_branch</span><span class="o">=</span><span class="n">algebraic_branch</span><span class="p">,</span>
+            <span class="n">closed_parallel_conductance</span><span class="o">=</span><span class="n">closed_parallel_conductance</span><span class="p">,</span>
+            <span class="n">zero_current_opening</span><span class="o">=</span><span class="n">zero_current_opening</span><span class="p">,</span>
+            <span class="n">zero_current_threshold</span><span class="o">=</span><span class="n">zero_current_threshold</span><span class="p">,</span>
         <span class="p">)</span></div>
 </div>
 
@@ -268,6 +292,10 @@
     <span class="n">switch_time_constant</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-4</span><span class="p">,</span>
     <span class="n">command_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;switch_emt_template&quot;</span><span class="p">,</span>
+    <span class="n">algebraic_branch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">closed_parallel_conductance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">zero_current_opening</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">zero_current_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-3</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EmtModelTemplate</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Build one phase-selective EMT switch branch template.</span>
@@ -285,6 +313,10 @@
 <span class="sd">    :param switch_time_constant: First-order current time constant.</span>
 <span class="sd">    :param command_threshold: Control threshold for the external command.</span>
 <span class="sd">    :param name: Symbolic model name.</span>
+<span class="sd">    :param algebraic_branch: If True, reproduce an instantaneous resistive breaker instead of adding a current lag.</span>
+<span class="sd">    :param closed_parallel_conductance: Parallel snubber conductance also present in the closed state.</span>
+<span class="sd">    :param zero_current_opening: If True, defer each phase opening until its current crosses zero.</span>
+<span class="sd">    :param zero_current_threshold: Per-unit current magnitude treated as zero at a sampled boundary.</span>
 <span class="sd">    :return: EMT switch template.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">active_phases</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">_get_active_phases</span><span class="p">(</span><span class="n">phA</span><span class="o">=</span><span class="n">phA</span><span class="p">,</span> <span class="n">phB</span><span class="o">=</span><span class="n">phB</span><span class="p">,</span> <span class="n">phC</span><span class="o">=</span><span class="n">phC</span><span class="p">)</span>
@@ -293,6 +325,9 @@
     <span class="n">templ</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
 
+    <span class="c1"># The command remains the public event target. Optional phase latches below</span>
+    <span class="c1"># convert an open command into the zero-current commutation used by the</span>
+    <span class="c1"># Simulink Specialized Power Systems three-phase breaker.</span>
     <span class="n">closed_mode</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;switch_closed_mode&quot;</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">mode_dict</span><span class="p">[</span><span class="n">closed_mode</span><span class="p">]</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="mf">1.0</span> <span class="k">if</span> <span class="n">initial_closed</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;switch_closed_mode&quot;</span><span class="p">)</span>
 
@@ -300,6 +335,7 @@
     <span class="n">g_manual</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;switch_closed_g_manual&quot;</span><span class="p">)</span>
     <span class="n">g_open</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;switch_open_g&quot;</span><span class="p">)</span>
     <span class="n">tau_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;switch_tau&quot;</span><span class="p">)</span>
+    <span class="n">g_parallel</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;switch_closed_parallel_g&quot;</span><span class="p">)</span>
     <span class="n">seed_from_pf_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;switch_seed_from_pf&quot;</span><span class="p">)</span>
 
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">g_device</span><span class="p">]</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;switch_closed_g_api&quot;</span><span class="p">)</span>
@@ -307,11 +343,25 @@
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">g_manual</span><span class="p">]</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">manual_closed_conductance</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;switch_closed_g_manual&quot;</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">g_open</span><span class="p">]</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">open_conductance</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;switch_open_g&quot;</span><span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">tau_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">switch_time_constant</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;switch_tau&quot;</span><span class="p">)</span>
+    <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">g_parallel</span><span class="p">]</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">closed_parallel_conductance</span><span class="p">),</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;switch_closed_parallel_g&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">seed_from_pf_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span><span class="mf">1.0</span> <span class="k">if</span> <span class="n">seed_from_pf_active</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;switch_seed_from_pf&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">zero_current_opening</span><span class="p">:</span>
+        <span class="n">zero_current_threshold_var</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;switch_zero_current_threshold&quot;</span><span class="p">)</span>
+        <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">event_dict</span><span class="p">[</span><span class="n">zero_current_threshold_var</span><span class="p">]</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span>
+            <span class="nb">float</span><span class="p">(</span><span class="n">zero_current_threshold</span><span class="p">),</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;switch_zero_current_threshold&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
 
-    <span class="n">g_closed_eff</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">seed_from_pf_var</span> <span class="o">*</span> <span class="n">g_device</span> <span class="o">+</span> <span class="p">(</span><span class="n">Const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">seed_from_pf_var</span><span class="p">)</span> <span class="o">*</span> <span class="n">g_manual</span>
-    <span class="n">g_eff</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">closed_mode</span> <span class="o">*</span> <span class="n">g_closed_eff</span> <span class="o">+</span> <span class="p">(</span><span class="n">Const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">closed_mode</span><span class="p">)</span> <span class="o">*</span> <span class="n">g_open</span>
-
+    <span class="n">g_closed_eff</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">seed_from_pf_var</span> <span class="o">*</span> <span class="n">g_device</span>
+        <span class="o">+</span> <span class="p">(</span><span class="n">Const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">seed_from_pf_var</span><span class="p">)</span> <span class="o">*</span> <span class="n">g_manual</span>
+        <span class="o">+</span> <span class="n">g_parallel</span>
+    <span class="p">)</span>
     <span class="n">in_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">state_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="n">diff_vars</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Var</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
@@ -365,20 +415,95 @@
 
     <span class="n">phase_label</span><span class="p">:</span> <span class="nb">str</span>
     <span class="k">for</span> <span class="n">phase_label</span> <span class="ow">in</span> <span class="n">active_phases</span><span class="p">:</span>
-        <span class="n">v_from</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vf_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">_get_from_voltage_reference</span><span class="p">(</span><span class="n">phase_label</span><span class="p">))</span>
-        <span class="n">v_to</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vt_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">_get_to_voltage_reference</span><span class="p">(</span><span class="n">phase_label</span><span class="p">))</span>
-        <span class="n">i_state</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;i_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">di_state</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;di_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">i_state</span><span class="p">)</span>
-        <span class="n">i_from</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;if_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">_get_from_current_reference</span><span class="p">(</span><span class="n">phase_label</span><span class="p">))</span>
-        <span class="n">i_to</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;it_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">_get_to_current_reference</span><span class="p">(</span><span class="n">phase_label</span><span class="p">))</span>
+        <span class="n">v_from</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vf_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">_get_from_voltage_reference</span><span class="p">(</span><span class="n">phase_label</span><span class="p">))</span>
+        <span class="n">v_to</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;vt_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">_get_to_voltage_reference</span><span class="p">(</span><span class="n">phase_label</span><span class="p">))</span>
+        <span class="n">i_from</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;if_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">_get_from_current_reference</span><span class="p">(</span><span class="n">phase_label</span><span class="p">))</span>
+        <span class="n">i_to</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;it_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">reference</span><span class="o">=</span><span class="n">_get_to_current_reference</span><span class="p">(</span><span class="n">phase_label</span><span class="p">))</span>
 
         <span class="n">in_vars</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">([</span><span class="n">v_from</span><span class="p">,</span> <span class="n">v_to</span><span class="p">]))</span>
-        <span class="n">state_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_state</span><span class="p">)</span>
-        <span class="n">diff_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">di_state</span><span class="p">)</span>
         <span class="n">algebraic_vars</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">([</span><span class="n">i_from</span><span class="p">,</span> <span class="n">i_to</span><span class="p">]))</span>
-        <span class="n">state_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">g_eff</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_from</span> <span class="o">-</span> <span class="n">v_to</span><span class="p">)</span> <span class="o">-</span> <span class="n">i_state</span><span class="p">)</span> <span class="o">/</span> <span class="n">tau_var</span><span class="p">)</span>
-        <span class="n">algebraic_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_from</span> <span class="o">-</span> <span class="n">i_state</span><span class="p">)</span>
-        <span class="n">algebraic_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_to</span> <span class="o">+</span> <span class="n">i_state</span><span class="p">)</span>
+
+        <span class="c1"># Simulink&#39;s discrete three-phase breaker retains each conducting phase</span>
+        <span class="c1"># after the open command until that phase current reaches its next zero.</span>
+        <span class="c1"># Detect both an exact/small sampled current and a sign change between</span>
+        <span class="c1"># accepted samples so a zero cannot be skipped by the fixed 10 us grid.</span>
+        <span class="k">if</span> <span class="n">zero_current_opening</span><span class="p">:</span>
+            <span class="c1"># The procedural latch resolves its output by symbolic name in the</span>
+            <span class="c1"># complete block tree. Include the device name so several breakers</span>
+            <span class="c1"># can use zero-current opening without producing ambiguous names.</span>
+            <span class="n">phase_closed_mode_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;switch_phase_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">_closed_mode_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">previous_current_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;switch_phase_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">_previous_current_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">phase_closed_mode</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">phase_closed_mode_name</span><span class="p">)</span>
+            <span class="n">previous_current</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="n">previous_current_name</span><span class="p">)</span>
+            <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">mode_dict</span><span class="p">[</span><span class="n">phase_closed_mode</span><span class="p">]</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span>
+                <span class="mf">1.0</span> <span class="k">if</span> <span class="n">initial_closed</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">phase_closed_mode_name</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">mode_dict</span><span class="p">[</span><span class="n">previous_current</span><span class="p">]</span> <span class="o">=</span> <span class="n">Const</span><span class="p">(</span>
+                <span class="mf">0.0</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">previous_current_name</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">command_closed</span><span class="p">:</span> <span class="n">Comparison</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span>
+                <span class="n">lhs</span><span class="o">=</span><span class="n">closed_mode</span><span class="p">,</span>
+                <span class="n">op</span><span class="o">=</span><span class="n">CmpOp</span><span class="o">.</span><span class="n">GE</span><span class="p">,</span>
+                <span class="n">rhs</span><span class="o">=</span><span class="n">Const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">command_threshold</span><span class="p">)),</span>
+            <span class="p">)</span>
+            <span class="n">command_open</span><span class="p">:</span> <span class="n">Comparison</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span>
+                <span class="n">lhs</span><span class="o">=</span><span class="n">closed_mode</span><span class="p">,</span>
+                <span class="n">op</span><span class="o">=</span><span class="n">CmpOp</span><span class="o">.</span><span class="n">LT</span><span class="p">,</span>
+                <span class="n">rhs</span><span class="o">=</span><span class="n">Const</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">command_threshold</span><span class="p">)),</span>
+            <span class="p">)</span>
+            <span class="n">sampled_zero</span><span class="p">:</span> <span class="n">Comparison</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span>
+                <span class="n">lhs</span><span class="o">=</span><span class="n">symbolic_abs</span><span class="p">(</span><span class="n">i_from</span><span class="p">),</span>
+                <span class="n">op</span><span class="o">=</span><span class="n">CmpOp</span><span class="o">.</span><span class="n">LE</span><span class="p">,</span>
+                <span class="n">rhs</span><span class="o">=</span><span class="n">zero_current_threshold_var</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">crossed_zero</span><span class="p">:</span> <span class="n">Comparison</span> <span class="o">=</span> <span class="n">Comparison</span><span class="p">(</span>
+                <span class="n">lhs</span><span class="o">=</span><span class="n">i_from</span> <span class="o">*</span> <span class="n">previous_current</span><span class="p">,</span>
+                <span class="n">op</span><span class="o">=</span><span class="n">CmpOp</span><span class="o">.</span><span class="n">LE</span><span class="p">,</span>
+                <span class="n">rhs</span><span class="o">=</span><span class="n">Const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">open_at_current_zero</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">bool_and</span><span class="p">(</span>
+                <span class="n">command_open</span><span class="p">,</span>
+                <span class="n">bool_or</span><span class="p">(</span><span class="n">sampled_zero</span><span class="p">,</span> <span class="n">crossed_zero</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">procedural_logic</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">flipflop</span><span class="p">(</span>
+                    <span class="n">boolset</span><span class="o">=</span><span class="n">command_closed</span><span class="p">,</span>
+                    <span class="n">boolreset</span><span class="o">=</span><span class="n">open_at_current_zero</span><span class="p">,</span>
+                    <span class="n">output</span><span class="o">=</span><span class="n">phase_closed_mode</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;switch_phase_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">_zero_current_opening_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="c1"># This sampler follows the latch in the procedural list, so the</span>
+            <span class="c1"># latch compares the accepted current with the preceding sample.</span>
+            <span class="n">templ</span><span class="o">.</span><span class="n">block</span><span class="o">.</span><span class="n">procedural_logic</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">sampled_value</span><span class="p">(</span>
+                    <span class="n">output</span><span class="o">=</span><span class="n">previous_current</span><span class="p">,</span>
+                    <span class="n">source</span><span class="o">=</span><span class="n">i_from</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;switch_phase_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">_current_memory_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="c1"># A close command acts without delay. Only opening is deferred to</span>
+            <span class="c1"># the retained phase latch, matching the breaker command semantics.</span>
+            <span class="n">phase_conduction_mode</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="n">bool_or</span><span class="p">(</span><span class="n">command_closed</span><span class="p">,</span> <span class="n">phase_closed_mode</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">phase_conduction_mode</span> <span class="o">=</span> <span class="n">closed_mode</span>
+        <span class="n">g_eff</span><span class="p">:</span> <span class="n">Expr</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">phase_conduction_mode</span> <span class="o">*</span> <span class="n">g_closed_eff</span>
+            <span class="o">+</span> <span class="p">(</span><span class="n">Const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">phase_conduction_mode</span><span class="p">)</span> <span class="o">*</span> <span class="n">g_open</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">algebraic_branch</span><span class="p">:</span>
+            <span class="n">algebraic_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_from</span> <span class="o">-</span> <span class="n">g_eff</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_from</span> <span class="o">-</span> <span class="n">v_to</span><span class="p">))</span>
+            <span class="n">algebraic_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_to</span> <span class="o">+</span> <span class="n">i_from</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">i_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_var</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;i_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">di_state</span><span class="p">:</span> <span class="n">Var</span> <span class="o">=</span> <span class="n">vf</span><span class="o">.</span><span class="n">add_diff_var</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;di_</span><span class="si">{</span><span class="n">phase_label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">base_var</span><span class="o">=</span><span class="n">i_state</span><span class="p">)</span>
+            <span class="n">state_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_state</span><span class="p">)</span>
+            <span class="n">diff_vars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">di_state</span><span class="p">)</span>
+            <span class="n">state_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">g_eff</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_from</span> <span class="o">-</span> <span class="n">v_to</span><span class="p">)</span> <span class="o">-</span> <span class="n">i_state</span><span class="p">)</span> <span class="o">/</span> <span class="n">tau_var</span><span class="p">)</span>
+            <span class="n">algebraic_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_from</span> <span class="o">-</span> <span class="n">i_state</span><span class="p">)</span>
+            <span class="n">algebraic_eqs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_to</span> <span class="o">+</span> <span class="n">i_state</span><span class="p">)</span>
         <span class="n">out_vars</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">([</span><span class="n">i_from</span><span class="p">,</span> <span class="n">i_to</span><span class="p">]))</span>
         <span class="n">external_mapping</span><span class="p">[</span><span class="n">_get_from_voltage_reference</span><span class="p">(</span><span class="n">phase_label</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v_from</span>
         <span class="n">external_mapping</span><span class="p">[</span><span class="n">_get_to_voltage_reference</span><span class="p">(</span><span class="n">phase_label</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v_to</span>

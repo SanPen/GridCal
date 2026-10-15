@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Devices.Branches.overhead_line_type &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Devices.Branches.overhead_line_type &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -116,7 +117,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.basic_structures</span><span class="w"> </span><span class="kn">import</span> <span class="n">Logger</span><span class="p">,</span> <span class="n">Mat</span><span class="p">,</span> <span class="n">IntVec</span><span class="p">,</span> <span class="n">Vec</span><span class="p">,</span> <span class="n">CxMat</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Parents.editable_device</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeviceType</span><span class="p">,</span> <span class="n">GCProp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Parents.dynamic_parent</span><span class="w"> </span><span class="kn">import</span> <span class="n">DynamicDevice</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Branches.wire</span><span class="w"> </span><span class="kn">import</span> <span class="n">Wire</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Branches.wire</span><span class="w"> </span><span class="kn">import</span> <span class="n">Wire</span><span class="p">,</span> <span class="n">calc_GMR</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.enumerations</span><span class="w"> </span><span class="kn">import</span> <span class="n">SubObjectType</span><span class="p">,</span> <span class="n">PrpCat</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -340,140 +341,78 @@
 
 
 
-<div class="viewcode-block" id="calc_GMR">
-<a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.calc_GMR">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">calc_GMR</span><span class="p">(</span><span class="n">is_tube</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">r</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates geometric mean radius (GMR) of solid or tubular conductor</span>
-<span class="sd">    Note that calculations assume uniform current distribution in the conductor, thus conductor stranding is not taken into account.</span>
-
-<span class="sd">    :param is_tube:</span>
-<span class="sd">    :param r: radius of the conductor [m]</span>
-<span class="sd">    :param q: radius of the inner tube [m] (only relevant for tubes)</span>
-<span class="sd">    :return: GMR the geometric mean radius [m]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">if</span> <span class="n">is_tube</span><span class="p">:</span>
-        <span class="c1"># Tubular conductor GMR [m]</span>
-        <span class="n">GMR</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="mi">3</span> <span class="o">*</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">r</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
-                          <span class="o">-</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">4</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">q</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">r</span> <span class="o">/</span> <span class="n">q</span><span class="p">)))</span>
-
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1"># Solid conductor GMR [m]</span>
-        <span class="n">GMR</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mf">0.25</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">GMR</span></div>
-
-
-
 <div class="viewcode-block" id="carsons">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.carsons">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">carsons</span><span class="p">(</span><span class="n">is_self</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">h_i</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">h_k</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x_ik</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">f</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">rho</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">err_tol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates Carson&#39;s earth return correction factors Rp and Xp for both self and mutual terms.</span>
-<span class="sd">    The number of terms evaluated in the infinite loop is based on convergence to the desired error tolerance.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate Carson earth-return corrections (Rp, Xp), in Ohm/km.</span>
 
-<span class="sd">    Usage:</span>
-<span class="sd">        Rp, Xp = carsons(type, h_i, h_k, x_ik, f, rho, err_tol)</span>
-
-<span class="sd">    where   type is &#39;self&#39; or &#39;mutual&#39;</span>
-<span class="sd">            h_i is the height of conductor i above ground (m)</span>
-<span class="sd">            h_k is the height of conductor k above ground (m)</span>
-<span class="sd">            x_ik is the horizontal distance between conductors i and k (m)</span>
-<span class="sd">            f is the frequency (Hz)</span>
-<span class="sd">            rho is the earth resistivity (Ohm.m)</span>
-<span class="sd">            err_tol is the error tolerance for the calculation (default = 1e-6)</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">            Rp, Xp the Carson earth return correction factors (in Ohm/km)</span>
+<span class="sd">    Heights and horizontal separation are in metres, f in Hz and rho in Ohm.m.</span>
+<span class="sd">    err_tol bounds the magnitude of terms in the dimensionless Carson series.</span>
+<span class="sd">    The EMTP series is summed in complete groups of four terms, so a vanishing</span>
+<span class="sd">    angular factor cannot prematurely terminate the calculation.</span>
+<span class="sd">    Coefficient recurrence: Carson implementation in https://doi.org/10.5772/58383.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Geometrical calculations - See Figure 4.4. of EMTP Theory Book</span>
-    <span class="k">if</span> <span class="n">is_self</span><span class="p">:</span>
-        <span class="n">D</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">h_i</span>  <span class="c1"># Distance between conductor i and its image [m]</span>
-        <span class="n">cos_phi</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">sin_phi</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="n">phi</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">h_i</span> <span class="o">+</span> <span class="n">h_k</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">x_ik</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># Distance between conductor i and image of conductor k [m]</span>
-        <span class="n">cos_phi</span> <span class="o">=</span> <span class="p">(</span><span class="n">h_i</span> <span class="o">+</span> <span class="n">h_k</span><span class="p">)</span> <span class="o">/</span> <span class="n">D</span>
-        <span class="n">sin_phi</span> <span class="o">=</span> <span class="n">x_ik</span> <span class="o">/</span> <span class="n">D</span>
-        <span class="n">phi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">cos_phi</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="ow">and</span> <span class="n">v</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">err_tol</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Carson frequency, earth resistivity and tolerance must be finite and positive.&#39;</span><span class="p">)</span>
+    <span class="n">height</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">h_i</span> <span class="k">if</span> <span class="n">is_self</span> <span class="k">else</span> <span class="n">h_i</span> <span class="o">+</span> <span class="n">h_k</span>
+    <span class="n">separation</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">is_self</span> <span class="k">else</span> <span class="nb">abs</span><span class="p">(</span><span class="n">x_ik</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">height</span><span class="p">)</span> <span class="ow">or</span> <span class="n">height</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">separation</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Carson image height must be positive and geometry must be finite.&#39;</span><span class="p">)</span>
 
-    <span class="c1"># Initialise parameters</span>
-    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">err</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="n">sgn</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">omega</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">f</span>
+    <span class="n">mu_0</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">1e-7</span>  <span class="c1"># H/m</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="n">separation</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">omega</span> <span class="o">*</span> <span class="n">mu_0</span> <span class="o">/</span> <span class="n">rho</span><span class="p">)</span>
+    <span class="n">phi</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">separation</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+    <span class="n">log_a</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">constant</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">euler_gamma</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">6.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">16.0</span><span class="p">]</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">constant</span> <span class="o">+</span> <span class="mf">0.75</span><span class="p">]</span>
+    <span class="n">Rp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">8.0</span>
+    <span class="n">Xp</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">constant</span> <span class="o">-</span> <span class="n">log_a</span><span class="p">)</span>
+    <span class="n">step</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="nb">complex</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">),</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">))</span>
+    <span class="n">power</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">0.0</span><span class="n">j</span>
+    <span class="n">group_error</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-    <span class="c1"># Initial values and constants for calculation</span>
-    <span class="n">omega</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">f</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-4</span> <span class="o">*</span> <span class="n">D</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">f</span> <span class="o">/</span> <span class="n">rho</span><span class="p">)</span>  <span class="c1"># Equation 4.10 EMTP</span>
-    <span class="n">acosphi</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">cos_phi</span>
-    <span class="n">asinphi</span> <span class="o">=</span> <span class="n">a</span> <span class="o">*</span> <span class="n">sin_phi</span>
-    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">16</span><span class="p">])</span>  <span class="c1"># Equation 4.12 EMTP</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mf">1.3659315</span><span class="p">])</span>
-    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">b</span>
-
-    <span class="c1"># First two terms of carson correction factor</span>
-    <span class="n">Rp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">8</span> <span class="o">-</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">acosphi</span>
-    <span class="n">Xp</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="mf">0.6159315</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="o">+</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">acosphi</span>
-
-    <span class="c1"># Loop through carson coefficient terms starting with i = 2</span>
-    <span class="k">while</span> <span class="p">(</span><span class="n">err</span> <span class="o">&gt;</span> <span class="n">err_tol</span><span class="p">):</span>
-        <span class="n">term</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
-        <span class="c1"># Check sign for b term</span>
-        <span class="k">if</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">sgn</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">sgn</span>
-
-        <span class="c1"># Calculate coefficients</span>
-        <span class="n">bi</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">sgn</span> <span class="o">/</span> <span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">3</span><span class="p">))</span>
-        <span class="n">ci</span> <span class="o">=</span> <span class="n">c</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span>
-        <span class="n">di</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">bi</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">bi</span><span class="p">)</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">ci</span><span class="p">)</span>
-        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">di</span><span class="p">)</span>
-
-        <span class="c1"># Recursively calculate powers of acosphi and asinphi</span>
-        <span class="n">acosphi_prev</span> <span class="o">=</span> <span class="n">acosphi</span>
-        <span class="n">asinphi_prev</span> <span class="o">=</span> <span class="n">asinphi</span>
-        <span class="n">acosphi</span> <span class="o">=</span> <span class="p">(</span><span class="n">acosphi_prev</span> <span class="o">*</span> <span class="n">cos_phi</span> <span class="o">-</span> <span class="n">asinphi_prev</span> <span class="o">*</span> <span class="n">sin_phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">a</span>
-        <span class="n">asinphi</span> <span class="o">=</span> <span class="p">(</span><span class="n">acosphi_prev</span> <span class="o">*</span> <span class="n">sin_phi</span> <span class="o">+</span> <span class="n">asinphi_prev</span> <span class="o">*</span> <span class="n">cos_phi</span><span class="p">)</span> <span class="o">*</span> <span class="n">a</span>
-
-        <span class="n">Rp_prev</span> <span class="o">=</span> <span class="n">Rp</span>
-        <span class="n">Xp_prev</span> <span class="o">=</span> <span class="n">Xp</span>
-
-        <span class="c1"># First term</span>
-        <span class="k">if</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">Rp</span> <span class="o">=</span> <span class="n">Rp</span> <span class="o">-</span> <span class="n">bi</span> <span class="o">*</span> <span class="n">acosphi</span>
-            <span class="n">Xp</span> <span class="o">=</span> <span class="n">Xp</span> <span class="o">+</span> <span class="n">bi</span> <span class="o">*</span> <span class="n">acosphi</span>
-
-        <span class="c1"># Second term</span>
-        <span class="k">elif</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">Rp</span> <span class="o">=</span> <span class="n">Rp</span> <span class="o">+</span> <span class="n">bi</span> <span class="o">*</span> <span class="p">((</span><span class="n">ci</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="o">*</span> <span class="n">acosphi</span> <span class="o">+</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">asinphi</span><span class="p">)</span>
-            <span class="n">Xp</span> <span class="o">=</span> <span class="n">Xp</span> <span class="o">-</span> <span class="n">di</span> <span class="o">*</span> <span class="n">acosphi</span>
-
-        <span class="c1"># Third term</span>
-        <span class="k">elif</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="n">Rp</span> <span class="o">=</span> <span class="n">Rp</span> <span class="o">+</span> <span class="n">bi</span> <span class="o">*</span> <span class="n">acosphi</span>
-            <span class="n">Xp</span> <span class="o">=</span> <span class="n">Xp</span> <span class="o">+</span> <span class="n">bi</span> <span class="o">*</span> <span class="n">acosphi</span>
-
-        <span class="c1"># Fourth term</span>
+    <span class="c1"># Coefficients b_n depend on b_(n-2), with signs alternating every four</span>
+    <span class="c1"># terms. In particular, the second power uses the initial b_2 = 1/16.</span>
+    <span class="c1"># Bound the iteration instead of allowing a nonconvergent infinite loop.</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">201</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">&gt;=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">sign</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="k">if</span> <span class="p">((</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">4</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="k">else</span> <span class="mf">1.0</span>
+            <span class="n">b</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="n">sign</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)))</span>
+            <span class="n">c</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">c</span><span class="p">[</span><span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">n</span> <span class="o">+</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">power</span> <span class="o">*=</span> <span class="n">step</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">power</span><span class="o">.</span><span class="n">real</span><span class="p">,</span> <span class="n">power</span><span class="o">.</span><span class="n">imag</span>
+        <span class="n">bn</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="n">n</span><span class="p">]</span>
+        <span class="n">dn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">bn</span>
+        <span class="n">term</span> <span class="o">=</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">4</span>
+        <span class="k">if</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">dr</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="o">-</span><span class="n">bn</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="n">bn</span> <span class="o">*</span> <span class="n">u</span>
+        <span class="k">elif</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">dr</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="n">bn</span> <span class="o">*</span> <span class="p">((</span><span class="n">c</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="n">log_a</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span> <span class="o">+</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">v</span><span class="p">),</span> <span class="o">-</span><span class="n">dn</span> <span class="o">*</span> <span class="n">u</span>
+        <span class="k">elif</span> <span class="n">term</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">dr</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="n">bn</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="n">bn</span> <span class="o">*</span> <span class="n">u</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">Rp</span> <span class="o">=</span> <span class="n">Rp</span> <span class="o">-</span> <span class="n">di</span> <span class="o">*</span> <span class="n">acosphi</span>
-            <span class="n">Xp</span> <span class="o">=</span> <span class="n">Xp</span> <span class="o">-</span> <span class="n">bi</span> <span class="o">*</span> <span class="p">((</span><span class="n">ci</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">a</span><span class="p">))</span> <span class="o">*</span> <span class="n">acosphi</span> <span class="o">+</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">asinphi</span><span class="p">)</span>
+            <span class="n">dr</span><span class="p">,</span> <span class="n">dx</span> <span class="o">=</span> <span class="o">-</span><span class="n">dn</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="o">-</span><span class="n">bn</span> <span class="o">*</span> <span class="p">((</span><span class="n">c</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">-</span> <span class="n">log_a</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span> <span class="o">+</span> <span class="n">phi</span> <span class="o">*</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">dx</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ArithmeticError</span><span class="p">(</span><span class="s1">&#39;Carson series produced non-finite terms.&#39;</span><span class="p">)</span>
+        <span class="n">Rp</span> <span class="o">+=</span> <span class="n">dr</span>
+        <span class="n">Xp</span> <span class="o">+=</span> <span class="n">dx</span>
+        <span class="n">group_error</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">group_error</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">dx</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">4</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">group_error</span><span class="p">)</span> <span class="ow">and</span> <span class="n">group_error</span> <span class="o">&lt;=</span> <span class="n">err_tol</span><span class="p">:</span>
+                <span class="n">scale</span> <span class="o">=</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="mf">1e-4</span>  <span class="c1"># Ohm/km</span>
+                <span class="k">return</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">Rp</span><span class="p">,</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">Xp</span>
+            <span class="n">group_error</span> <span class="o">=</span> <span class="mf">0.0</span>
 
-        <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">Rp</span> <span class="o">-</span> <span class="n">Rp_prev</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">Xp</span> <span class="o">-</span> <span class="n">Xp_prev</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
-
-    <span class="n">Rp</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="mf">1e-04</span> <span class="o">*</span> <span class="n">Rp</span>
-    <span class="n">Xp</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="mf">1e-04</span> <span class="o">*</span> <span class="n">Xp</span>
-
-    <span class="k">return</span> <span class="n">Rp</span><span class="p">,</span> <span class="n">Xp</span></div>
+    <span class="k">raise</span> <span class="ne">ArithmeticError</span><span class="p">(</span><span class="s1">&#39;Carson series did not converge within 200 terms.&#39;</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="calc_z_ii">
 <a class="viewcode-back" href="../../../../rst_source/api/auto/VeraGridEngine.Devices.Branches.html#VeraGridEngine.Devices.Branches.overhead_line_type.calc_z_ii">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">calc_z_ii</span><span class="p">(</span><span class="n">R_int</span><span class="p">,</span> <span class="n">is_tube</span><span class="p">,</span> <span class="n">r_outer</span><span class="p">,</span> <span class="n">r_inner</span><span class="p">,</span> <span class="n">y_i</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">err_tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">use_dubanton_aprox</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">calc_z_ii</span><span class="p">(</span><span class="n">R_int</span><span class="p">,</span> <span class="n">is_tube</span><span class="p">,</span> <span class="n">r_outer</span><span class="p">,</span> <span class="n">r_inner</span><span class="p">,</span> <span class="n">y_i</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">err_tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
+              <span class="n">use_dubanton_aprox</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">gmr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates self impedance term [Ohm/km]</span>
 <span class="sd">    NOTE: No allowance has been made for skin effects</span>
@@ -486,6 +425,7 @@
 <span class="sd">    :param rho: earth resistivity [Ohm.m]</span>
 <span class="sd">    :param err_tol: error tolerance for the calculation (default = 1e-6)</span>
 <span class="sd">    :param use_dubanton_aprox: Use dubanton&#39;s approximation (default = False)</span>
+<span class="sd">    :param gmr: Specified GMR in metres; zero uses the solid/tubular geometry.</span>
 <span class="sd">    :return: self impedance term of line impedance matrix [Ohm/km]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
@@ -501,7 +441,7 @@
 
         <span class="n">p</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">rho</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="n">mu_0</span><span class="p">))</span>
 
-        <span class="n">gmr_i</span> <span class="o">=</span> <span class="n">calc_GMR</span><span class="p">(</span><span class="n">is_tube</span><span class="o">=</span><span class="n">is_tube</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">r_outer</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">r_inner</span><span class="p">)</span>
+        <span class="n">gmr_i</span> <span class="o">=</span> <span class="n">gmr</span> <span class="k">if</span> <span class="n">gmr</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="k">else</span> <span class="n">calc_GMR</span><span class="p">(</span><span class="n">is_tube</span><span class="o">=</span><span class="n">is_tube</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="n">r_outer</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">r_inner</span><span class="p">)</span>
 
         <span class="n">z</span> <span class="o">=</span> <span class="n">R_int</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span> <span class="o">*</span> <span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">mu_0_2pi</span> <span class="o">*</span> <span class="n">log</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_i</span> <span class="o">+</span> <span class="n">p</span><span class="p">))</span> <span class="o">/</span> <span class="n">gmr_i</span><span class="p">))</span>
 
@@ -513,14 +453,15 @@
         <span class="n">omega</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">f</span>  <span class="c1"># Nominal angular frequency [rad/s]</span>
         <span class="n">mu_0</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mf">1e-7</span>  <span class="c1"># Permeability of free space [H/m]</span>
 
-        <span class="c1"># Calculate internal conductor reactance (in Ohm/km)</span>
-        <span class="n">X_int</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">calc_L_int</span><span class="p">(</span><span class="n">is_tube</span><span class="p">,</span> <span class="n">r_outer</span><span class="p">,</span> <span class="n">r_inner</span><span class="p">)</span>
-
-        <span class="c1"># Calculate geometrical reactance (in Ohm/km) - Equation 4.15 EMTP</span>
-        <span class="k">if</span> <span class="n">r_outer</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">X_geo</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">mu_0</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">y_i</span> <span class="o">/</span> <span class="n">r_outer</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">gmr</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="c1"># GMR already includes the internal flux linkage. Do not add L_int</span>
+            <span class="c1"># again, and do not replace the physical radius used for capacitance.</span>
+            <span class="n">X_int</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">X_geo</span> <span class="o">=</span> <span class="mf">1000.0</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">mu_0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">y_i</span> <span class="o">/</span> <span class="n">gmr</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">X_geo</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">X_int</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">calc_L_int</span><span class="p">(</span><span class="n">is_tube</span><span class="p">,</span> <span class="n">r_outer</span><span class="p">,</span> <span class="n">r_inner</span><span class="p">)</span>
+            <span class="n">X_geo</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1000.0</span> <span class="o">*</span> <span class="n">omega</span> <span class="o">*</span> <span class="n">mu_0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">y_i</span> <span class="o">/</span> <span class="n">r_outer</span><span class="p">)</span>
+                     <span class="k">if</span> <span class="n">r_outer</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">)</span>
 
         <span class="c1"># Calculate Carson&#39;s correction factors (in Ohm/km)</span>
         <span class="n">Rp</span><span class="p">,</span> <span class="n">Xp</span> <span class="o">=</span> <span class="n">carsons</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">y_i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">rho</span><span class="p">,</span> <span class="n">err_tol</span><span class="p">)</span>
@@ -611,7 +552,8 @@
                                  <span class="n">f</span><span class="o">=</span><span class="n">f</span><span class="p">,</span>
                                  <span class="n">rho</span><span class="o">=</span><span class="n">rho</span><span class="p">,</span>
                                  <span class="n">err_tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span>
-                                 <span class="n">use_dubanton_aprox</span><span class="o">=</span><span class="n">use_dubanton_aprox</span><span class="p">)</span>
+                                 <span class="n">use_dubanton_aprox</span><span class="o">=</span><span class="n">use_dubanton_aprox</span><span class="p">,</span>
+                                 <span class="n">gmr</span><span class="o">=</span><span class="n">wire_i</span><span class="o">.</span><span class="n">wire</span><span class="o">.</span><span class="n">gmr</span> <span class="o">/</span> <span class="mf">1000.0</span><span class="p">)</span>
 
         <span class="c1"># mutual impedances</span>
         <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">wire_j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">wires_in_tower</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>

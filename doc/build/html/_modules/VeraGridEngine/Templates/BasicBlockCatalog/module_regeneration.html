@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Templates.BasicBlockCatalog.module_regeneration &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Templates.BasicBlockCatalog.module_regeneration &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../md_source/license.html">📜 License</a></li>
@@ -117,10 +118,10 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Devices.Dynamic.var_factory</span><span class="w"> </span><span class="kn">import</span> <span class="n">VarFactory</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.Functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicBlockCatalogTemplateBuilder</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.Functions</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_basic_block_catalog_template_builder_by_module_name</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicBlockTemplateDescriptor</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_basic_block_catalog_descriptors</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_basic_block_catalog_descriptor_by_key</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_basic_block_catalog_templates_dir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicBlockTemplateDescriptor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_basic_block_catalog_descriptors</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_basic_block_catalog_descriptor_by_key</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Templates.BasicBlockCatalog.basic_block_catalog</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_basic_block_catalog_templates_dir</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.block</span><span class="w"> </span><span class="kn">import</span> <span class="n">Block</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">CmpOp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">VeraGridEngine.Utils.Symbolic.symbolic</span><span class="w"> </span><span class="kn">import</span> <span class="n">Comparison</span>

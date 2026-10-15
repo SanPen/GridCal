@@ -43,6 +43,7 @@ from VeraGridEngine.Utils.Symbolic.templates_common_functions import (
 from VeraGridEngine.basic_structures import Logger
 from VeraGridEngine.enumerations import (
     ConverterControlType,
+    LogSeverity,
     ParamPowerFlowReferenceType,
     VarPowerFlowReferenceType,
 )
@@ -281,7 +282,7 @@ def test_rms_save_preserves_live_root_choices_and_terminal_sides() -> None:
 
 
 def test_vsc_device_mapping_initializes_event_parameter_without_mutating_block() -> None:
-    """Seed a mapped event parameter without changing its declared storage.
+    """Seed and report a mapped event parameter without mutating its storage.
 
     :return: None.
     """
@@ -302,4 +303,8 @@ def test_vsc_device_mapping_initializes_event_parameter_without_mutating_block()
     assert problem_mapping[parameter].value == 0.001
     assert root.event_dict[parameter].value == 0.25
     assert len(root.parameters) == 0
-    assert len(logger.entries) == 0
+    assert len(logger.entries) == 1
+    assert logger.entries[0].severity == LogSeverity.Information
+    assert logger.entries[0].msg == "API-object initial value overrides the model-template fallback."
+    assert "API=0.001" in logger.entries[0].value
+    assert "template=0.25" in logger.entries[0].value

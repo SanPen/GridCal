@@ -717,7 +717,8 @@ class SmallSignalStabilityRmsDriver(DriverTemplate):
 
         self.problem = RmsProblemDae(grid=grid,
                                      options=self.rms_options,
-                                     pf_results=pf_results)
+                                     pf_results=pf_results,
+                                     logger=self.logger)
 
         self.problem.set_events_group(events_group)
 

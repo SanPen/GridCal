@@ -1,7 +1,7 @@
-# Lookup matrix
+# 2D lookup tables
 
 <!-- veragrid-block-introduction:start -->
-**Lookup matrix** evaluates a tabulated characteristic instead of assuming one closed-form equation. Interpolation maps measured or commanded inputs to empirical outputs such as efficiency, saturation, capability, or control schedules while preserving the supplied breakpoints.
+**2D lookup tables** evaluate a tabulated surface instead of assuming one closed-form equation. They map two measured or commanded inputs to empirical outputs such as efficiency, saturation, capability, or control schedules.
 
 ## Typical use
 
@@ -11,12 +11,17 @@
 
 ### Purpose
 
-This block approximates one two-dimensional nonlinear relation from one stored matrix.
+The Basic library exposes two distinct surface interpolators:
+
+- **Bilinear lookup table** interpolates linearly inside each grid cell.
+- **2D spline lookup table** applies natural cubic interpolation across both axes.
+
+Both blocks clip coordinates outside the table to its nearest boundary.
 
 ### Behavior
 
 - Receives two independent inputs.
-- Interpolates on a matrix or surface.
+- Interpolates on a stored matrix whose x and y axes are strictly increasing.
 - Outputs one approximated scalar value.
 
 ### Characteristics
@@ -30,8 +35,10 @@ This block approximates one two-dimensional nonlinear relation from one stored m
 | Input | `yi1` | First independent input variable | model-dependent |
 | Input | `yi2` | Second independent input variable | model-dependent |
 | Output | `yo` | Interpolated output value | model-dependent |
-| Parameter | `matrix_K` | Stored lookup matrix or surface data | data object |
+| Setting | `x_y_z_values` | Ordered x axis, ordered y axis, and row-major z matrix | model-dependent |
 
 ## How to use it
 
-- Use this block when the modeled relation depends on two inputs and is best described by tabulated data.
+- Use bilinear interpolation for piecewise-planar data and predictable local behavior.
+- Use the spline variant when a smooth surface is required.
+- Keep each axis strictly increasing and provide one z row per y point with one value per x point.

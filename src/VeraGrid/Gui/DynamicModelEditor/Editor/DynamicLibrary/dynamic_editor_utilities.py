@@ -185,7 +185,9 @@ def get_blocktype2template_builder_dict() -> Dict[BlockType, type[TemplateDefini
 
     :return: Builder class lookup used by drop and properties workflows.
     """
-    return dict(((BlockType.FAULT_EMT, emt_templates.FaultEmtTemplate),
+    return dict(((BlockType.MIN, basic_block_templates.MinimumTemplate),
+                 (BlockType.MAX, basic_block_templates.MaximumTemplate),
+                 (BlockType.FAULT_EMT, emt_templates.FaultEmtTemplate),
                  (BlockType.SWITCH_EMT, emt_templates.SwitchEmtTemplate),
                  (BlockType.GROUNDING_LINK_EMT, emt_templates.GroundingLinkEmtTemplate),
                  (BlockType.INDUCTION_MOTOR_EMT, emt_templates.InductionMotorEmtTemplate),
@@ -215,6 +217,7 @@ def get_blocktype2template_builder_dict() -> Dict[BlockType, type[TemplateDefini
                  (BlockType.EMT_JMARTI_LINE, JMartiBlockTemplateDefinition),
                  (BlockType.INVERSE_LOOKUP_ARRAY, emt_templates.InverseLookupArrayLinearRuntimeTemplate),
                  (BlockType.LOOKUP_ARRAY_LINEAR, emt_templates.LookupArrayLinearRuntimeTemplate),
+                 (BlockType.LOOKUP_ARRAY_LINEAR_VARIABLE, emt_templates.LookupArrayLinearVariableRuntimeTemplate),
                  (BlockType.LOOKUP_ARRAY_SPLINE, emt_templates.LookupArraySplineRuntimeTemplate),
                  (BlockType.LOOKUP_MATRIX_LINEAR, emt_templates.LookupMatrixLinearRuntimeTemplate),
                  (BlockType.LOOKUP_MATRIX_SPLINE, emt_templates.LookupMatrixSplineRuntimeTemplate),
@@ -326,6 +329,7 @@ def create_default_template_builder(var_factory: VarFactory,
             pass
     else:
         pass
+
     return builder
 
 
@@ -590,6 +594,51 @@ def initialize_template_builder_from_block(builder: TemplateDefinition,
         # The persisted symbolic equations and diagram are authoritative, so
         # recovery behaves identically before and after save/close/reopen.
         _recover_fault_builder_values(builder=builder, block=block)
+    else:
+        pass
+
+    if block_type == BlockType.MIN or block_type == BlockType.MAX:
+        input_count_property: TemplateProp | None = builder.params_dict.get("input_count", None)
+        if input_count_property is not None:
+            input_count_property.value = len(block.in_vars)
+        else:
+            pass
+    else:
+        pass
+
+    if block_type == BlockType.LOOKUP_ARRAY_LINEAR_VARIABLE:
+        # The dynamic lookup exposes one coordinate, N x-breakpoints and N
+        # y-samples. Recover N from that stable port layout.
+        lookup_input_count: int = len(block.in_vars)
+        point_count_property: TemplateProp | None = builder.params_dict.get("point_count", None)
+        has_valid_dynamic_layout: bool = (
+            lookup_input_count >= 5
+            and (lookup_input_count - 1) % 2 == 0
+        )
+        if point_count_property is not None and has_valid_dynamic_layout:
+            point_count_property.value = (lookup_input_count - 1) // 2
+        else:
+            pass
+    else:
+        pass
+
+    if block_type in (BlockType.LOOKUP_ARRAY_LINEAR, BlockType.LOOKUP_ARRAY_LINEAR_VARIABLE):
+        # Linear lookup blocks retain the clipping choice as a mode parameter,
+        # which survives serialization and remains independent of block names.
+        clip_property: TemplateProp | None = builder.params_dict.get("clip", None)
+        mode_variable: Var
+        mode_expression: Expr
+        for mode_variable, mode_expression in block.mode_dict.items():
+            if (
+                clip_property is not None
+                and mode_variable.name.startswith("lookup_clip_")
+                and isinstance(mode_expression, Const)
+                and isinstance(mode_expression.value, (int, float))
+                and not isinstance(mode_expression.value, bool)
+            ):
+                clip_property.value = float(mode_expression.value) >= 0.5
+            else:
+                pass
     else:
         pass
 

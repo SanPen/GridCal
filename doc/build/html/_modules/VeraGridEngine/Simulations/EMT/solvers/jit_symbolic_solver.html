@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver &mdash; VeraGrid 6.7.3 documentation</title>
+  <title>VeraGridEngine.Simulations.EMT.solvers.jit_symbolic_solver &mdash; VeraGrid 6.7.13 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
@@ -14,7 +14,7 @@
   
       <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=ab36fa8d"></script>
+      <script src="../../../../../_static/documentation_options.js?v=16fbabd8"></script>
       <script src="../../../../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../../../../_static/js/theme.js"></script>
@@ -70,6 +70,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/reliability.html">🚧 Reliability</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/state_estimation.html">🌀 State estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/dynamic_simulations.html">🧲 Dynamic simulations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/fmu.html">🔌 Functional Mock-up Units (FMUs)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/development.html">💻 Development</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/plugins.html">🧩 Plugins</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../md_source/license.html">📜 License</a></li>
@@ -139,6 +140,43 @@
 <span class="n">DenseFactorization</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span>
 <span class="n">DenseSolveBundle</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">DenseFactorization</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]</span>
 <span class="n">SparseSolveBundle</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">SuperLU</span><span class="p">,</span> <span class="n">CscMat</span><span class="p">]</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_has_consistent_initial_state_derivatives</span><span class="p">(</span>
+        <span class="n">problem</span><span class="p">:</span> <span class="n">EmtProblemTemplate</span><span class="p">,</span>
+        <span class="n">x0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">dx0</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">runtime_params</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+        <span class="n">t0</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Use trapezoidal BDF2 startup only when its initial slope is valid.&quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">bindings</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">uid</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">x0</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">problem</span><span class="o">.</span><span class="n">uid2idx_vars</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+        <span class="n">bindings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="n">uid</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">dx0</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">problem</span><span class="o">.</span><span class="n">uid2idx_diff</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">})</span>
+        <span class="n">bindings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="n">uid</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">runtime_params</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">problem</span><span class="o">.</span><span class="n">uid2idx_event_params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">})</span>
+        <span class="n">bindings</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="n">uid</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">get_parameters_values</span><span class="p">()[</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">uid</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="n">problem</span><span class="o">.</span><span class="n">uid2idx_params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">})</span>
+        <span class="n">bindings</span><span class="p">[</span><span class="n">problem</span><span class="o">.</span><span class="n">glob_time</span><span class="o">.</span><span class="n">uid</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">t0</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">differential</span><span class="p">,</span> <span class="n">equation</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">problem</span><span class="o">.</span><span class="n">get_diff_vars</span><span class="p">(),</span> <span class="n">problem</span><span class="o">.</span><span class="n">get_state_eqs</span><span class="p">()):</span>
+            <span class="n">rhs</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">equation</span><span class="o">.</span><span class="n">eval_uid</span><span class="p">(</span><span class="n">bindings</span><span class="p">))</span>
+            <span class="n">stored</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dx0</span><span class="p">[</span><span class="n">problem</span><span class="o">.</span><span class="n">uid2idx_diff</span><span class="p">[</span><span class="n">differential</span><span class="o">.</span><span class="n">uid</span><span class="p">]])</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">stored</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">stored</span> <span class="o">-</span> <span class="n">rhs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1e-6</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">stored</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rhs</span><span class="p">))):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">ZeroDivisionError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
 
 
 <div class="viewcode-block" id="SymbolicCompiledNumbaKernelCache">
@@ -732,7 +770,8 @@
         <span class="s1">&#39;_predictor&#39;</span><span class="p">,</span> <span class="s1">&#39;_runtime_param_count&#39;</span><span class="p">,</span> <span class="s1">&#39;_static_parameter_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_full_parameter_buffer&#39;</span><span class="p">,</span>
         <span class="s1">&#39;_residual_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_trial_state_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_trial_residual_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;_trial_residual_evaluator&#39;</span><span class="p">,</span>
         <span class="s1">&#39;_backend_build_stats&#39;</span><span class="p">,</span> <span class="s1">&#39;_last_runtime_stats&#39;</span><span class="p">,</span> <span class="s1">&#39;_last_sim_loop_time&#39;</span><span class="p">,</span>
-        <span class="s1">&#39;_max_residual_inf_fail&#39;</span><span class="p">,</span> <span class="s1">&#39;_max_state_residual_inf_fail&#39;</span><span class="p">,</span> <span class="s1">&#39;_cancel_checker&#39;</span><span class="p">,</span> <span class="s1">&#39;_progress_signal&#39;</span>
+        <span class="s1">&#39;_max_residual_inf_fail&#39;</span><span class="p">,</span> <span class="s1">&#39;_max_state_residual_inf_fail&#39;</span><span class="p">,</span> <span class="s1">&#39;_cancel_checker&#39;</span><span class="p">,</span> <span class="s1">&#39;_progress_signal&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;_newton_tolerance&#39;</span>
     <span class="p">]</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
@@ -749,7 +788,8 @@
                  <span class="n">max_residual_inf_fail</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
                  <span class="n">max_state_residual_inf_fail</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>
                  <span class="n">progress_signal</span><span class="p">:</span> <span class="n">DummySignal</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                 <span class="n">cancel_checker</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                 <span class="n">cancel_checker</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="nb">bool</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">newton_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0e-6</span><span class="p">)</span><span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        :param problem: The DAE problem definition.</span>
 <span class="sd">        :param t0: Initial time.</span>
@@ -760,6 +800,7 @@
 <span class="sd">        :param dense_threshold: Threshold to switch between dense and sparse linear solvers.</span>
 <span class="sd">        :param verbose: Print compilation and simulation timings.</span>
 <span class="sd">        :param newton_max_iter: Maximum Newton iterations per local EMT substep.</span>
+<span class="sd">        :param newton_tolerance: Absolute infinity-norm tolerance for Newton residual convergence.</span>
 <span class="sd">        :param progress_signal: Optional progress signal updated during the simulation loop.</span>
 <span class="sd">        :type progress_signal: DummySignal | None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -772,6 +813,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">dense_threshold</span> <span class="o">=</span> <span class="n">dense_threshold</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">newton_max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">newton_max_iter</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">newton_tolerance</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;newton_tolerance must be finite and greater than zero.&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_residual_inf_fail</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_residual_inf_fail</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_state_residual_inf_fail</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_state_residual_inf_fail</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_newton_diag_config</span> <span class="o">=</span> <span class="n">newton_diag_config</span> <span class="ow">or</span> <span class="n">NewtonDiagnosticsConfig</span><span class="p">(</span>
@@ -1170,6 +1214,23 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">pass</span>
 
+        <span class="n">use_trapezoidal_startup</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBDF2</span>
+            <span class="ow">and</span> <span class="n">_has_consistent_initial_state_derivatives</span><span class="p">(</span>
+                <span class="n">problem</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="p">,</span>
+                <span class="n">x0</span><span class="o">=</span><span class="n">x_prev</span><span class="p">,</span>
+                <span class="n">dx0</span><span class="o">=</span><span class="n">dx_prev</span><span class="p">,</span>
+                <span class="n">runtime_params</span><span class="o">=</span><span class="n">ev_params</span><span class="p">,</span>
+                <span class="n">t0</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t0</span><span class="p">),</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">use_trapezoidal_startup</span><span class="p">:</span>
+            <span class="n">startup_method</span> <span class="o">=</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeTrapezoidal</span>
+            <span class="k">if</span> <span class="n">startup_method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">jit_kernels</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">build_jit_kernel</span><span class="p">(</span><span class="n">startup_method</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_build_jit_symbolic_hybrid</span><span class="p">(</span><span class="n">startup_method</span><span class="p">,</span> <span class="n">use_sparse</span><span class="o">=</span><span class="n">is_sparse</span><span class="p">)</span>
+            <span class="n">startup_jac_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">startup_method</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">is_sparse</span><span class="si">}</span><span class="s2">&quot;</span>
+
         <span class="n">trace_collector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">get_newton_trace_collector</span><span class="p">()</span>
         <span class="n">diag_cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_newton_diag_config</span>
         <span class="n">diagnostics_enabled</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="p">(</span>
@@ -1267,8 +1328,15 @@
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">pass</span>
 
-                <span class="n">kernel_list_eff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jit_kernels</span><span class="p">[</span><span class="n">method</span><span class="p">]</span>
-                <span class="n">current_jacobian_eff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jit_jacobian_symbolic</span><span class="p">[</span><span class="n">jac_key_main</span><span class="p">]</span>
+                <span class="n">effective_method</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">startup_method</span>
+                    <span class="k">if</span> <span class="n">use_trapezoidal_startup</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span>
+                    <span class="k">else</span> <span class="n">method</span>
+                <span class="p">)</span>
+                <span class="n">kernel_list_eff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jit_kernels</span><span class="p">[</span><span class="n">effective_method</span><span class="p">]</span>
+                <span class="n">current_jacobian_eff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">jit_jacobian_symbolic</span><span class="p">[</span>
+                    <span class="n">startup_jac_key</span> <span class="k">if</span> <span class="n">effective_method</span> <span class="o">!=</span> <span class="n">method</span> <span class="k">else</span> <span class="n">jac_key_main</span>
+                <span class="p">]</span>
 
                 <span class="n">ev_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">problem</span><span class="o">.</span><span class="n">def_event_params_fn</span><span class="p">(</span><span class="n">ev_params</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">t_curr</span><span class="p">))</span>
                 <span class="n">fill_full_parameter_buffer</span><span class="p">(</span><span class="n">ev_params</span><span class="p">,</span> <span class="n">static_vals</span><span class="p">,</span> <span class="n">full_params</span><span class="p">)</span>
@@ -1297,7 +1365,7 @@
                 <span class="n">cached_lu_dense</span><span class="p">:</span> <span class="n">DenseSolveBundle</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="n">cached_lu_sparse</span><span class="p">:</span> <span class="n">SparseSolveBundle</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
 
-                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">is_first_local_step</span> <span class="ow">and</span> <span class="n">method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeTrapezoidal</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">is_first_local_step</span> <span class="ow">and</span> <span class="n">effective_method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeTrapezoidal</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_predictor</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
                         <span class="n">x_iter</span><span class="o">=</span><span class="n">x_iter</span><span class="p">,</span>
                         <span class="n">x_prev</span><span class="o">=</span><span class="n">x_prev</span><span class="p">,</span>
@@ -1387,7 +1455,7 @@
                             <span class="n">iter_idx</span><span class="o">=</span><span class="n">k</span><span class="p">,</span>
                         <span class="p">)</span>
 
-                    <span class="k">if</span> <span class="n">res_norm_inf</span> <span class="o">&lt;</span> <span class="mf">1e-6</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">res_norm_inf</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_newton_tolerance</span><span class="p">:</span>
                         <span class="n">substep_converged</span> <span class="o">=</span> <span class="kc">True</span>
                         <span class="k">break</span>
                     <span class="k">else</span><span class="p">:</span>
@@ -1509,7 +1577,16 @@
                         <span class="n">boundary_updater</span><span class="o">=</span><span class="n">active_boundary_updater</span><span class="p">,</span>
                         <span class="n">accepted</span><span class="o">=</span><span class="n">substep_converged</span><span class="p">,</span>
                         <span class="n">params</span><span class="o">=</span><span class="n">full_params</span><span class="p">,</span>
+                        <span class="n">committed_time</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">t_curr</span><span class="p">),</span>
+                        <span class="n">committed_state</span><span class="o">=</span><span class="n">x_iter</span><span class="p">,</span>
                     <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+                <span class="k">if</span> <span class="n">substep_converged</span> <span class="ow">and</span> <span class="n">state_event_retry_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># A post-acceptance native sample may publish new held</span>
+                    <span class="c1"># outputs. Retain them for the next aligned sub-step.</span>
+                    <span class="n">ev_params</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">full_params</span><span class="p">[:</span><span class="n">n_event_params</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">pass</span>
 
@@ -1527,28 +1604,28 @@
                     <span class="k">if</span> <span class="n">substep_numerical_failure</span><span class="p">:</span>
                         <span class="k">pass</span>
                     <span class="k">else</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeTrapezoidal</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">effective_method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeTrapezoidal</span><span class="p">:</span>
                             <span class="n">dx_prev</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                                     <span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">h_eff</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_iter</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_prev</span><span class="p">[:</span><span class="n">n_states</span><span class="p">])</span>
                                     <span class="o">-</span> <span class="n">dx_prev</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span>
                             <span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBackEuler</span><span class="p">:</span>
+                        <span class="k">elif</span> <span class="n">effective_method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBackEuler</span><span class="p">:</span>
                             <span class="n">dx_prev</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                                     <span class="p">(</span><span class="n">x_iter</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_prev</span><span class="p">[:</span><span class="n">n_states</span><span class="p">])</span> <span class="o">/</span> <span class="n">h_eff</span>
                             <span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBDF2</span><span class="p">:</span>
+                        <span class="k">elif</span> <span class="n">effective_method</span> <span class="o">==</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBDF2</span><span class="p">:</span>
                             <span class="n">x_prev2</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">x_prev</span>
                             <span class="n">dx_prev</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                                                         <span class="mf">1.5</span> <span class="o">*</span> <span class="n">x_iter</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span>
-                                                         <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">x_prev</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span>
-                                                         <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">x_prev2</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span>
-                                                 <span class="p">)</span> <span class="o">/</span> <span class="n">h_eff</span>
+                                <span class="mf">1.5</span> <span class="o">*</span> <span class="n">x_iter</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span>
+                                <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">x_prev</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span>
+                                <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">x_prev2</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span>
+                            <span class="p">)</span> <span class="o">/</span> <span class="n">h_eff</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">dx_prev</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                                     <span class="p">(</span><span class="n">x_iter</span><span class="p">[:</span><span class="n">n_states</span><span class="p">]</span> <span class="o">-</span> <span class="n">x_prev</span><span class="p">[:</span><span class="n">n_states</span><span class="p">])</span> <span class="o">/</span> <span class="n">h_eff</span>
                             <span class="p">)</span>
 
-                    <span class="k">if</span> <span class="n">method</span> <span class="o">!=</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBDF2</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">substep_numerical_failure</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">effective_method</span> <span class="o">!=</span> <span class="n">DynamicIntegrationMethod</span><span class="o">.</span><span class="n">DaeBDF2</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">substep_numerical_failure</span><span class="p">:</span>
                         <span class="n">x_prev2</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">x_prev</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="k">pass</span>

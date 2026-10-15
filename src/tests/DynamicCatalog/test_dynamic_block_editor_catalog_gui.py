@@ -14,12 +14,15 @@ from VeraGrid.Gui.DynamicModelEditor.Editor.BlockProperties import DynamicBlockP
 from VeraGrid.Gui.DynamicModelEditor.Editor.DynamicLibrary.dynamic_editor_library import (
     DynamicEditorLibrary,
     LibraryDeviceTemplateSpec,
+    get_basic_procedural_category_path,
     get_dynamic_library_international_standard_descriptors,
     get_dynamic_library_procedural_descriptors,
+    is_replaced_legacy_basic_descriptor,
 )
 from VeraGridEngine.Devices.Diagrams.block_diagram import BlockDiagramNode
 from VeraGridEngine.Devices.Dynamic.var_factory import VarFactory
 from VeraGridEngine.Templates.BasicBlockCatalog import BasicBlockTemplateDescriptor
+from VeraGridEngine.Templates.BasicBlockCatalog import ExactMathematicalBlockDescriptor
 from VeraGridEngine.Templates.BasicBlockCatalog import get_basic_block_catalog_descriptor_by_key
 from VeraGridEngine.Templates.BasicBlockCatalog import get_editor_ready_basic_block_catalog_descriptors
 from VeraGridEngine.Templates.ProceduralLogicCatalog import (
@@ -33,6 +36,8 @@ from VeraGridEngine.Utils.Symbolic.symbolic import Var
 from VeraGridEngine.enumerations import BlockType
 from VeraGridEngine.enumerations import DynamicSimulationMode
 from VeraGridEngine.enumerations import DeviceType
+from VeraGridEngine.enumerations import ExactMathematicalBlockOperation
+from VeraGridEngine.enumerations import ExactMathematicalValue
 from VeraGridEngine.enumerations import InternationalStandardModel
 from VeraGridEngine.enumerations import VarPowerFlowReferenceType
 
@@ -282,6 +287,24 @@ def _count_descriptor_leaves(editor: DynamicBlockEditorGUI,
     return count
 
 
+def _assert_functional_leaf_descriptions(parent_item: QtGui.QStandardItem) -> None:
+    """Assert that every descendant leaf has a functional description.
+
+    :param parent_item: Root item whose descendant leaves are inspected.
+    :return: None.
+    """
+    row: int
+    for row in range(parent_item.rowCount()):
+        child_item: QtGui.QStandardItem = parent_item.child(row, 0)
+        if child_item.hasChildren():
+            _assert_functional_leaf_descriptions(parent_item=child_item)
+        else:
+            description_item: QtGui.QStandardItem = parent_item.child(row, 1)
+            description: str = description_item.text().strip()
+            assert len(description) > 0
+            assert not description.startswith("Inputs:")
+
+
 def _build_editor(mode: DynamicSimulationMode = DynamicSimulationMode.EMT,
                   api_object=None,
                   circuit=None) -> DynamicBlockEditorGUI:
@@ -439,21 +462,21 @@ def _assert_index_has_icon(index: QtCore.QModelIndex) -> None:
     assert not icon_data.isNull()
 
 
-def test_emt_editor_exposes_basic_block_catalog_under_basic() -> None:
+def test_emt_editor_exposes_flat_categorized_basic_block_catalog() -> None:
     editor = _build_editor(DynamicSimulationMode.EMT)
     source_model = editor.library.library_model
     basic_item = source_model.invisibleRootItem().child(0)
-    native_item = basic_item.child(0)
-    const_index: QtCore.QModelIndex = _find_index_by_label(source_model, "Const")
-    moving_average_descriptor: BasicBlockTemplateDescriptor = get_basic_block_catalog_descriptor_by_key()["movingavg"]
+    const_index: QtCore.QModelIndex = _find_index_by_path(
+        source_model,
+        ("Basic", "Mathematical functions", "Constants", "Configurable constant"),
+    )
     moving_average_index: QtCore.QModelIndex = _find_index_by_path(
         source_model,
         (
             "Basic",
-            "Native",
             "Memory and discrete-time",
             "Moving average",
-            moving_average_descriptor.display_label,
+            "Moving average",
         ),
     )
 
@@ -461,12 +484,10 @@ def test_emt_editor_exposes_basic_block_catalog_under_basic() -> None:
     assert source_model.headerData(0, QtCore.Qt.Orientation.Horizontal) == "Name"
     assert source_model.headerData(1, QtCore.Qt.Orientation.Horizontal) == "Description"
     assert basic_item.text() == "Basic"
-    assert basic_item.rowCount() == 1
-    assert native_item.text() == "Native"
     top_level_categories: list[str] = list()
     category_row: int
-    for category_row in range(native_item.rowCount()):
-        top_level_categories.append(native_item.child(category_row).text())
+    for category_row in range(basic_item.rowCount()):
+        top_level_categories.append(basic_item.child(category_row).text())
     assert top_level_categories == list((
         "Mathematical functions",
         "Continuous dynamics",
@@ -477,12 +498,12 @@ def test_emt_editor_exposes_basic_block_catalog_under_basic() -> None:
         "Lookup tables",
         "Transforms",
         "Complex numbers",
-        "Measurements",
+        "Measurements and conversions",
         "Mechanical",
     ))
     expected_category_children: tuple[tuple[str, tuple[str, ...]], ...] = (
         ("Mathematical functions", (
-            "Sum", "Product", "Gain", "Bias / Affine", "Minimum/Maximum",
+            "Sum", "Product", "Gain", "Affine", "Polynomials", "Minimum/Maximum",
             "Absolute value", "Sign", "Square root", "Power",
             "Exponential and logarithms", "Rounding and modulo",
             "Trigonometric functions", "Constants",
@@ -493,7 +514,7 @@ def test_emt_editor_exposes_basic_block_catalog_under_basic() -> None:
         )),
         ("Memory and discrete-time", (
             "Sample and hold", "Previous value", "Exact time delay",
-            "Moving average", "Discrete integrator",
+            "Moving average",
         )),
         ("Logic and events", (
             "Logic gate", "Comparator", "Timed comparator", "Selector / Switch",
@@ -501,10 +522,9 @@ def test_emt_editor_exposes_basic_block_catalog_under_basic() -> None:
         )),
         ("Limits and nonlinearities", (
             "Saturation", "Deadband", "Rate limiter", "Hysteresis",
-            "Piecewise function",
         )),
         ("Sources", (
-            "Constant", "Simulation time", "Step", "Ramp", "Pulse", "Sine",
+            "Initial conditions", "Simulation time", "Periodic clocks", "Pulse", "Sine",
             "Square", "Triangle", "Sawtooth",
         )),
         ("Lookup tables", (
@@ -517,53 +537,204 @@ def test_emt_editor_exposes_basic_block_catalog_under_basic() -> None:
             "Cartesian / polar conversion", "Magnitude and angle", "Conjugate",
             "Arithmetic",
         )),
+        ("Measurements and conversions", (
+            "Electrical measurements", "Per-unit conversions", "Unit conversions",
+        )),
         ("Mechanical", ("Drive train",)),
     )
     expected_category: tuple[str, tuple[str, ...]]
     for expected_category in expected_category_children:
         category_index: QtCore.QModelIndex = _find_index_by_path(
             source_model,
-            ("Basic", "Native", expected_category[0]),
+            ("Basic", expected_category[0]),
         )
         assert category_index.isValid()
         assert _collect_direct_child_labels(source_model, category_index) == list(expected_category[1])
     assert _find_index_by_path(
         source_model,
-        ("Basic", "Native", "Memory and discrete-time", "Moving average",
-         moving_average_descriptor.display_label),
+        ("Basic", "Memory and discrete-time", "Moving average", "Moving average"),
     ).isValid()
     assert _find_index_by_path(
         source_model,
-        ("Basic", "Native", "Transforms", "Park / dq0", "Park transform (dq)"),
+        ("Basic", "Transforms", "Park / dq0", "Park transform (dq)"),
     ).isValid()
     assert _find_index_by_path(
         source_model,
-        ("Basic", "Native", "Mechanical", "Drive train", "Gear Box"),
+        ("Basic", "Mechanical", "Drive train", "Gearbox"),
     ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Mathematical functions", "Affine", "mx + n"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Mathematical functions", "Polynomials", "ax^2 + bx + c"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Lookup tables", "1D lookup table", "Linear lookup table"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Lookup tables", "1D lookup table", "Spline lookup table"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Lookup tables", "1D lookup table", "Dynamic linear lookup table"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Lookup tables", "Inverse 1D lookup table", "Inverse linear lookup table"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Lookup tables", "2D lookup table", "Bilinear lookup table"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Lookup tables", "2D lookup table", "2D spline lookup table"),
+    ).isValid()
+    assert not _find_index_by_label(source_model, "Lookup array object (linear)").isValid()
+    assert not _find_index_by_label(source_model, "Lookup matrix object (linear)").isValid()
+    assert not _find_index_by_label(source_model, "Lookup array 1x3 (linear fixed)").isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Sources", "Initial conditions", "Initial bias"),
+    ).isValid()
+    assert not _find_index_by_path(
+        source_model,
+        ("Basic", "Sources", "Constant"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Sources", "Simulation time", "Simulation time"),
+    ).isValid()
+    assert not _find_index_by_label(source_model, "Simulation time (form A)").isValid()
+    assert not _find_index_by_label(source_model, "Simulation time (form B)").isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Sources", "Periodic clocks", "Clock (parameter)"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Continuous dynamics", "Integrators", "1/s (enable)"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Continuous dynamics", "Derivatives", "sT/(1+sT) (enable)"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Continuous dynamics", "Transfer functions", "1/(1+sT) (enable)"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Logic and events", "Selector / Switch", "Enable signal"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Measurements and conversions", "Per-unit conversions", "Hz -> p.u."),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Measurements and conversions", "Per-unit conversions", "Power base"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Measurements and conversions", "Unit conversions", "deg -> rad"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Mathematical functions", "Minimum/Maximum", "MIN"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Mathematical functions", "Minimum/Maximum", "MAX"),
+    ).isValid()
+    assert not _find_index_by_label(source_model, "Native", source_model.indexFromItem(basic_item)).isValid()
     assert not _find_index_by_label(source_model, "Scaling and Products").isValid()
     ready_descriptors: list[BasicBlockTemplateDescriptor] = list(
         get_editor_ready_basic_block_catalog_descriptors()
     )
-    native_index: QtCore.QModelIndex = source_model.indexFromItem(native_item)
-    native_payloads: list[object] = _collect_leaf_payloads(
+    basic_index: QtCore.QModelIndex = source_model.indexFromItem(basic_item)
+    proxy_basic_index: QtCore.QModelIndex = editor.library_proxy_model.mapFromSource(basic_index)
+    assert editor.ui.libraryTreeView.isExpanded(proxy_basic_index)
+
+    # Basic remains discoverable on opening the editor, but its semantic
+    # categories stay folded until the user selects one or performs a search.
+    basic_category_row: int
+    for basic_category_row in range(source_model.rowCount(basic_index)):
+        source_category_index: QtCore.QModelIndex = source_model.index(
+            basic_category_row,
+            0,
+            basic_index,
+        )
+        proxy_category_index: QtCore.QModelIndex = editor.library_proxy_model.mapFromSource(
+            source_category_index,
+        )
+        assert not editor.ui.libraryTreeView.isExpanded(proxy_category_index)
+
+    basic_payloads: list[object] = _collect_leaf_payloads(
         source_model,
         editor.block_role,
-        native_index,
+        basic_index,
     )
     descriptor_keys: list[str] = list()
-    native_payload: object
-    for native_payload in native_payloads:
-        if isinstance(native_payload, BasicBlockTemplateDescriptor):
-            descriptor_keys.append(native_payload.template_key)
+    basic_payload: object
+    for basic_payload in basic_payloads:
+        if isinstance(basic_payload, BasicBlockTemplateDescriptor):
+            descriptor_keys.append(basic_payload.template_key)
         else:
             pass
     expected_descriptor_keys: set[str] = set()
     ready_descriptor: BasicBlockTemplateDescriptor
     for ready_descriptor in ready_descriptors:
-        expected_descriptor_keys.add(ready_descriptor.template_key)
-    assert _count_descriptor_leaves(editor, native_item) == len(ready_descriptors)
-    assert len(descriptor_keys) == len(ready_descriptors)
+        if is_replaced_legacy_basic_descriptor(descriptor=ready_descriptor):
+            pass
+        else:
+            expected_descriptor_keys.add(ready_descriptor.template_key)
+    assert _count_descriptor_leaves(editor, basic_item) == len(expected_descriptor_keys)
+    assert len(descriptor_keys) == len(expected_descriptor_keys)
     assert set(descriptor_keys) == expected_descriptor_keys
+
+    # Every canonical named value appears once as a source and once as a gain.
+    exact_descriptors: list[ExactMathematicalBlockDescriptor] = list()
+    basic_payload: object
+    for basic_payload in basic_payloads:
+        if isinstance(basic_payload, ExactMathematicalBlockDescriptor):
+            exact_descriptors.append(basic_payload)
+        else:
+            pass
+    assert len(exact_descriptors) == len(ExactMathematicalValue) * len(ExactMathematicalBlockOperation)
+    mathematical_value: ExactMathematicalValue
+    for mathematical_value in ExactMathematicalValue:
+        source_matches: list[ExactMathematicalBlockDescriptor] = list()
+        gain_matches: list[ExactMathematicalBlockDescriptor] = list()
+        exact_descriptor: ExactMathematicalBlockDescriptor
+        for exact_descriptor in exact_descriptors:
+            if exact_descriptor.mathematical_value == mathematical_value:
+                if exact_descriptor.operation == ExactMathematicalBlockOperation.CONSTANT:
+                    source_matches.append(exact_descriptor)
+                else:
+                    gain_matches.append(exact_descriptor)
+            else:
+                pass
+        assert len(source_matches) == 1
+        assert len(gain_matches) == 1
+
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Mathematical functions", "Constants", "Constant 2pi"),
+    ).isValid()
+    assert _find_index_by_path(
+        source_model,
+        ("Basic", "Mathematical functions", "Gain", "2pi"),
+    ).isValid()
+    assert not _find_index_by_label(source_model, "Constant C").isValid()
+    assert not _find_index_by_label(source_model, "2pi (form A)").isValid()
+    assert not _find_index_by_label(source_model, "2pi (form B)").isValid()
+    assert not _find_index_by_label(source_model, "C [param: C; form B]").isValid()
+    _assert_functional_leaf_descriptions(parent_item=basic_item)
     _assert_index_has_icon(source_model.index(0, 0))
     assert const_index.isValid()
     _assert_index_has_icon(const_index)
@@ -573,28 +744,31 @@ def test_emt_editor_exposes_basic_block_catalog_under_basic() -> None:
     )
     assert moving_average_index.isValid()
     _assert_index_has_icon(moving_average_index)
-    assert "Inputs:" in str(
+    assert (
         source_model.data(moving_average_index.siblingAtColumn(1), QtCore.Qt.ItemDataRole.DisplayRole)
-    )
-    assert "Outputs:" in str(
-        source_model.data(moving_average_index.siblingAtColumn(1), QtCore.Qt.ItemDataRole.DisplayRole)
+        == "Averages the input over a configurable historical time window."
     )
 
     editor.close()
 
 
-def test_rms_editor_exposes_basic_block_catalog_under_basic() -> None:
+def test_rms_editor_exposes_flat_basic_block_catalog() -> None:
     editor = _build_editor(DynamicSimulationMode.RMS)
     source_model = editor.library.library_model
     basic_item = source_model.invisibleRootItem().child(0)
-    native_item = basic_item.child(0)
 
     assert basic_item.text() == "Basic"
-    assert basic_item.rowCount() == 1
-    assert native_item.text() == "Native"
-    assert _count_descriptor_leaves(editor, native_item) == len(
-        get_editor_ready_basic_block_catalog_descriptors()
-    )
+    assert basic_item.child(0).text() == "Mathematical functions"
+    assert not _find_index_by_label(source_model, "Native", source_model.indexFromItem(basic_item)).isValid()
+    expected_descriptor_count: int = 0
+    ready_descriptor: BasicBlockTemplateDescriptor
+    for ready_descriptor in get_editor_ready_basic_block_catalog_descriptors():
+        if is_replaced_legacy_basic_descriptor(descriptor=ready_descriptor):
+            pass
+        else:
+            expected_descriptor_count += 1
+    assert _count_descriptor_leaves(editor, basic_item) == expected_descriptor_count
+    _assert_functional_leaf_descriptions(parent_item=basic_item)
 
     editor.close()
 
@@ -640,14 +814,13 @@ def test_rms_editor_exposes_basic_block_catalog_under_basic() -> None:
 
 def test_proxy_drag_payload_materializes_catalog_template() -> None:
     editor = _build_editor(DynamicSimulationMode.EMT)
-    descriptor = get_basic_block_catalog_descriptor_by_key()["movingavg"]
+    descriptor = get_basic_block_catalog_descriptor_by_key()["pade_approximant_r12_incforward"]
     source_index = _find_index_by_path(
         editor.library.library_model,
         (
             "Basic",
-            "Native",
-            "Memory and discrete-time",
-            "Moving average",
+            "Continuous dynamics",
+            "Delay approximations",
             descriptor.display_label,
         ),
     )
@@ -662,7 +835,7 @@ def test_proxy_drag_payload_materializes_catalog_template() -> None:
 
     assert payload is not None
     assert isinstance(payload, BasicBlockTemplateDescriptor)
-    assert payload.template_key == "movingavg"
+    assert payload.template_key == "pade_approximant_r12_incforward"
 
     children_before: int = len(editor.main_block.children)
     block_item = editor.create_library_payload_item(payload, 10.0, 20.0)
@@ -670,17 +843,17 @@ def test_proxy_drag_payload_materializes_catalog_template() -> None:
     assert block_item is not None
     assert len(editor.main_block.children) == children_before + 1
     assert block_item.subsys is editor.main_block.children[-1]
-    assert block_item.subsys.name == "movingavg__77"
+    assert block_item.subsys.name == "Pade approximant R12 _incforward__100"
 
     editor.has_unapplied_changes = False
     editor.close()
 
 
 @pytest.mark.parametrize("mode", (DynamicSimulationMode.RMS, DynamicSimulationMode.EMT))
-def test_procedural_logic_branch_exposes_every_library_descriptor(
+def test_procedural_descriptors_are_exposed_once_in_their_semantic_branch(
         mode: DynamicSimulationMode,
 ) -> None:
-    """RMS and EMT libraries must expose the same native procedural primitives.
+    """RMS and EMT libraries must expose each procedural primitive once.
 
     :param mode: Dynamic editor mode under inspection.
     :return: None.
@@ -690,18 +863,55 @@ def test_procedural_logic_branch_exposes_every_library_descriptor(
         editor.library.library_model,
         "Procedural logic",
     )
+    basic_root: QtCore.QModelIndex = _find_index_by_label(
+        editor.library.library_model,
+        "Basic",
+    )
     assert procedural_root.isValid()
+    assert basic_root.isValid()
+    library_payloads: list[object] = _collect_leaf_payloads(
+        editor.library.library_model,
+        editor.block_role,
+    )
     descriptor: ProceduralBlockTemplateDescriptor
     for descriptor in get_dynamic_library_procedural_descriptors():
-        source_index: QtCore.QModelIndex = _find_index_by_label(
+        basic_category_path: tuple[str, ...] | None = get_basic_procedural_category_path(
+            descriptor=descriptor,
+        )
+        if basic_category_path is None:
+            expected_path: tuple[str, ...] = (
+                "Procedural logic",
+            ) + tuple(descriptor.category_path) + (descriptor.display_label,)
+            absent_root: QtCore.QModelIndex = basic_root
+        else:
+            expected_path = (
+                "Basic",
+            ) + basic_category_path + (descriptor.display_label,)
+            absent_root = procedural_root
+        source_index: QtCore.QModelIndex = _find_index_by_path(
             editor.library.library_model,
-            descriptor.display_label,
-            procedural_root,
+            expected_path,
         )
         assert source_index.isValid(), descriptor.display_label
         payload: object = source_index.data(editor.block_role)
         assert isinstance(payload, ProceduralBlockTemplateDescriptor)
         assert payload.logic_tpe == descriptor.logic_tpe
+        occurrence_count: int = 0
+        library_payload: object
+        for library_payload in library_payloads:
+            if (
+                    isinstance(library_payload, ProceduralBlockTemplateDescriptor)
+                    and library_payload.logic_tpe == descriptor.logic_tpe
+            ):
+                occurrence_count += 1
+            else:
+                pass
+        assert occurrence_count == 1
+        assert not _find_index_by_label(
+            editor.library.library_model,
+            descriptor.display_label,
+            absent_root,
+        ).isValid()
 
     editor.has_unapplied_changes = False
     editor.close()
@@ -716,15 +926,9 @@ def test_procedural_library_double_click_materializes_canvas_block() -> None:
     descriptor: ProceduralBlockTemplateDescriptor = list(
         get_dynamic_library_procedural_descriptors()
     )[0]
-    procedural_root: QtCore.QModelIndex = _find_index_by_label(
-        editor.library.library_model,
-        "Procedural logic",
-    )
-    assert procedural_root.isValid()
     source_index: QtCore.QModelIndex = _find_index_by_label(
         editor.library.library_model,
         descriptor.display_label,
-        procedural_root,
     )
     proxy_index: QtCore.QModelIndex = editor.library_proxy_model.mapFromSource(source_index)
     children_before: int = len(editor.main_block.children)
